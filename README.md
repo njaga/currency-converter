@@ -2,7 +2,7 @@
 
 <div align="center">
   <img src="public/logo.svg" alt="XOF Converter Logo" width="200"/>
-  
+
   Un convertisseur de devises moderne et intuitif, spécialement conçu pour la conversion entre le Franc CFA (XOF) et d'autres devises internationales.
 
   [Voir la démo en direct](https://xof-converter.vercel.app) | [Signaler un bug](https://github.com/njaga/currency-converter/issues) | [Demander une fonctionnalité](https://github.com/njaga/currency-converter/issues)
@@ -35,43 +35,38 @@
 ## 🛠️ Installation
 
 1. **Clonez le répertoire**
-
-```bash
-git clone https://github.com/njaga/currency-converter.git
-```
+   ```bash
+   git clone https://github.com/njaga/currency-converter.git
+   ```
 
 2. **Installez les dépendances**
-
-```bash
-cd currency-converter
-npm install
-```
-ou
-```bash
-yarn install
-```
+   ```bash
+   cd currency-converter
+   npm install
+   ```
+   ou
+   ```bash
+   yarn install
+   ```
 
 3. **Configurez les variables d'environnement**
-
-```bash
-cp .env.example .env
-```
-Ajoutez vos clés API dans le fichier `.env.local`:
-
-CURRENCY_API_KEY=votre_clé_ici
-EXCHANGE_RATE_API_KEY=votre_clé_ici
-```
+   ```bash
+   cp .env.example .env
+   ```
+   Ajoutez vos clés API dans le fichier `.env.local`:
+   ```
+   CURRENCY_API_KEY=votre_clé_ici
+   EXCHANGE_RATE_API_KEY=votre_clé_ici
+   ```
 
 4. **Démarrez le serveur de développement**
-
-```bash
-npm run dev
-```
-ou
-```bash
-yarn dev
-```
-
+   ```bash
+   npm run dev
+   ```
+   ou
+   ```bash
+   yarn dev
+   ```
 
 5. **Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur**
 
