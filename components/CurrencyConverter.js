@@ -197,7 +197,7 @@ const CurrencyConverter = () => {
     if (amount > 0) {
       fetchExchangeRate();
     }
-  }, [fromCurrency, toCurrency, amount]);
+  }, [fromCurrency, toCurrency, amount, fetchExchangeRate]);
 
   const handleSwapCurrencies = () => {
     setFromCurrency(toCurrency);
@@ -342,13 +342,23 @@ const CurrencyConverter = () => {
               <span>Développé par Ndiaga Ndiaye</span>
             </motion.a>
             
-            <motion.a
-              href="/mentions-legales"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
-              whileHover={{ scale: 1.02 }}
-            >
-              Mentions légales
-            </motion.a>
+            <div className="flex items-center space-x-6">
+              <motion.a
+                href="/about"
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+                whileHover={{ scale: 1.02 }}
+              >
+                À propos du développeur
+              </motion.a>
+              
+              <motion.a
+                href="/mentions-legales"
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+                whileHover={{ scale: 1.02 }}
+              >
+                Mentions légales
+              </motion.a>
+            </div>
           </div>
         </div>
       </footer>
