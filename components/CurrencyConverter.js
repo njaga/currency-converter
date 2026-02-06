@@ -10,6 +10,9 @@ import Image from 'next/image';
 const EXCHANGE_RATE_API_KEY = '1276659af5bdc69143b11f57';
 const EXCHANGE_RATE_API_URL = 'https://v6.exchangerate-api.com/v6/';
 
+const OPEN_EXCHANGE_APP_ID = '7c71ac4719b841758f38e4dc994eb8d3';
+const OPEN_EXCHANGE_API_URL = 'https://openexchangerates.org/api/';
+
 // Currency data with country codes for flag API
 const CURRENCIES = [
   { code: 'XOF', name: 'Franc CFA (BCEAO)', country: 'sn', symbol: 'CFA' },
@@ -257,6 +260,30 @@ const CurrencyConverter = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleSwapCurrencies]);
 
+  const fetchFromBackup = useCallback(async () => {
+    try {
+      console.log('Switching to backup API...');
+      const response = await fetch(`${OPEN_EXCHANGE_API_URL}latest.json?app_id=${OPEN_EXCHANGE_APP_ID}`);
+      const data = await response.json();
+
+      if (!data.error) {
+        const fromRate = data.rates[fromCurrency];
+        const toRate = data.rates[toCurrency];
+        
+        if (fromRate && toRate) {
+          const crossRate = toRate / fromRate;
+          setExchangeRate(crossRate);
+          setAllRates(data.rates);
+          setConvertedAmount(parseFloat(amount) * crossRate);
+          setLastUpdated(new Date(data.timestamp * 1000));
+          console.log('Backup API success');
+        }
+      }
+    } catch (backupError) {
+      console.error('Backup API Error:', backupError);
+    }
+  }, [amount, fromCurrency, toCurrency]);
+
   const fetchExchangeRate = useCallback(async () => {
     if (!amount || parseFloat(amount) <= 0) {
       setConvertedAmount(null);
@@ -267,6 +294,8 @@ const CurrencyConverter = () => {
     setIsLoading(true);
     try {
       const response = await fetch(`${EXCHANGE_RATE_API_URL}${EXCHANGE_RATE_API_KEY}/latest/${fromCurrency}`);
+      if (!response.ok) throw new Error('Primary API Failed');
+      
       const data = await response.json();
       
       if (data.result === 'success') {
@@ -275,13 +304,16 @@ const CurrencyConverter = () => {
         setAllRates(data.conversion_rates);
         setConvertedAmount(parseFloat(amount) * rate);
         setLastUpdated(new Date(data.time_last_update_unix * 1000));
+      } else {
+        throw new Error('Primary API Error Result');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.warn('Primary API failed, trying backup:', error);
+      await fetchFromBackup();
     } finally {
       setIsLoading(false);
     }
-  }, [amount, fromCurrency, toCurrency]);
+  }, [amount, fromCurrency, toCurrency, fetchFromBackup]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
