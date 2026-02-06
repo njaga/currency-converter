@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowRightLeft, Star, RefreshCw, TrendingUp, 
-  Sun, Moon, Clock, ChevronDown, Check, X, Bookmark
+  Sun, Moon, Clock, ChevronDown, Check, X, Bookmark, CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -34,7 +34,7 @@ const Flag = ({ country, size = 'md' }) => {
   const sizes = {
     sm: { width: 24, height: 18 },
     md: { width: 32, height: 24 },
-    lg: { width: 48, height: 36 }
+    lg: { width: 40, height: 30 }
   };
   const { width, height } = sizes[size];
   
@@ -44,38 +44,22 @@ const Flag = ({ country, size = 'md' }) => {
       alt={country.toUpperCase()}
       width={width}
       height={height}
-      className="rounded-sm object-cover"
+      className="rounded-sm object-cover shadow-sm"
       unoptimized
     />
   );
-};
-
-// Animated number component
-const AnimatedNumber = ({ value, decimals = 2 }) => {
-  const spring = useSpring(0, { stiffness: 100, damping: 30 });
-  const display = useTransform(spring, (v) => 
-    new Intl.NumberFormat('fr-FR', { 
-      minimumFractionDigits: decimals, 
-      maximumFractionDigits: decimals 
-    }).format(v)
-  );
-  
-  useEffect(() => {
-    spring.set(value || 0);
-  }, [value, spring]);
-  
-  return <motion.span>{display}</motion.span>;
 };
 
 // Theme toggle component
 const ThemeToggle = ({ isDark, onToggle }) => (
   <motion.button
     onClick={onToggle}
-    className="relative w-14 h-7 bg-zinc-200 dark:bg-zinc-700 rounded-full p-1 transition-colors"
+    className="theme-toggle"
     whileTap={{ scale: 0.95 }}
+    aria-label="Toggle theme"
   >
     <motion.div
-      className="w-5 h-5 rounded-full bg-white dark:bg-primary flex items-center justify-center shadow-md"
+      className="theme-toggle-handle"
       animate={{ x: isDark ? 28 : 0 }}
       transition={{ type: "spring", stiffness: 500, damping: 30 }}
     >
@@ -88,7 +72,7 @@ const ThemeToggle = ({ isDark, onToggle }) => (
   </motion.button>
 );
 
-// Currency dropdown
+// Currency dropdown with mobile-optimized design
 const CurrencyDropdown = ({ value, onChange, currencies, label }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selected = currencies.find(c => c.code === value);
@@ -106,25 +90,25 @@ const CurrencyDropdown = ({ value, onChange, currencies, label }) => {
 
   return (
     <div className="flex-1" ref={dropdownRef}>
-      <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
         {label}
       </label>
       <div className="relative">
         <motion.button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full h-16 bg-zinc-100 dark:bg-zinc-800 border-2 border-transparent hover:border-primary/30 focus:border-primary rounded-2xl px-4 flex items-center gap-3 transition-all focus-ring"
+          className="currency-selector touch-feedback"
           whileTap={{ scale: 0.98 }}
         >
           <Flag country={selected?.country} size="lg" />
-          <div className="flex-1 text-left">
-            <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{selected?.code}</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{selected?.name}</p>
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{selected?.code}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{selected?.name}</p>
           </div>
           <motion.div
             animate={{ rotate: isOpen ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="w-5 h-5 text-zinc-400" />
+            <ChevronDown className="w-5 h-5 text-slate-400" />
           </motion.div>
         </motion.button>
 
@@ -134,8 +118,8 @@ const CurrencyDropdown = ({ value, onChange, currencies, label }) => {
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-2xl z-[100] overflow-hidden max-h-80 overflow-y-auto"
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="dropdown-panel"
             >
               {currencies.map((currency) => (
                 <motion.button
@@ -144,18 +128,17 @@ const CurrencyDropdown = ({ value, onChange, currencies, label }) => {
                     onChange(currency.code);
                     setIsOpen(false);
                   }}
-                  className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors ${
-                    value === currency.code ? 'bg-primary/10' : ''
-                  }`}
+                  className={`dropdown-item ${value === currency.code ? 'selected' : ''}`}
                   whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <Flag country={currency.country} size="sm" />
-                  <div className="flex-1 text-left">
-                    <p className="font-semibold text-zinc-900 dark:text-zinc-100">{currency.code}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{currency.name}</p>
+                  <div className="flex-1 text-left min-w-0">
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{currency.code}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{currency.name}</p>
                   </div>
                   {value === currency.code && (
-                    <Check className="w-5 h-5 text-primary" />
+                    <Check className="w-5 h-5 text-blue-600" />
                   )}
                 </motion.button>
               ))}
@@ -171,6 +154,7 @@ const CurrencyDropdown = ({ value, onChange, currencies, label }) => {
 const RateBar = ({ currency, rate, maxRate, baseRate }) => {
   const percentage = (rate / maxRate) * 100;
   const isBase = rate === baseRate;
+  const currencyData = CURRENCIES.find(c => c.code === currency);
   
   return (
     <motion.div
@@ -178,22 +162,40 @@ const RateBar = ({ currency, rate, maxRate, baseRate }) => {
       animate={{ opacity: 1, x: 0 }}
       className="flex items-center gap-3"
     >
-      <Flag country={CURRENCIES.find(c => c.code === currency)?.country} size="sm" />
-      <span className="w-12 text-sm font-semibold text-zinc-700 dark:text-zinc-300">{currency}</span>
-      <div className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+      <Flag country={currencyData?.country} size="sm" />
+      <span className="w-12 text-sm font-semibold text-slate-700 dark:text-slate-300">{currency}</span>
+      <div className="flex-1 rate-bar">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className={`h-full rounded-full ${isBase ? 'bg-primary' : 'bg-zinc-400 dark:bg-zinc-500'}`}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className={`rate-bar-fill ${isBase ? '' : 'opacity-50'}`}
         />
       </div>
-      <span className="w-24 text-right text-sm font-mono text-zinc-600 dark:text-zinc-400">
+      <span className="w-24 text-right text-sm font-mono text-slate-600 dark:text-slate-400">
         {rate.toFixed(4)}
       </span>
     </motion.div>
   );
 };
+
+// Toast notification for feedback
+const Toast = ({ message, isVisible, onClose }) => (
+  <AnimatePresence>
+    {isVisible && (
+      <motion.div
+        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.9 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 toast-success"
+      >
+        <CheckCircle className="w-5 h-5" />
+        <span>{message}</span>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
 
 // Main component
 const CurrencyConverter = () => {
@@ -208,7 +210,17 @@ const CurrencyConverter = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isDark, setIsDark] = useState(false);
   const [showRates, setShowRates] = useState(false);
+  const [toast, setToast] = useState({ message: '', visible: false });
   const inputRef = useRef(null);
+  
+  // Ref to track if we're currently fetching (prevents double fetch)
+  const isFetchingRef = useRef(false);
+
+  // Show toast notification
+  const showToast = (message) => {
+    setToast({ message, visible: true });
+    setTimeout(() => setToast({ message: '', visible: false }), 2500);
+  };
 
   // Initialize dark mode
   useEffect(() => {
@@ -223,22 +235,25 @@ const CurrencyConverter = () => {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
-  // Load favorites
+  // Load favorites from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('favorites');
-    if (saved) setFavorites(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem('currency_favorites');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setFavorites(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load favorites:', e);
+    }
   }, []);
 
-  // Save favorites
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }, [favorites]);
-
-  // Swap currencies handler - defined before useEffect that uses it
+  // Swap currencies handler
   const handleSwapCurrencies = useCallback(() => {
-    const temp = fromCurrency;
     setFromCurrency(toCurrency);
-    setToCurrency(temp);
+    setToCurrency(fromCurrency);
   }, [fromCurrency, toCurrency]);
 
   // Keyboard shortcuts
@@ -260,90 +275,134 @@ const CurrencyConverter = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleSwapCurrencies]);
 
-  const fetchFromBackup = useCallback(async () => {
-    try {
-      console.log('Switching to backup API...');
-      const response = await fetch(`${OPEN_EXCHANGE_API_URL}latest.json?app_id=${OPEN_EXCHANGE_APP_ID}`);
-      const data = await response.json();
-
-      if (!data.error) {
-        const fromRate = data.rates[fromCurrency];
-        const toRate = data.rates[toCurrency];
-        
-        if (fromRate && toRate) {
-          const crossRate = toRate / fromRate;
-          setExchangeRate(crossRate);
-          setAllRates(data.rates);
-          setConvertedAmount(parseFloat(amount) * crossRate);
-          setLastUpdated(new Date(data.timestamp * 1000));
-          console.log('Backup API success');
-        }
-      }
-    } catch (backupError) {
-      console.error('Backup API Error:', backupError);
-    }
-  }, [amount, fromCurrency, toCurrency]);
-
-  const fetchExchangeRate = useCallback(async () => {
-    if (!amount || parseFloat(amount) <= 0) {
+  // Fetch exchange rate - stable function that won't cause re-renders
+  const fetchExchangeRate = useCallback(async (amountValue, from, to) => {
+    if (!amountValue || parseFloat(amountValue) <= 0) {
       setConvertedAmount(null);
       setExchangeRate(null);
       return;
     }
 
+    // Prevent double fetch
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
     setIsLoading(true);
+    
     try {
-      const response = await fetch(`${EXCHANGE_RATE_API_URL}${EXCHANGE_RATE_API_KEY}/latest/${fromCurrency}`);
+      // Try primary API
+      const response = await fetch(`${EXCHANGE_RATE_API_URL}${EXCHANGE_RATE_API_KEY}/latest/${from}`);
       if (!response.ok) throw new Error('Primary API Failed');
       
       const data = await response.json();
       
       if (data.result === 'success') {
-        const rate = data.conversion_rates[toCurrency];
+        const rate = data.conversion_rates[to];
         setExchangeRate(rate);
         setAllRates(data.conversion_rates);
-        setConvertedAmount(parseFloat(amount) * rate);
+        setConvertedAmount(parseFloat(amountValue) * rate);
         setLastUpdated(new Date(data.time_last_update_unix * 1000));
       } else {
-        throw new Error('Primary API Error Result');
+        throw new Error('Primary API Error');
       }
     } catch (error) {
       console.warn('Primary API failed, trying backup:', error);
-      await fetchFromBackup();
+      
+      // Fallback to Open Exchange Rates
+      try {
+        const backupResponse = await fetch(`${OPEN_EXCHANGE_API_URL}latest.json?app_id=${OPEN_EXCHANGE_APP_ID}`);
+        const backupData = await backupResponse.json();
+        
+        if (!backupData.error) {
+          const fromRate = backupData.rates[from];
+          const toRate = backupData.rates[to];
+          
+          if (fromRate && toRate) {
+            const crossRate = toRate / fromRate;
+            setExchangeRate(crossRate);
+            setAllRates(backupData.rates);
+            setConvertedAmount(parseFloat(amountValue) * crossRate);
+            setLastUpdated(new Date(backupData.timestamp * 1000));
+          }
+        }
+      } catch (backupError) {
+        console.error('Backup API Error:', backupError);
+      }
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  }, [amount, fromCurrency, toCurrency, fetchFromBackup]);
+  }, []);
 
+  // Debounced effect for fetching rates - FIXED: no fetchExchangeRate in deps
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (amount) fetchExchangeRate();
-    }, 300);
+      if (amount) {
+        fetchExchangeRate(amount, fromCurrency, toCurrency);
+      }
+    }, 400);
     return () => clearTimeout(timer);
   }, [amount, fromCurrency, toCurrency, fetchExchangeRate]);
 
+  // Save favorite - FIXED with validation
   const handleSaveFavorite = () => {
+    const numAmount = parseFloat(amount);
+    
+    if (isNaN(numAmount) || numAmount <= 0) {
+      showToast('Entrez un montant valide');
+      return;
+    }
+    
+    if (!exchangeRate) {
+      showToast('Attendez la conversion');
+      return;
+    }
+
     const newFav = {
       id: Date.now(),
-      amount: parseFloat(amount),
+      amount: numAmount,
       from: fromCurrency,
       to: toCurrency,
       rate: exchangeRate
     };
-    setFavorites(prev => [newFav, ...prev.slice(0, 4)]);
+    
+    const updatedFavorites = [newFav, ...favorites.slice(0, 4)];
+    setFavorites(updatedFavorites);
+    
+    // Persist to localStorage
+    try {
+      localStorage.setItem('currency_favorites', JSON.stringify(updatedFavorites));
+      showToast('Conversion sauvegardée !');
+    } catch (e) {
+      console.warn('Failed to save favorites:', e);
+    }
   };
 
   const handleRemoveFavorite = (id) => {
-    setFavorites(prev => prev.filter(f => f.id !== id));
+    const updatedFavorites = favorites.filter(f => f.id !== id);
+    setFavorites(updatedFavorites);
+    try {
+      localStorage.setItem('currency_favorites', JSON.stringify(updatedFavorites));
+    } catch (e) {
+      console.warn('Failed to save favorites:', e);
+    }
   };
 
   const formatTime = (date) => {
-    if (!date) return '';
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) return '';
     const now = new Date();
     const diff = Math.floor((now - date) / 1000);
     if (diff < 60) return "À l'instant";
     if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    if (diff < 86400) return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  };
+
+  const formatNumber = (num) => {
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(num);
   };
 
   // Get popular rates for comparison
@@ -353,40 +412,40 @@ const CurrencyConverter = () => {
   const maxRate = Math.max(...popularRates.map(r => r.rate), 1);
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 transition-colors duration-300">
+    <div className="min-h-screen min-h-[100dvh] bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[40%] -right-[20%] w-[80%] h-[80%] rounded-full bg-primary/5 dark:bg-primary/10 blur-3xl" />
+        <div className="absolute -top-[40%] -right-[20%] w-[80%] h-[80%] rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-3xl" />
         <div className="absolute -bottom-[40%] -left-[20%] w-[80%] h-[80%] rounded-full bg-cyan-500/5 dark:bg-cyan-500/10 blur-3xl" />
       </div>
 
       {/* Header */}
-      <header className="relative z-10 border-b border-zinc-200/50 dark:border-zinc-800/50 backdrop-blur-sm">
+      <header className="relative z-20 border-b border-slate-200/50 dark:border-slate-800/50 backdrop-blur-xl bg-white/70 dark:bg-slate-900/70">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <motion.div
-              className="w-12 h-12 rounded-xl overflow-hidden"
+              className="w-11 h-11 rounded-xl overflow-hidden shadow-lg shadow-blue-500/20"
               whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
             >
               <Image 
                 src="/favicon.svg" 
                 alt="XOF Converter" 
-                width={48} 
-                height={48}
+                width={44} 
+                height={44}
                 className="w-full h-full"
               />
             </motion.div>
             <div>
-              <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">XOF Converter</h1>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Conversion en temps réel</p>
+              <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">XOF Converter</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Taux en temps réel</p>
             </div>
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400">
+            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
               <kbd className="kbd">/</kbd>
-              <span>Rechercher</span>
+              <span>Focus</span>
             </div>
             <ThemeToggle isDark={isDark} onToggle={() => setIsDark(!isDark)} />
           </div>
@@ -394,39 +453,40 @@ const CurrencyConverter = () => {
       </header>
 
       {/* Main */}
-      <main className="relative z-10 max-w-4xl mx-auto px-4 py-8">
-        <div className="space-y-6">
+      <main className="relative z-10 max-w-4xl mx-auto px-4 py-6 md:py-8 safe-bottom">
+        <div className="space-y-5">
           
           {/* Main converter card */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-card p-6 md:p-8 relative z-50"
+            className="glass-card p-5 md:p-8 relative z-50"
           >
             {/* Amount input */}
-            <div className="mb-8">
-              <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
-                Montant à convertir
+            <div className="mb-6">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+                Montant
               </label>
               <div className="relative">
                 <input
                   ref={inputRef}
                   type="number"
+                  inputMode="decimal"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0"
-                  className="w-full h-24 bg-zinc-100 dark:bg-zinc-800 border-2 border-transparent focus:border-primary rounded-2xl px-6 text-5xl md:text-6xl font-bold text-zinc-900 dark:text-zinc-100 placeholder-zinc-300 dark:placeholder-zinc-600 transition-all focus-ring"
+                  className="amount-input"
                 />
                 {isLoading && (
-                  <div className="absolute right-6 top-1/2 -translate-y-1/2">
-                    <RefreshCw className="w-6 h-6 text-primary animate-spin" />
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2">
+                    <RefreshCw className="w-6 h-6 text-blue-600 animate-spin" />
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Currency selectors */}
-            <div className="flex flex-col md:flex-row items-stretch gap-4 mb-8">
+            {/* Currency selectors - stacked on mobile */}
+            <div className="flex flex-col gap-3">
               <CurrencyDropdown
                 value={fromCurrency}
                 onChange={setFromCurrency}
@@ -434,15 +494,17 @@ const CurrencyConverter = () => {
                 label="De"
               />
               
-              <div className="flex items-end justify-center md:pb-2">
+              {/* Swap button - inline on mobile */}
+              <div className="flex justify-center -my-1">
                 <motion.button
                   onClick={handleSwapCurrencies}
-                  className="w-14 h-14 bg-primary hover:bg-primary-hover rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/25 transition-colors"
-                  whileHover={{ scale: 1.05, rotate: 180 }}
-                  whileTap={{ scale: 0.95 }}
+                  className="w-10 h-10 md:w-14 md:h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30"
+                  whileHover={{ scale: 1.1, rotate: 180 }}
+                  whileTap={{ scale: 0.9 }}
                   transition={{ duration: 0.3 }}
+                  aria-label="Swap currencies"
                 >
-                  <ArrowRightLeft className="w-5 h-5" />
+                  <ArrowRightLeft className="w-4 h-4 md:w-5 md:h-5" />
                 </motion.button>
               </div>
 
@@ -462,24 +524,24 @@ const CurrencyConverter = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="pt-6 border-t border-zinc-200 dark:border-zinc-700"
+                  className="pt-6 border-t border-slate-200 dark:border-slate-700"
                 >
-                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4">
+                  <div className="flex flex-col gap-4 mb-4">
                     <div>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-2">
-                        {new Intl.NumberFormat('fr-FR').format(amount)} {fromCurrency} =
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
+                        {formatNumber(parseFloat(amount))} {fromCurrency} =
                       </p>
-                      <div className="flex items-baseline gap-3">
-                        <p className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-zinc-100">
-                          <AnimatedNumber value={convertedAmount} />
+                      <div className="flex items-baseline gap-3 flex-wrap">
+                        <p className="result-value">
+                          {formatNumber(convertedAmount)}
                         </p>
-                        <span className="text-2xl font-bold text-primary">{toCurrency}</span>
+                        <span className="text-xl md:text-2xl font-bold text-blue-600">{toCurrency}</span>
                       </div>
                     </div>
                     
                     <motion.button
                       onClick={handleSaveFavorite}
-                      className="glow-button px-6 py-3 font-semibold flex items-center gap-2"
+                      className="glow-button px-5 py-3.5 font-semibold flex items-center justify-center gap-2 w-full md:w-auto"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -489,7 +551,7 @@ const CurrencyConverter = () => {
                   </div>
 
                   {/* Rate info */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-emerald-500" />
                       <span>1 {fromCurrency} = {exchangeRate?.toFixed(4)} {toCurrency}</span>
@@ -512,21 +574,21 @@ const CurrencyConverter = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="glass-card p-6"
+              className="glass-card p-5 md:p-6"
             >
               <button
                 onClick={() => setShowRates(!showRates)}
-                className="w-full flex items-center justify-between mb-4"
+                className="w-full flex items-center justify-between mb-4 touch-feedback"
               >
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">Taux de change</h3>
+                  <TrendingUp className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-semibold text-slate-900 dark:text-slate-100">Taux de change</h3>
                 </div>
                 <motion.div
                   animate={{ rotate: showRates ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ChevronDown className="w-5 h-5 text-zinc-400" />
+                  <ChevronDown className="w-5 h-5 text-slate-400" />
                 </motion.div>
               </button>
               
@@ -536,12 +598,13 @@ const CurrencyConverter = () => {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                     className="space-y-3 overflow-hidden"
                   >
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
                       Pour 1 {fromCurrency}
                     </p>
-                    {popularRates.map((rate, i) => (
+                    {popularRates.map((rate) => (
                       <RateBar
                         key={rate.code}
                         currency={rate.code}
@@ -562,11 +625,11 @@ const CurrencyConverter = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="glass-card p-6"
+              className="glass-card p-5 md:p-6"
             >
               <div className="flex items-center gap-2 mb-4">
-                <Bookmark className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">Récents</h3>
+                <Bookmark className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold text-slate-900 dark:text-slate-100">Récents</h3>
               </div>
               <div className="grid gap-2">
                 {favorites.map((fav) => (
@@ -574,8 +637,7 @@ const CurrencyConverter = () => {
                     key={fav.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    className="group flex items-center gap-3 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                    className="favorite-card group"
                     onClick={() => {
                       setAmount(fav.amount.toString());
                       setFromCurrency(fav.from);
@@ -584,12 +646,12 @@ const CurrencyConverter = () => {
                   >
                     <div className="flex items-center gap-1.5">
                       <Flag country={CURRENCIES.find(c => c.code === fav.from)?.country} size="sm" />
-                      <span className="text-zinc-400">→</span>
+                      <span className="text-slate-400">→</span>
                       <Flag country={CURRENCIES.find(c => c.code === fav.to)?.country} size="sm" />
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                        {new Intl.NumberFormat('fr-FR').format(fav.amount)} {fav.from} → {fav.to}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
+                        {formatNumber(fav.amount)} {fav.from} → {fav.to}
                       </p>
                     </div>
                     <button
@@ -598,6 +660,7 @@ const CurrencyConverter = () => {
                         handleRemoveFavorite(fav.id);
                       }}
                       className="p-2 opacity-0 group-hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-all"
+                      aria-label="Remove favorite"
                     >
                       <X className="w-4 h-4 text-red-500" />
                     </button>
@@ -612,7 +675,7 @@ const CurrencyConverter = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="hidden md:flex items-center justify-center gap-6 text-xs text-zinc-400 dark:text-zinc-500"
+            className="hidden md:flex items-center justify-center gap-6 text-xs text-slate-400 dark:text-slate-500"
           >
             <div className="flex items-center gap-2">
               <kbd className="kbd">/</kbd>
@@ -633,27 +696,34 @@ const CurrencyConverter = () => {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-zinc-200/50 dark:border-zinc-800/50 mt-12">
+      <footer className="relative z-10 border-t border-slate-200/50 dark:border-slate-800/50 mt-8">
         <div className="max-w-4xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Développé par{' '}
             <a 
               href="https://ndiagandiaye.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="font-medium text-primary hover:underline"
+              className="font-medium text-blue-600 hover:underline"
             >
               Ndiaga Ndiaye
             </a>
           </p>
           <Link 
             href="/mentions-legales"
-            className="text-sm text-zinc-400 dark:text-zinc-500 hover:text-primary dark:hover:text-primary transition-colors"
+            className="text-sm text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-500 transition-colors"
           >
             Mentions légales
           </Link>
         </div>
       </footer>
+
+      {/* Toast notification */}
+      <Toast 
+        message={toast.message} 
+        isVisible={toast.visible} 
+        onClose={() => setToast({ message: '', visible: false })} 
+      />
     </div>
   );
 };
