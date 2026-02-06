@@ -1,59 +1,65 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
- "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="396.000000pt" height="95.000000pt" viewBox="0 0 396.000000 95.000000"
- preserveAspectRatio="xMidYMid meet">
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Coin Gradient -->
+    <linearGradient id="goldGradient" x1="10" y1="10" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="20%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#B45309" />
+      <stop offset="80%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FCD34D" />
+    </linearGradient>
+    
+    <!-- Coin Face Gradient -->
+    <radialGradient id="goldFace" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+      <stop offset="0%" stop-color="#FEF3C7" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </radialGradient>
 
-<g transform="translate(0.000000,95.000000) scale(0.100000,-0.100000)"
-fill="#000000" stroke="none">
-<path d="M417 769 c-253 -61 -315 -394 -99 -535 174 -114 415 -14 451 189 18
-102 -13 202 -86 272 -62 60 -185 94 -266 74z m148 -63 c95 -40 155 -127 155
--223 0 -182 -186 -298 -347 -218 -177 89 -178 341 -1 429 60 30 138 35 193 12z"/>
-<path d="M445 660 l-29 -30 32 -33 32 -32 32 32 32 33 -29 30 c-16 16 -32 30
--35 30 -3 0 -19 -14 -35 -30z"/>
-<path d="M1130 615 c0 -2 16 -29 35 -60 39 -61 40 -60 -16 -142 -35 -51 -35
--53 -5 -53 18 0 32 12 53 45 15 25 30 45 33 45 3 0 17 -20 32 -45 21 -34 34
--45 53 -45 14 0 25 2 25 6 0 3 -18 32 -40 64 -22 32 -40 63 -40 67 0 5 16 32
-35 60 19 29 35 55 35 58 0 3 -11 5 -24 5 -17 0 -31 -11 -46 -35 -12 -19 -25
--35 -30 -35 -5 0 -18 16 -30 35 -15 24 -29 35 -46 35 -13 0 -24 -2 -24 -5z"/>
-<path d="M1433 605 c-61 -26 -83 -127 -43 -192 41 -67 159 -67 200 0 41 67 17
-167 -45 193 -42 17 -71 17 -112 -1z m107 -45 c15 -15 20 -33 20 -70 0 -59 -24
--90 -70 -90 -44 0 -70 34 -70 92 0 57 24 88 70 88 17 0 39 -9 50 -20z"/>
-<path d="M1660 490 c0 -123 1 -130 20 -130 18 0 20 7 20 60 l0 60 55 0 c48 0
-55 2 55 20 0 18 -7 20 -55 20 -54 0 -55 0 -55 30 l0 30 65 0 c58 0 65 2 65 20
-0 18 -7 20 -85 20 l-85 0 0 -130z"/>
-<path d="M2032 605 c-56 -24 -80 -121 -47 -185 17 -34 62 -60 100 -60 34 0 82
-25 95 49 16 30 -25 40 -51 12 -26 -28 -73 -28 -93 1 -9 12 -16 43 -16 68 0 61
-21 90 65 90 23 0 39 -6 46 -18 8 -12 20 -17 35 -14 20 3 22 7 13 23 -12 23
--60 49 -91 49 -13 -1 -38 -7 -56 -15z"/>
-<path d="M3238 599 c-10 -5 -18 -17 -18 -24 0 -8 -4 -15 -10 -15 -5 0 -10 -9
--10 -20 0 -11 4 -20 9 -20 5 0 11 -32 13 -71 4 -75 14 -91 57 -87 31 4 40 28
-12 35 -18 5 -21 13 -21 64 0 46 3 59 15 59 8 0 15 9 15 20 0 11 -7 20 -15 20
--9 0 -15 9 -15 25 0 27 -6 30 -32 14z"/>
-<path d="M2284 550 c-55 -22 -72 -108 -31 -155 13 -15 37 -28 59 -32 32 -5 41
--1 68 25 76 76 2 202 -96 162z m80 -62 c14 -39 -3 -82 -33 -86 -50 -7 -82 66
--45 103 25 25 67 15 78 -17z"/>
-<path d="M2460 460 c0 -93 1 -100 20 -100 18 0 20 7 20 61 0 72 12 99 44 99
-30 0 36 -16 36 -96 0 -58 2 -64 20 -64 20 0 21 5 18 87 -3 84 -4 88 -31 103
--25 14 -30 13 -57 -2 -25 -14 -30 -15 -30 -3 0 8 -9 15 -20 15 -19 0 -20 -7
--20 -100z"/>
-<path d="M2660 553 c0 -5 15 -48 34 -98 46 -123 62 -125 104 -13 16 46 33 91
-37 101 7 16 4 18 -16 15 -19 -2 -27 -15 -43 -65 -11 -35 -23 -63 -28 -63 -4 0
--8 4 -8 10 0 5 -9 34 -21 65 -15 40 -25 55 -40 55 -10 0 -19 -3 -19 -7z"/>
-<path d="M2907 549 c-32 -19 -49 -74 -37 -118 12 -46 27 -60 72 -67 25 -4 40
-0 62 17 28 22 28 23 7 31 -13 5 -29 3 -41 -5 -23 -14 -53 0 -58 27 -3 13 6 16
-59 16 l62 0 -6 37 c-4 20 -12 43 -20 50 -18 19 -78 26 -100 12z m71 -41 c21
--21 13 -28 -28 -28 -22 0 -40 4 -40 8 0 14 23 32 40 32 9 0 21 -5 28 -12z"/>
-<path d="M3080 460 c0 -93 1 -100 20 -100 18 0 20 7 20 56 0 64 13 94 39 94
-20 0 35 25 25 41 -8 13 -38 11 -52 -3 -9 -9 -12 -9 -12 0 0 7 -9 12 -20 12
--19 0 -20 -7 -20 -100z"/>
-<path d="M3367 549 c-32 -19 -49 -74 -37 -118 12 -46 27 -60 72 -67 25 -4 40
-0 62 17 28 22 28 23 7 31 -13 5 -29 3 -41 -5 -23 -14 -53 0 -58 27 -3 13 6 16
-57 16 55 0 61 2 61 20 0 67 -69 110 -123 79z m71 -41 c21 -21 13 -28 -28 -28
--22 0 -40 4 -40 8 0 14 23 32 40 32 9 0 21 -5 28 -12z"/>
-<path d="M3540 460 c0 -93 1 -100 20 -100 18 0 20 7 20 63 0 65 11 87 41 87
-18 0 33 26 23 41 -8 13 -38 11 -52 -3 -9 -9 -12 -9 -12 0 0 7 -9 12 -20 12
--19 0 -20 -7 -20 -100z"/>
-</g>
+    <!-- Arrow Blue Gradient -->
+    <linearGradient id="arrowBlue" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1E3A8A" />
+    </linearGradient>
+
+    <!-- Drop Shadow -->
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Logo Icon Proup -->
+  <g transform="translate(5, 5)" filter="url(#dropShadow)">
+    <!-- 3D Coin Shape -->
+    <circle cx="25" cy="25" r="20" fill="url(#goldGradient)" />
+    <circle cx="25" cy="25" r="16" fill="url(#goldFace)" stroke="#B45309" stroke-width="0.5" />
+    
+    <!-- Inner Coin Detail: Stylized X/Cross -->
+    <path d="M25 15V35M15 25H35" stroke="#B45309" stroke-width="1" stroke-linecap="round" opacity="0.5" />
+    <circle cx="25" cy="25" r="12" stroke="#B45309" stroke-width="1" opacity="0.3" />
+
+    <!-- Dynamic Swoosh Atoms / Arrows -->
+    <!-- Top-Right Swoosh -->
+    <path d="M10 35 C10 15, 20 5, 40 10" stroke="url(#arrowBlue)" stroke-width="4" stroke-linecap="round" fill="none" />
+    <!-- Bottom-Left Swoosh -->
+    <path d="M40 15 C40 35, 30 45, 10 40" stroke="url(#arrowBlue)" stroke-width="4" stroke-linecap="round" fill="none" />
+    
+    <!-- Arrow heads -->
+    <path d="M40 10 L35 7" stroke="url(#arrowBlue)" stroke-width="3" stroke-linecap="round" />
+    <path d="M10 40 L15 43" stroke="url(#arrowBlue)" stroke-width="3" stroke-linecap="round" />
+  </g>
+
+  <!-- Text Group -->
+  <g transform="translate(64, 0)">
+    <text x="0" y="26" fill="#18181B" font-family="'Inter', sans-serif" font-size="20" font-weight="900" letter-spacing="-0.5">XOF</text>
+    <text x="42" y="26" fill="#2563EB" font-family="'Inter', sans-serif" font-size="20" font-weight="900" letter-spacing="-0.5">Converter</text>
+    <text x="0" y="44" fill="#52525B" font-family="'Inter', sans-serif" font-size="12" font-weight="500">Premium Exchange</text>
+  </g>
 </svg>

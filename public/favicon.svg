@@ -1,19 +1,43 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Fond -->
-  <rect width="32" height="32" rx="8" fill="#2563EB"/>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Coin Gradient -->
+    <linearGradient id="goldGradientIcon" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="20%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#B45309" />
+      <stop offset="80%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FCD34D" />
+    </linearGradient>
+    
+    <!-- Coin Face Gradient -->
+    <radialGradient id="goldFaceIcon" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+      <stop offset="0%" stop-color="#FEF3C7" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </radialGradient>
+
+    <!-- Arrow Blue Gradient -->
+    <linearGradient id="arrowBlueIcon" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1E3A8A" />
+    </linearGradient>
+  </defs>
+
+  <!-- 3D Coin Shape -->
+  <circle cx="32" cy="32" r="24" fill="url(#goldGradientIcon)" />
+  <circle cx="32" cy="32" r="19" fill="url(#goldFaceIcon)" stroke="#B45309" stroke-width="1" />
   
-  <!-- Symbole XOF -->
-  <g fill="white">
-    <!-- X -->
-    <path d="M8 8L12 12M12 8L8 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
-    
-    <!-- O -->
-    <circle cx="16" cy="10" r="2.5" stroke="white" stroke-width="1.5"/>
-    
-    <!-- F -->
-    <path d="M20 8V12M20 8H24M20 10H23" stroke="white" stroke-width="2" stroke-linecap="round"/>
-    
-    <!-- Symbole de conversion -->
-    <path d="M12 20H20M16 16L20 20L16 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
+  <!-- Inner Coin Detail: Stylized Symbol -->
+  <path d="M32 20V44M20 32H44" stroke="#B45309" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+  <circle cx="32" cy="32" r="14" stroke="#B45309" stroke-width="1" opacity="0.4" />
+
+  <!-- Dynamic Swoosh Atoms / Arrows -->
+  <!-- Top-Right Swoosh -->
+  <path d="M14 44 C14 20, 26 8, 50 14" stroke="url(#arrowBlueIcon)" stroke-width="5" stroke-linecap="round" fill="none" />
+  <!-- Bottom-Left Swoosh -->
+  <path d="M50 20 C50 44, 38 56, 14 50" stroke="url(#arrowBlueIcon)" stroke-width="5" stroke-linecap="round" fill="none" />
+  
+  <!-- Arrow heads -->
+  <path d="M50 14 L42 10" stroke="url(#arrowBlueIcon)" stroke-width="4" stroke-linecap="round" />
+  <path d="M14 50 L22 54" stroke="url(#arrowBlueIcon)" stroke-width="4" stroke-linecap="round" />
+
 </svg>
