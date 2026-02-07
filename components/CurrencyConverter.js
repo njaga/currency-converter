@@ -29,24 +29,34 @@ const CURRENCIES = [
   { code: 'GHS', name: 'Cedi ghanéen', country: 'gh', symbol: '₵' },
 ];
 
-// Flag component using flagcdn.com API
+// Flag component using country-flag-icons (SVG)
+import * as Flags from 'country-flag-icons/react/3x2';
+
 const Flag = ({ country, size = 'md' }) => {
   const sizes = {
-    sm: { width: 24, height: 18 },
-    md: { width: 32, height: 24 },
-    lg: { width: 40, height: 30 }
+    sm: 'w-6 h-4',
+    md: 'w-8 h-5',
+    lg: 'w-10 h-7'
   };
-  const { width, height } = sizes[size];
+  
+  if (!country) return null;
+  
+  // Map country codes to ISO 3166-1 alpha-2 (uppercase)
+  const countryMap = {
+    'sn': 'SN', 'eu': 'EU', 'us': 'US', 'gb': 'GB', 'ca': 'CA',
+    'ch': 'CH', 'jp': 'JP', 'cn': 'CN', 'au': 'AU', 'ma': 'MA',
+    'ng': 'NG', 'gh': 'GH'
+  };
+  
+  const isoCode = countryMap[country] || country.toUpperCase();
+  const FlagComponent = Flags[isoCode];
+  
+  if (!FlagComponent) return null;
   
   return (
-    <Image
-      src={`https://flagcdn.com/w80/${country}.png`}
-      alt={country.toUpperCase()}
-      width={width}
-      height={height}
-      className="rounded-sm object-cover shadow-sm"
-      unoptimized
-    />
+    <div className="flex-shrink-0">
+      <FlagComponent className={`${sizes[size]} rounded-sm shadow-sm`} />
+    </div>
   );
 };
 
@@ -89,7 +99,7 @@ const CurrencyDropdown = ({ value, onChange, currencies, label }) => {
   }, []);
 
   return (
-    <div className="flex-1" ref={dropdownRef}>
+    <div className="flex-1 min-w-0" ref={dropdownRef}>
       <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
         {label}
       </label>
@@ -99,16 +109,17 @@ const CurrencyDropdown = ({ value, onChange, currencies, label }) => {
           className="currency-selector touch-feedback"
           whileTap={{ scale: 0.98 }}
         >
-          <Flag country={selected?.country} size="lg" />
+          <Flag country={selected?.country} size="md" />
           <div className="flex-1 text-left min-w-0">
-            <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{selected?.code}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{selected?.name}</p>
+            <p className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">{selected?.code}</p>
+            <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 truncate hidden sm:block">{selected?.name}</p>
           </div>
           <motion.div
             animate={{ rotate: isOpen ? 180 : 0 }}
             transition={{ duration: 0.2 }}
+            className="hidden sm:block"
           >
-            <ChevronDown className="w-5 h-5 text-slate-400" />
+            <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-slate-400" />
           </motion.div>
         </motion.button>
 
@@ -485,8 +496,8 @@ const CurrencyConverter = () => {
               </div>
             </div>
 
-            {/* Currency selectors - stacked on mobile */}
-            <div className="flex flex-col gap-3">
+            {/* Currency selectors - side by side */}
+            <div className="flex items-center gap-2 md:gap-4">
               <CurrencyDropdown
                 value={fromCurrency}
                 onChange={setFromCurrency}
@@ -494,19 +505,17 @@ const CurrencyConverter = () => {
                 label="De"
               />
               
-              {/* Swap button - inline on mobile */}
-              <div className="flex justify-center -my-1">
-                <motion.button
-                  onClick={handleSwapCurrencies}
-                  className="w-10 h-10 md:w-14 md:h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30"
-                  whileHover={{ scale: 1.1, rotate: 180 }}
-                  whileTap={{ scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
-                  aria-label="Swap currencies"
-                >
-                  <ArrowRightLeft className="w-4 h-4 md:w-5 md:h-5" />
-                </motion.button>
-              </div>
+              {/* Swap button - center */}
+              <motion.button
+                onClick={handleSwapCurrencies}
+                className="flex-shrink-0 w-11 h-11 md:w-12 md:h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-500/30 mt-6"
+                whileHover={{ scale: 1.1, rotate: 180 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+                aria-label="Swap currencies"
+              >
+                <ArrowRightLeft className="w-4 h-4 md:w-5 md:h-5" />
+              </motion.button>
 
               <CurrencyDropdown
                 value={toCurrency}
