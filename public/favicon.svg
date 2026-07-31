@@ -1,43 +1,29 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Coin Gradient -->
-    <linearGradient id="goldGradientIcon" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#FCD34D" />
-      <stop offset="20%" stop-color="#F59E0B" />
-      <stop offset="50%" stop-color="#B45309" />
-      <stop offset="80%" stop-color="#F59E0B" />
-      <stop offset="100%" stop-color="#FCD34D" />
+    <linearGradient id="logoGradPrimary" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stopColor="#2563eb" />
+      <stop offset="1" stopColor="#06b6d4" />
     </linearGradient>
-    
-    <!-- Coin Face Gradient -->
-    <radialGradient id="goldFaceIcon" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
-      <stop offset="0%" stop-color="#FEF3C7" />
-      <stop offset="100%" stop-color="#F59E0B" />
-    </radialGradient>
-
-    <!-- Arrow Blue Gradient -->
-    <linearGradient id="arrowBlueIcon" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#3B82F6" />
-      <stop offset="100%" stop-color="#1E3A8A" />
+    <linearGradient id="logoGradSecondary" x1="44" y1="0" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stopColor="#f59e0b" />
+      <stop offset="1" stopColor="#d97706" />
     </linearGradient>
   </defs>
 
-  <!-- 3D Coin Shape -->
-  <circle cx="32" cy="32" r="24" fill="url(#goldGradientIcon)" />
-  <circle cx="32" cy="32" r="19" fill="url(#goldFaceIcon)" stroke="#B45309" stroke-width="1" />
-  
-  <!-- Inner Coin Detail: Stylized Symbol -->
-  <path d="M32 20V44M20 32H44" stroke="#B45309" stroke-width="2" stroke-linecap="round" opacity="0.6" />
-  <circle cx="32" cy="32" r="14" stroke="#B45309" stroke-width="1" opacity="0.4" />
+  <rect x="2" y="2" width="40" height="40" rx="12" fill="url(#logoGradPrimary)" />
 
-  <!-- Dynamic Swoosh Atoms / Arrows -->
-  <!-- Top-Right Swoosh -->
-  <path d="M14 44 C14 20, 26 8, 50 14" stroke="url(#arrowBlueIcon)" stroke-width="5" stroke-linecap="round" fill="none" />
-  <!-- Bottom-Left Swoosh -->
-  <path d="M50 20 C50 44, 38 56, 14 50" stroke="url(#arrowBlueIcon)" stroke-width="5" stroke-linecap="round" fill="none" />
-  
-  <!-- Arrow heads -->
-  <path d="M50 14 L42 10" stroke="url(#arrowBlueIcon)" stroke-width="4" stroke-linecap="round" />
-  <path d="M14 50 L22 54" stroke="url(#arrowBlueIcon)" stroke-width="4" stroke-linecap="round" />
-
+  <path
+    d="M13 20C13 16.134 16.134 13 20 13H29M29 13L24.5 8.5M29 13L24.5 17.5"
+    stroke="white"
+    strokeWidth="3.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  <path
+    d="M31 24C31 27.866 27.866 31 24 31H15M15 31L19.5 35.5M15 31L19.5 26.5"
+    stroke="url(#logoGradSecondary)"
+    strokeWidth="3.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
 </svg>

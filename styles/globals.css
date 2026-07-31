@@ -572,3 +572,28 @@ input[type="number"] {
     opacity: 0.9;
   }
 }
+
+/* Hide scrollbar utility — works across all browsers */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth fade-in-up for tab content transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}

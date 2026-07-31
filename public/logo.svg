@@ -1,65 +1,29 @@
-<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Coin Gradient -->
-    <linearGradient id="goldGradient" x1="10" y1="10" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#FCD34D" />
-      <stop offset="20%" stop-color="#F59E0B" />
-      <stop offset="50%" stop-color="#B45309" />
-      <stop offset="80%" stop-color="#F59E0B" />
-      <stop offset="100%" stop-color="#FCD34D" />
+    <linearGradient id="logoGradPrimary" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stopColor="#2563eb" />
+      <stop offset="1" stopColor="#06b6d4" />
     </linearGradient>
-    
-    <!-- Coin Face Gradient -->
-    <radialGradient id="goldFace" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
-      <stop offset="0%" stop-color="#FEF3C7" />
-      <stop offset="100%" stop-color="#F59E0B" />
-    </radialGradient>
-
-    <!-- Arrow Blue Gradient -->
-    <linearGradient id="arrowBlue" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#3B82F6" />
-      <stop offset="100%" stop-color="#1E3A8A" />
+    <linearGradient id="logoGradSecondary" x1="44" y1="0" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stopColor="#f59e0b" />
+      <stop offset="1" stopColor="#d97706" />
     </linearGradient>
-
-    <!-- Drop Shadow -->
-    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-      <feOffset dx="0" dy="2" result="offsetblur"/>
-      <feComponentTransfer>
-        <feFuncA type="linear" slope="0.3"/>
-      </feComponentTransfer>
-      <feMerge> 
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/> 
-      </feMerge>
-    </filter>
   </defs>
 
-  <!-- Logo Icon Proup -->
-  <g transform="translate(5, 5)" filter="url(#dropShadow)">
-    <!-- 3D Coin Shape -->
-    <circle cx="25" cy="25" r="20" fill="url(#goldGradient)" />
-    <circle cx="25" cy="25" r="16" fill="url(#goldFace)" stroke="#B45309" stroke-width="0.5" />
-    
-    <!-- Inner Coin Detail: Stylized X/Cross -->
-    <path d="M25 15V35M15 25H35" stroke="#B45309" stroke-width="1" stroke-linecap="round" opacity="0.5" />
-    <circle cx="25" cy="25" r="12" stroke="#B45309" stroke-width="1" opacity="0.3" />
+  <rect x="2" y="2" width="40" height="40" rx="12" fill="url(#logoGradPrimary)" />
 
-    <!-- Dynamic Swoosh Atoms / Arrows -->
-    <!-- Top-Right Swoosh -->
-    <path d="M10 35 C10 15, 20 5, 40 10" stroke="url(#arrowBlue)" stroke-width="4" stroke-linecap="round" fill="none" />
-    <!-- Bottom-Left Swoosh -->
-    <path d="M40 15 C40 35, 30 45, 10 40" stroke="url(#arrowBlue)" stroke-width="4" stroke-linecap="round" fill="none" />
-    
-    <!-- Arrow heads -->
-    <path d="M40 10 L35 7" stroke="url(#arrowBlue)" stroke-width="3" stroke-linecap="round" />
-    <path d="M10 40 L15 43" stroke="url(#arrowBlue)" stroke-width="3" stroke-linecap="round" />
-  </g>
-
-  <!-- Text Group -->
-  <g transform="translate(64, 0)">
-    <text x="0" y="26" fill="#18181B" font-family="'Inter', sans-serif" font-size="20" font-weight="900" letter-spacing="-0.5">XOF</text>
-    <text x="42" y="26" fill="#2563EB" font-family="'Inter', sans-serif" font-size="20" font-weight="900" letter-spacing="-0.5">Converter</text>
-    <text x="0" y="44" fill="#52525B" font-family="'Inter', sans-serif" font-size="12" font-weight="500">Premium Exchange</text>
-  </g>
+  <path
+    d="M13 20C13 16.134 16.134 13 20 13H29M29 13L24.5 8.5M29 13L24.5 17.5"
+    stroke="white"
+    strokeWidth="3.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  <path
+    d="M31 24C31 27.866 27.866 31 24 31H15M15 31L19.5 35.5M15 31L19.5 26.5"
+    stroke="url(#logoGradSecondary)"
+    strokeWidth="3.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
 </svg>

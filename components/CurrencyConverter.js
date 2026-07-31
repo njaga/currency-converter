@@ -1,92 +1,71 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowRightLeft, Star, RefreshCw, TrendingUp, 
-  Sun, Moon, Clock, ChevronDown, Check, X, Bookmark, CheckCircle
+import {
+  ArrowRightLeft,
+  Star,
+  RefreshCw,
+  Sun,
+  Moon,
+  ChevronDown,
+  CheckCircle,
+  Download,
+  Share2,
+  Globe,
+  Sparkles,
+  TrendingUp,
+  History,
 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
-
-const EXCHANGE_RATE_API_KEY = '1276659af5bdc69143b11f57';
-const EXCHANGE_RATE_API_URL = 'https://v6.exchangerate-api.com/v6/';
-
-const OPEN_EXCHANGE_APP_ID = '7c71ac4719b841758f38e4dc994eb8d3';
-const OPEN_EXCHANGE_API_URL = 'https://openexchangerates.org/api/';
-
-// Currency data with country codes for flag API
-const CURRENCIES = [
-  { code: 'XOF', name: 'Franc CFA (BCEAO)', country: 'sn', symbol: 'CFA' },
-  { code: 'EUR', name: 'Euro', country: 'eu', symbol: '€' },
-  { code: 'USD', name: 'Dollar américain', country: 'us', symbol: '$' },
-  { code: 'GBP', name: 'Livre sterling', country: 'gb', symbol: '£' },
-  { code: 'CAD', name: 'Dollar canadien', country: 'ca', symbol: 'C$' },
-  { code: 'CHF', name: 'Franc suisse', country: 'ch', symbol: 'CHF' },
-  { code: 'JPY', name: 'Yen japonais', country: 'jp', symbol: '¥' },
-  { code: 'CNY', name: 'Yuan chinois', country: 'cn', symbol: '¥' },
-  { code: 'AUD', name: 'Dollar australien', country: 'au', symbol: 'A$' },
-  { code: 'MAD', name: 'Dirham marocain', country: 'ma', symbol: 'DH' },
-  { code: 'NGN', name: 'Naira nigérian', country: 'ng', symbol: '₦' },
-  { code: 'GHS', name: 'Cedi ghanéen', country: 'gh', symbol: '₵' },
-];
-
-// Flag component using country-flag-icons (SVG)
 import * as Flags from 'country-flag-icons/react/3x2';
 
-const Flag = ({ country, size = 'md' }) => {
-  const sizes = {
-    sm: 'w-6 h-4',
-    md: 'w-8 h-5',
-    lg: 'w-10 h-7'
-  };
-  
+import { CURRENCIES, getCurrencyByCode } from '../lib/currencies';
+import { getExchangeRates, calculateCrossRate } from '../lib/rates';
+import {
+  saveConversionHistory,
+  getConversionHistory,
+  clearConversionHistory,
+} from '../lib/db';
+import { TRANSLATIONS, getTranslation } from '../lib/i18n';
+
+import Logo from './Logo';
+import OfflineBadge from './OfflineBadge';
+import CurrencySelectorModal from './CurrencySelectorModal';
+import ConversionHistory from './ConversionHistory';
+import PopularRatesGrid from './PopularRatesGrid';
+import LandingFeatures from './LandingFeatures';
+import MarketingSections from './MarketingSections';
+
+// Flag Component
+const Flag = ({ country, className = 'w-7 h-5' }) => {
   if (!country) return null;
-  
-  // Map country codes to ISO 3166-1 alpha-2 (uppercase)
-  const countryMap = {
-    'sn': 'SN', 'eu': 'EU', 'us': 'US', 'gb': 'GB', 'ca': 'CA',
-    'ch': 'CH', 'jp': 'JP', 'cn': 'CN', 'au': 'AU', 'ma': 'MA',
-    'ng': 'NG', 'gh': 'GH'
-  };
-  
-  const isoCode = countryMap[country] || country.toUpperCase();
+  const isoCode = country.toUpperCase();
   const FlagComponent = Flags[isoCode];
-  
   if (!FlagComponent) return null;
-  
-  return (
-    <div className="flex-shrink-0">
-      <FlagComponent className={`${sizes[size]} rounded-sm shadow-sm`} />
-    </div>
-  );
+  return <FlagComponent className={`${className} rounded-xs shadow-xs flex-shrink-0 object-cover`} />;
 };
 
 // Theme toggle component
 const ThemeToggle = ({ isDark, onToggle }) => (
-  <motion.button
+  <button
     onClick={onToggle}
-    className="theme-toggle"
-    whileTap={{ scale: 0.95 }}
+    className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/15 transition-colors"
     aria-label="Toggle theme"
   >
-    <motion.div
-      className="theme-toggle-handle"
-      animate={{ x: isDark ? 28 : 0 }}
-      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-    >
-      {isDark ? (
-        <Moon className="w-3 h-3 text-white" />
-      ) : (
-        <Sun className="w-3 h-3 text-amber-500" />
-      )}
-    </motion.div>
-  </motion.button>
+    {isDark ? <Moon className="w-4 h-4 text-white" /> : <Sun className="w-4 h-4 text-amber-400" />}
+  </button>
 );
 
-// Currency dropdown with mobile-optimized design
-const CurrencyDropdown = ({ value, onChange, currencies, label }) => {
+// Language Selector Dropdown
+const LanguageSelector = ({ lang, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const selected = currencies.find(c => c.code === value);
   const dropdownRef = useRef(null);
+
+  const languages = [
+    { code: 'fr', label: 'Français (FR)' },
+    { code: 'en', label: 'English (EN)' },
+    { code: 'es', label: 'Español (ES)' },
+    { code: 'wo', label: 'Wolof (WO)' },
+  ];
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -99,117 +78,74 @@ const CurrencyDropdown = ({ value, onChange, currencies, label }) => {
   }, []);
 
   return (
-    <div className="flex-1 min-w-0" ref={dropdownRef}>
-      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-        {label}
-      </label>
-      <div className="relative">
-        <motion.button
-          onClick={() => setIsOpen(!isOpen)}
-          className="currency-selector touch-feedback"
-          whileTap={{ scale: 0.98 }}
-        >
-          <Flag country={selected?.country} size="md" />
-          <div className="flex-1 text-left min-w-0">
-            <p className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">{selected?.code}</p>
-            <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 truncate hidden sm:block">{selected?.name}</p>
-          </div>
-          <motion.div
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-            className="hidden sm:block"
-          >
-            <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-slate-400" />
-          </motion.div>
-        </motion.button>
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20 transition-colors border border-white/10"
+      >
+        <Globe className="w-3.5 h-3.5 text-blue-400" />
+        <span className="uppercase font-bold">{lang}</span>
+        <ChevronDown className="w-3 h-3 opacity-70" />
+      </button>
 
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="dropdown-panel"
-            >
-              {currencies.map((currency) => (
-                <motion.button
-                  key={currency.code}
-                  onClick={() => {
-                    onChange(currency.code);
-                    setIsOpen(false);
-                  }}
-                  className={`dropdown-item ${value === currency.code ? 'selected' : ''}`}
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Flag country={currency.country} size="sm" />
-                  <div className="flex-1 text-left min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-slate-100">{currency.code}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{currency.name}</p>
-                  </div>
-                  {value === currency.code && (
-                    <Check className="w-5 h-5 text-blue-600" />
-                  )}
-                </motion.button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -5, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -5, scale: 0.95 }}
+            className="absolute right-0 mt-2 w-40 py-1 bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 z-50 overflow-hidden text-slate-200"
+          >
+            {languages.map((l) => (
+              <button
+                key={l.code}
+                onClick={() => {
+                  onChange(l.code);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3.5 py-2 text-xs font-medium transition-colors ${
+                  lang === l.code
+                    ? 'bg-blue-600/30 text-blue-400 font-bold'
+                    : 'hover:bg-slate-800'
+                }`}
+              >
+                <span>{l.label}</span>
+                {lang === l.code && <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
-// Rate comparison bar
-const RateBar = ({ currency, rate, maxRate, baseRate }) => {
-  const percentage = (rate / maxRate) * 100;
-  const isBase = rate === baseRate;
-  const currencyData = CURRENCIES.find(c => c.code === currency);
-  
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="flex items-center gap-3"
-    >
-      <Flag country={currencyData?.country} size="sm" />
-      <span className="w-12 text-sm font-semibold text-slate-700 dark:text-slate-300">{currency}</span>
-      <div className="flex-1 rate-bar">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${percentage}%` }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className={`rate-bar-fill ${isBase ? '' : 'opacity-50'}`}
-        />
-      </div>
-      <span className="w-24 text-right text-sm font-mono text-slate-600 dark:text-slate-400">
-        {rate.toFixed(4)}
-      </span>
-    </motion.div>
-  );
-};
-
-// Toast notification for feedback
-const Toast = ({ message, isVisible, onClose }) => (
+// Toast notification
+const Toast = ({ message, isVisible }) => (
   <AnimatePresence>
     {isVisible && (
       <motion.div
         initial={{ opacity: 0, y: 50, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.9 }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 toast-success"
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-2xl border border-slate-800 dark:border-slate-200"
       >
-        <CheckCircle className="w-5 h-5" />
+        <CheckCircle className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
         <span>{message}</span>
       </motion.div>
     )}
   </AnimatePresence>
 );
 
-// Main component
-const CurrencyConverter = () => {
+// Tab transition variants
+const tabVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+
+export default function CurrencyConverter() {
   const [amount, setAmount] = useState('');
   const [fromCurrency, setFromCurrency] = useState('EUR');
   const [toCurrency, setToCurrency] = useState('XOF');
@@ -217,57 +153,164 @@ const CurrencyConverter = () => {
   const [allRates, setAllRates] = useState({});
   const [convertedAmount, setConvertedAmount] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [favorites, setFavorites] = useState([]);
+  const [isOffline, setIsOffline] = useState(false);
+  const [rateSource, setRateSource] = useState('api');
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+  const [history, setHistory] = useState([]);
   const [isDark, setIsDark] = useState(false);
-  const [showRates, setShowRates] = useState(false);
+  const [lang, setLang] = useState('fr');
   const [toast, setToast] = useState({ message: '', visible: false });
+  const [pwaPrompt, setPwaPrompt] = useState(null);
+
+  // Widget Tabs State ('converter' | 'rates' | 'history')
+  const [activeTab, setActiveTab] = useState('converter');
+
+  // Selector Modal state
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, target: 'from' });
+
   const inputRef = useRef(null);
-  
-  // Ref to track if we're currently fetching (prevents double fetch)
   const isFetchingRef = useRef(false);
 
-  // Show toast notification
+  // Show toast feedback
   const showToast = (message) => {
     setToast({ message, visible: true });
     setTimeout(() => setToast({ message: '', visible: false }), 2500);
   };
 
-  // Initialize dark mode
+  // Initialize theme & language
   useEffect(() => {
-    const saved = localStorage.getItem('theme');
+    const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setIsDark(saved ? saved === 'dark' : prefersDark);
+    setIsDark(savedTheme ? savedTheme === 'dark' : prefersDark);
+
+    const savedLang = localStorage.getItem('app_lang');
+    if (savedLang && TRANSLATIONS[savedLang]) {
+      setLang(savedLang);
+    }
   }, []);
 
-  // Apply dark mode
+  // Handle dark mode side effect
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
-  // Load favorites from localStorage
+  // Handle language side effect
+  const handleLanguageChange = (newLang) => {
+    setLang(newLang);
+    localStorage.setItem('app_lang', newLang);
+  };
+
+  // Network listener & PWA prompt listener
   useEffect(() => {
+    const updateNetworkStatus = () => {
+      const offline = typeof navigator !== 'undefined' ? !navigator.onLine : false;
+      setIsOffline(offline);
+    };
+
+    updateNetworkStatus();
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+
+    const handlePwaPrompt = (e) => {
+      e.preventDefault();
+      setPwaPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handlePwaPrompt);
+
+    return () => {
+      window.removeEventListener('online', updateNetworkStatus);
+      window.removeEventListener('offline', updateNetworkStatus);
+      window.removeEventListener('beforeinstallprompt', handlePwaPrompt);
+    };
+  }, []);
+
+  // Load favorites & history from IndexedDB / LocalStorage
+  useEffect(() => {
+    const loadSavedData = async () => {
+      try {
+        const savedFavs = localStorage.getItem('currency_favorites');
+        if (savedFavs) setFavorites(JSON.parse(savedFavs));
+      } catch (e) {
+        console.warn('Failed favorites load:', e);
+      }
+
+      const dbHistory = await getConversionHistory(15);
+      setHistory(dbHistory);
+    };
+    loadSavedData();
+  }, []);
+
+  // Fetch exchange rates handler
+  const fetchRates = useCallback(async (amountVal, fromCode, toCode, forceRefresh = false) => {
+    if (!amountVal || isNaN(parseFloat(amountVal)) || parseFloat(amountVal) <= 0) {
+      setConvertedAmount(null);
+      setExchangeRate(null);
+      return;
+    }
+
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+    setIsLoading(true);
+
     try {
-      const saved = localStorage.getItem('currency_favorites');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setFavorites(parsed);
+      // Get rates using multi-tier rates engine (12h cache-first)
+      const data = await getExchangeRates('EUR', forceRefresh);
+
+      if (data && data.rates) {
+        setAllRates(data.rates);
+        setRateSource(data.source);
+        setIsOffline(data.isOffline);
+        setLastUpdated(data.timestamp);
+
+        // Calculate rate from -> to using cross rate calculator
+        const rate = calculateCrossRate(fromCode, toCode, data.rates, 'EUR');
+
+        if (rate !== null) {
+          setExchangeRate(rate);
+          const result = parseFloat(amountVal) * rate;
+          setConvertedAmount(result);
+
+          // Save to IndexedDB history asynchronously
+          const historyEntry = {
+            from: fromCode,
+            to: toCode,
+            amount: parseFloat(amountVal),
+            result,
+            rate,
+            isOffline: data.isOffline,
+          };
+          saveConversionHistory(historyEntry).then(() => {
+            getConversionHistory(15).then(setHistory);
+          });
         }
       }
     } catch (e) {
-      console.warn('Failed to load favorites:', e);
+      console.error('Rate calculation error:', e);
+    } finally {
+      setIsLoading(false);
+      isFetchingRef.current = false;
     }
   }, []);
 
+  // Debounced rate calculation when inputs change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (amount) {
+        fetchRates(amount, fromCurrency, toCurrency);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [amount, fromCurrency, toCurrency, fetchRates]);
+
   // Swap currencies handler
-  const handleSwapCurrencies = useCallback(() => {
+  const handleSwap = useCallback(() => {
     setFromCurrency(toCurrency);
     setToCurrency(fromCurrency);
   }, [fromCurrency, toCurrency]);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts (/ to focus, Esc to blur, Ctrl+S to swap)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === '/' && !e.target.closest('input')) {
@@ -279,93 +322,18 @@ const CurrencyConverter = () => {
       }
       if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        handleSwapCurrencies();
+        handleSwap();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleSwapCurrencies]);
+  }, [handleSwap]);
 
-  // Fetch exchange rate - stable function that won't cause re-renders
-  const fetchExchangeRate = useCallback(async (amountValue, from, to) => {
-    if (!amountValue || parseFloat(amountValue) <= 0) {
-      setConvertedAmount(null);
-      setExchangeRate(null);
-      return;
-    }
-
-    // Prevent double fetch
-    if (isFetchingRef.current) return;
-    isFetchingRef.current = true;
-
-    setIsLoading(true);
-    
-    try {
-      // Try primary API
-      const response = await fetch(`${EXCHANGE_RATE_API_URL}${EXCHANGE_RATE_API_KEY}/latest/${from}`);
-      if (!response.ok) throw new Error('Primary API Failed');
-      
-      const data = await response.json();
-      
-      if (data.result === 'success') {
-        const rate = data.conversion_rates[to];
-        setExchangeRate(rate);
-        setAllRates(data.conversion_rates);
-        setConvertedAmount(parseFloat(amountValue) * rate);
-        setLastUpdated(new Date(data.time_last_update_unix * 1000));
-      } else {
-        throw new Error('Primary API Error');
-      }
-    } catch (error) {
-      console.warn('Primary API failed, trying backup:', error);
-      
-      // Fallback to Open Exchange Rates
-      try {
-        const backupResponse = await fetch(`${OPEN_EXCHANGE_API_URL}latest.json?app_id=${OPEN_EXCHANGE_APP_ID}`);
-        const backupData = await backupResponse.json();
-        
-        if (!backupData.error) {
-          const fromRate = backupData.rates[from];
-          const toRate = backupData.rates[to];
-          
-          if (fromRate && toRate) {
-            const crossRate = toRate / fromRate;
-            setExchangeRate(crossRate);
-            setAllRates(backupData.rates);
-            setConvertedAmount(parseFloat(amountValue) * crossRate);
-            setLastUpdated(new Date(backupData.timestamp * 1000));
-          }
-        }
-      } catch (backupError) {
-        console.error('Backup API Error:', backupError);
-      }
-    } finally {
-      setIsLoading(false);
-      isFetchingRef.current = false;
-    }
-  }, []);
-
-  // Debounced effect for fetching rates - FIXED: no fetchExchangeRate in deps
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (amount) {
-        fetchExchangeRate(amount, fromCurrency, toCurrency);
-      }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [amount, fromCurrency, toCurrency, fetchExchangeRate]);
-
-  // Save favorite - FIXED with validation
+  // Save favorite handler
   const handleSaveFavorite = () => {
-    const numAmount = parseFloat(amount);
-    
-    if (isNaN(numAmount) || numAmount <= 0) {
-      showToast('Entrez un montant valide');
-      return;
-    }
-    
-    if (!exchangeRate) {
-      showToast('Attendez la conversion');
+    const numAmount = parseFloat(amount || '100');
+    if (isNaN(numAmount) || numAmount <= 0 || !exchangeRate) {
+      showToast(getTranslation(lang, 'enterAmount'));
       return;
     }
 
@@ -374,367 +342,426 @@ const CurrencyConverter = () => {
       amount: numAmount,
       from: fromCurrency,
       to: toCurrency,
-      rate: exchangeRate
+      rate: exchangeRate,
     };
-    
-    const updatedFavorites = [newFav, ...favorites.slice(0, 4)];
-    setFavorites(updatedFavorites);
-    
-    // Persist to localStorage
+
+    const updated = [newFav, ...favorites.filter((f) => !(f.from === fromCurrency && f.to === toCurrency)).slice(0, 4)];
+    setFavorites(updated);
     try {
-      localStorage.setItem('currency_favorites', JSON.stringify(updatedFavorites));
-      showToast('Conversion sauvegardée !');
+      localStorage.setItem('currency_favorites', JSON.stringify(updated));
+      showToast(getTranslation(lang, 'saved'));
     } catch (e) {
-      console.warn('Failed to save favorites:', e);
+      console.warn('Failed to save fav:', e);
     }
   };
 
-  const handleRemoveFavorite = (id) => {
-    const updatedFavorites = favorites.filter(f => f.id !== id);
-    setFavorites(updatedFavorites);
-    try {
-      localStorage.setItem('currency_favorites', JSON.stringify(updatedFavorites));
-    } catch (e) {
-      console.warn('Failed to save favorites:', e);
+  const handleClearHistory = async () => {
+    await clearConversionHistory();
+    setHistory([]);
+    showToast(getTranslation(lang, 'historyCleared'));
+  };
+
+  const handleInstallPwa = async () => {
+    if (!pwaPrompt) return;
+    pwaPrompt.prompt();
+    const { outcome } = await pwaPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setPwaPrompt(null);
+      showToast(getTranslation(lang, 'saved'));
     }
   };
 
-  const formatTime = (date) => {
-    if (!date || !(date instanceof Date) || isNaN(date.getTime())) return '';
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000);
-    if (diff < 60) return "À l'instant";
-    if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
-    if (diff < 86400) return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  const handleShareApp = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'AfriChange PWA',
+        text: getTranslation(lang, 'subtitle'),
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      showToast(getTranslation(lang, 'copiedToClipboard'));
+    }
   };
 
-  const formatNumber = (num) => {
-    return new Intl.NumberFormat('fr-FR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+  const fromInfo = getCurrencyByCode(fromCurrency);
+  const toInfo = getCurrencyByCode(toCurrency);
+
+  const formatNum = (num, decimals = 2) => {
+    if (num === null || isNaN(num)) return '0.00';
+    return new Intl.NumberFormat(lang === 'fr' ? 'fr-FR' : 'en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
     }).format(num);
   };
 
-  // Get popular rates for comparison
-  const popularRates = ['EUR', 'USD', 'GBP', 'XOF', 'CAD', 'CHF']
-    .filter(c => c !== fromCurrency && allRates[c])
-    .map(c => ({ code: c, rate: allRates[c] }));
-  const maxRate = Math.max(...popularRates.map(r => r.rate), 1);
+  // Check if we have a valid amount to show result
+  const hasAmount = amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0;
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-      {/* Background decoration */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[40%] -right-[20%] w-[80%] h-[80%] rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-3xl" />
-        <div className="absolute -bottom-[40%] -left-[20%] w-[80%] h-[80%] rounded-full bg-cyan-500/5 dark:bg-cyan-500/10 blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+      {/* BRAND HERO NAVY SECTION WITH ROUNDED BOTTOM */}
+      <div className="bg-[#0a142f] text-white pt-5 pb-28 md:pb-32 px-4 relative overflow-hidden rounded-b-[40px] md:rounded-b-[65px] shadow-xl">
+        {/* Glow Decor Background */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none">
+          <div className="absolute -top-32 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl" />
+          <div className="absolute top-20 right-1/4 w-80 h-80 bg-cyan-500/15 rounded-full blur-3xl" />
+        </div>
 
-      {/* Header */}
-      <header className="relative z-20 border-b border-slate-200/50 dark:border-slate-800/50 backdrop-blur-xl bg-white/70 dark:bg-slate-900/70">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        {/* Modern & Compact Navbar */}
+        <header className="relative z-20 max-w-6xl mx-auto flex items-center justify-between pb-8 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <motion.div
-              className="w-11 h-11 rounded-xl overflow-hidden shadow-lg shadow-blue-500/20"
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Image 
-                src="/favicon.svg" 
-                alt="XOF Converter" 
-                width={44} 
-                height={44}
-                className="w-full h-full"
-              />
-            </motion.div>
-            <div>
-              <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">XOF Converter</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Taux en temps réel</p>
-            </div>
+            {/* Custom Brand Logo with variant='light' so 'AfriChange' is fully visible in crisp white */}
+            <Logo size="md" showText={true} variant="light" />
           </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-              <kbd className="kbd">/</kbd>
-              <span>Focus</span>
-            </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {pwaPrompt && (
+              <button
+                onClick={handleInstallPwa}
+                className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-md hover:bg-blue-500 transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{getTranslation(lang, 'installPwa')}</span>
+              </button>
+            )}
+
+            <button
+              onClick={handleShareApp}
+              className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/15 transition-colors"
+              title={getTranslation(lang, 'shareApp')}
+              aria-label={getTranslation(lang, 'shareApp')}
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+
+            <LanguageSelector lang={lang} onChange={handleLanguageChange} />
             <ThemeToggle isDark={isDark} onToggle={() => setIsDark(!isDark)} />
           </div>
+        </header>
+
+        {/* Hero Title Header */}
+        <div className="relative z-10 text-center max-w-3xl mx-auto pt-8 pb-4 space-y-2.5">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-snug px-2">
+            {getTranslation(lang, 'heroTitle')}
+          </h1>
+          <p className="text-xs sm:text-base text-slate-300 max-w-xl mx-auto font-normal leading-relaxed px-4">
+            {getTranslation(lang, 'heroSubtitle')}
+          </p>
         </div>
-      </header>
+      </div>
 
-      {/* Main */}
-      <main className="relative z-10 max-w-4xl mx-auto px-4 py-6 md:py-8 safe-bottom">
-        <div className="space-y-5">
-          
-          {/* Main converter card */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-card p-5 md:p-8 relative z-50"
-          >
-            {/* Amount input */}
-            <div className="mb-6">
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                Montant
-              </label>
-              <div className="relative">
-                <input
-                  ref={inputRef}
-                  type="number"
-                  inputMode="decimal"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0"
-                  className="amount-input"
-                />
-                {isLoading && (
-                  <div className="absolute right-5 top-1/2 -translate-y-1/2">
-                    <RefreshCw className="w-6 h-6 text-blue-600 animate-spin" />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Currency selectors - side by side */}
-            <div className="flex items-center gap-2 md:gap-4">
-              <CurrencyDropdown
-                value={fromCurrency}
-                onChange={setFromCurrency}
-                currencies={CURRENCIES}
-                label="De"
-              />
-              
-              {/* Swap button - center */}
-              <motion.button
-                onClick={handleSwapCurrencies}
-                className="flex-shrink-0 w-11 h-11 md:w-12 md:h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-500/30 mt-6"
-                whileHover={{ scale: 1.1, rotate: 180 }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ duration: 0.3 }}
-                aria-label="Swap currencies"
-              >
-                <ArrowRightLeft className="w-4 h-4 md:w-5 md:h-5" />
-              </motion.button>
-
-              <CurrencyDropdown
-                value={toCurrency}
-                onChange={setToCurrency}
-                currencies={CURRENCIES}
-                label="Vers"
-              />
-            </div>
-
-            {/* Result */}
-            <AnimatePresence mode="wait">
-              {convertedAmount !== null && (
-                <motion.div
-                  key="result"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="pt-6 border-t border-slate-200 dark:border-slate-700"
-                >
-                  <div className="flex flex-col gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
-                        {formatNumber(parseFloat(amount))} {fromCurrency} =
-                      </p>
-                      <div className="flex items-baseline gap-3 flex-wrap">
-                        <p className="result-value">
-                          {formatNumber(convertedAmount)}
-                        </p>
-                        <span className="text-xl md:text-2xl font-bold text-blue-600">{toCurrency}</span>
-                      </div>
-                    </div>
-                    
-                    <motion.button
-                      onClick={handleSaveFavorite}
-                      className="glow-button px-5 py-3.5 font-semibold flex items-center justify-center gap-2 w-full md:w-auto"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Star className="w-4 h-4" />
-                      Sauvegarder
-                    </motion.button>
-                  </div>
-
-                  {/* Rate info */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-emerald-500" />
-                      <span>1 {fromCurrency} = {exchangeRate?.toFixed(4)} {toCurrency}</span>
-                    </div>
-                    {lastUpdated && (
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <span>{formatTime(lastUpdated)}</span>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-
-          {/* Rate comparison */}
-          {Object.keys(allRates).length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="glass-card p-5 md:p-6"
+      {/* FLOATING CONVERTER WIDGET CARD */}
+      <div className="max-w-4xl mx-auto px-4 -mt-20 relative z-30 mb-16">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-700/60 p-5 md:p-8 space-y-6">
+          {/* Widget Navigation Tabs */}
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto border-b border-slate-100 dark:border-slate-700/60 pb-3 no-scrollbar">
+            <button
+              onClick={() => setActiveTab('converter')}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+                activeTab === 'converter'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
             >
-              <button
-                onClick={() => setShowRates(!showRates)}
-                className="w-full flex items-center justify-between mb-4 touch-feedback"
+              <ArrowRightLeft className="w-4 h-4" />
+              {getTranslation(lang, 'tabConverter')}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('rates')}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+                activeTab === 'rates'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4" />
+              {getTranslation(lang, 'tabRates')}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+                activeTab === 'history'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
+            >
+              <History className="w-4 h-4" />
+              {getTranslation(lang, 'tabHistory')}
+            </button>
+          </div>
+
+          {/* Animated Tab Content */}
+          <AnimatePresence mode="wait">
+            {/* TAB 1: CONVERTER INPUTS */}
+            {activeTab === 'converter' && (
+              <motion.div
+                key="converter"
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="space-y-6"
               >
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-semibold text-slate-900 dark:text-slate-100">Taux de change</h3>
-                </div>
-                <motion.div
-                  animate={{ rotate: showRates ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ChevronDown className="w-5 h-5 text-slate-400" />
-                </motion.div>
-              </button>
-              
-              <AnimatePresence>
-                {showRates && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    className="space-y-3 overflow-hidden"
-                  >
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-                      Pour 1 {fromCurrency}
-                    </p>
-                    {popularRates.map((rate) => (
-                      <RateBar
-                        key={rate.code}
-                        currency={rate.code}
-                        rate={rate.rate}
-                        maxRate={maxRate}
-                        baseRate={allRates[toCurrency]}
+                {/* Dual Input Container */}
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-3">
+                  {/* FROM BOX */}
+                  <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all space-y-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      {getTranslation(lang, 'from')}
+                    </span>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <input
+                        ref={inputRef}
+                        type="number"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="1,00"
+                        className="w-full text-2xl md:text-3xl font-extrabold font-mono text-slate-900 dark:text-slate-100 bg-transparent focus:outline-none min-h-[44px]"
                       />
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          )}
 
-          {/* Favorites */}
-          {favorites.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="glass-card p-5 md:p-6"
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <Bookmark className="w-5 h-5 text-blue-600" />
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100">Récents</h3>
-              </div>
-              <div className="grid gap-2">
-                {favorites.map((fav) => (
-                  <motion.div
-                    key={fav.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="favorite-card group"
-                    onClick={() => {
-                      setAmount(fav.amount.toString());
-                      setFromCurrency(fav.from);
-                      setToCurrency(fav.to);
-                    }}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Flag country={CURRENCIES.find(c => c.code === fav.from)?.country} size="sm" />
-                      <span className="text-slate-400">→</span>
-                      <Flag country={CURRENCIES.find(c => c.code === fav.to)?.country} size="sm" />
+                      <button
+                        onClick={() => setModalConfig({ isOpen: true, target: 'from' })}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs hover:border-blue-500 transition-all flex-shrink-0 min-h-[44px]"
+                      >
+                        <Flag country={fromInfo.country} className="w-6 h-4" />
+                        <span className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
+                          {fromCurrency}
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      </button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
-                        {formatNumber(fav.amount)} {fav.from} → {fav.to}
-                      </p>
-                    </div>
+                  </div>
+
+                  {/* SWAP BUTTON */}
+                  <div className="flex justify-center my-1 md:my-0">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveFavorite(fav.id);
-                      }}
-                      className="p-2 opacity-0 group-hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-all"
-                      aria-label="Remove favorite"
+                      onClick={handleSwap}
+                      className="p-3 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-blue-500 shadow-md transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+                      title={getTranslation(lang, 'swap')}
+                      aria-label={getTranslation(lang, 'swap')}
                     >
-                      <X className="w-4 h-4 text-red-500" />
+                      <ArrowRightLeft className="w-4 h-4" />
                     </button>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
+                  </div>
 
-          {/* Keyboard shortcuts */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="hidden md:flex items-center justify-center gap-6 text-xs text-slate-400 dark:text-slate-500"
-          >
-            <div className="flex items-center gap-2">
-              <kbd className="kbd">/</kbd>
-              <span>Focus</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <kbd className="kbd">Ctrl</kbd>
-              <span>+</span>
-              <kbd className="kbd">S</kbd>
-              <span>Swap</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <kbd className="kbd">Esc</kbd>
-              <span>Blur</span>
-            </div>
-          </motion.div>
+                  {/* TO BOX */}
+                  <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all space-y-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      {getTranslation(lang, 'to')}
+                    </span>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="w-full text-2xl md:text-3xl font-extrabold font-mono truncate min-h-[44px] flex items-center">
+                        {isLoading ? (
+                          <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
+                        ) : hasAmount && convertedAmount !== null ? (
+                          <span className="text-blue-600 dark:text-blue-400">
+                            {formatNum(convertedAmount, toInfo.decimals)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 dark:text-slate-600">
+                            —
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => setModalConfig({ isOpen: true, target: 'to' })}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs hover:border-blue-500 transition-all flex-shrink-0 min-h-[44px]"
+                      >
+                        <Flag country={toInfo.country} className="w-6 h-4" />
+                        <span className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
+                          {toCurrency}
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CARD FOOTER: Rate Breakdown + CTA */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-700/60">
+                  <div className="space-y-1 w-full sm:w-auto">
+                    {exchangeRate && hasAmount ? (
+                      <h4 className="text-lg font-black text-slate-900 dark:text-slate-100 font-mono">
+                        1,00 {fromCurrency} = {formatNum(exchangeRate, 4)} {toCurrency}
+                      </h4>
+                    ) : (
+                      <p className="text-xs text-slate-400 font-medium">
+                        {getTranslation(lang, 'enterAmountHint')}
+                      </p>
+                    )}
+
+                    <OfflineBadge
+                      isOffline={isOffline}
+                      source={rateSource}
+                      timestamp={lastUpdated}
+                      onRefresh={() => fetchRates(amount || '100', fromCurrency, toCurrency, true)}
+                      lang={lang}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button
+                      onClick={handleSaveFavorite}
+                      className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-full sm:w-auto min-h-[44px]"
+                    >
+                      <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                      <span>{getTranslation(lang, 'saveFavorite')}</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB 2: POPULAR RATES */}
+            {activeTab === 'rates' && (
+              <motion.div
+                key="rates"
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <PopularRatesGrid
+                  allRates={allRates}
+                  onSelectPair={(f, t) => {
+                    setFromCurrency(f);
+                    setToCurrency(t);
+                    setActiveTab('converter');
+                  }}
+                  lang={lang}
+                />
+              </motion.div>
+            )}
+
+            {/* TAB 3: HISTORY & FAVORITES */}
+            {activeTab === 'history' && (
+              <motion.div
+                key="history"
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                {/* Favorites */}
+                {favorites.length > 0 ? (
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-700/60 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                        {getTranslation(lang, 'favorites')}
+                      </h4>
+                    </div>
+                    <div className="space-y-2">
+                      {favorites.map((fav) => (
+                        <div
+                          key={fav.id}
+                          onClick={() => {
+                            setFromCurrency(fav.from);
+                            setToCurrency(fav.to);
+                            setAmount(fav.amount.toString());
+                            setActiveTab('converter');
+                          }}
+                          className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500 cursor-pointer transition-all text-xs font-mono"
+                        >
+                          <span className="font-bold text-slate-800 dark:text-slate-200">
+                            {fav.amount} {fav.from} → {fav.to}
+                          </span>
+                          <span className="text-blue-600 font-bold">
+                            1 {fav.from} = {formatNum(fav.rate, 4)} {fav.to}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-700/60 text-center text-xs text-slate-400">
+                    <Star className="w-6 h-6 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                    {getTranslation(lang, 'noFavorites')}
+                  </div>
+                )}
+
+                {/* History */}
+                <ConversionHistory
+                  history={history}
+                  onClear={handleClearHistory}
+                  onSelectPair={(f, t, a) => {
+                    setFromCurrency(f);
+                    setToCurrency(t);
+                    if (a) setAmount(a.toString());
+                    setActiveTab('converter');
+                  }}
+                  lang={lang}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
+      </div>
+
+      {/* LANDING PAGE BODY CONTENT BELOW HERO */}
+      <main className="max-w-6xl mx-auto px-4 pb-16 space-y-16">
+        <LandingFeatures lang={lang} />
+        <MarketingSections
+          lang={lang}
+          allRates={allRates}
+          onSelectPair={(f, t) => {
+            setFromCurrency(f);
+            setToCurrency(t);
+            setActiveTab('converter');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onOpenSelectorModal={(target) => setModalConfig({ isOpen: true, target })}
+          pwaPrompt={pwaPrompt}
+          onInstall={handleInstallPwa}
+        />
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-slate-200/50 dark:border-slate-800/50 mt-8">
-        <div className="max-w-4xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Développé par{' '}
-            <a 
-              href="https://ndiagandiaye.com" 
-              target="_blank" 
+      {/* FOOTER WITH BRAND LOGO */}
+      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-8 text-xs text-slate-500 dark:text-slate-400">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Logo size="sm" showText={true} />
+
+          <div className="flex items-center gap-4">
+            <Link href="/mentions-legales" className="hover:text-blue-600 transition-colors">
+              {getTranslation(lang, 'legal')}
+            </Link>
+            <span>•</span>
+            <a
+              href="https://ndiagandiaye.com"
+              target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-blue-600 hover:underline"
+              className="hover:text-blue-600 font-semibold transition-colors"
             >
-              Ndiaga Ndiaye
+              {getTranslation(lang, 'by')} Ndiaga Ndiaye
             </a>
-          </p>
-          <Link 
-            href="/mentions-legales"
-            className="text-sm text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-500 transition-colors"
-          >
-            Mentions légales
-          </Link>
+          </div>
         </div>
       </footer>
 
-      {/* Toast notification */}
-      <Toast 
-        message={toast.message} 
-        isVisible={toast.visible} 
-        onClose={() => setToast({ message: '', visible: false })} 
+      {/* Selector Modal & Toast */}
+      <CurrencySelectorModal
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        selectedCode={modalConfig.target === 'from' ? fromCurrency : toCurrency}
+        onSelect={(code) => {
+          if (modalConfig.target === 'from') setFromCurrency(code);
+          else setToCurrency(code);
+        }}
+        label={modalConfig.target === 'from' ? getTranslation(lang, 'from') : getTranslation(lang, 'to')}
+        lang={lang}
       />
+
+      <Toast message={toast.message} isVisible={toast.visible} />
     </div>
   );
-};
-
-export default CurrencyConverter;
+}
