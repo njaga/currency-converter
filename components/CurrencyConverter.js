@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowRightLeft, ChevronDown, Download, History, Moon, RefreshCw, Share2, Star, Sun, WifiOff } from 'lucide-react';
+import { ArrowRightLeft, ChevronDown, Download, History, Moon, Plane, RefreshCw, Share2, Star, Sun, WifiOff } from 'lucide-react';
 import * as Flags from 'country-flag-icons/react/3x2';
 import Link from 'next/link';
 
@@ -13,6 +13,7 @@ import CurrencySelectorModal from './CurrencySelectorModal';
 import Logo from './Logo';
 import OfflineBadge from './OfflineBadge';
 import PopularRatesGrid from './PopularRatesGrid';
+import TravelMode from './TravelMode';
 
 const Flag = ({ country, className = 'w-7 h-5' }) => {
   if (!country) return null;
@@ -153,6 +154,13 @@ export default function CurrencyConverter() {
     else await navigator.clipboard.writeText(window.location.href);
   };
 
+  const openPair = (from, to) => {
+    setFromCurrency(from);
+    setToCurrency(to);
+    setActiveTab('converter');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const fromInfo = getCurrencyByCode(fromCurrency);
   const toInfo = getCurrencyByCode(toCurrency);
   const numericAmount = parseAmount(amount);
@@ -162,6 +170,7 @@ export default function CurrencyConverter() {
 
   const tabs = [
     { id: 'converter', label: lang === 'fr' ? 'Convertir' : 'Convert' },
+    { id: 'travel', label: lang === 'fr' ? 'Voyage' : 'Travel' },
     { id: 'rates', label: lang === 'fr' ? 'Taux' : 'Rates' },
     { id: 'history', label: lang === 'fr' ? 'Historique' : 'History' },
   ];
@@ -175,7 +184,6 @@ export default function CurrencyConverter() {
             {tabs.map((tab) => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm transition-colors ${activeTab === tab.id ? 'font-semibold text-emerald-700 dark:text-emerald-400' : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'}`}>{tab.label}</button>
             ))}
-            <button className="text-sm text-slate-500 hover:text-slate-950 dark:text-slate-400" disabled>Voyage <span className="ml-1 text-[10px] uppercase tracking-wide text-slate-400">bientôt</span></button>
           </nav>
           <div className="flex items-center gap-1">
             {pwaPrompt && <button onClick={handleInstall} className="hidden items-center gap-1.5 rounded-md border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 sm:flex dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"><Download className="h-3.5 w-3.5" /> Installer</button>}
@@ -189,14 +197,16 @@ export default function CurrencyConverter() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-8 md:px-6 md:py-14">
-        <div className="mb-8 max-w-2xl">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-400">AfriChange</p>
-          <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-950 md:text-4xl dark:text-white">{lang === 'fr' ? 'Convertir simplement, même sans réseau.' : 'Simple currency conversion, even offline.'}</h1>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400">{lang === 'fr' ? 'Pensé pour les déplacements en Afrique. Les derniers taux synchronisés restent disponibles sur votre appareil.' : 'Built for travel across Africa. Your latest synchronized rates stay available on your device.'}</p>
-        </div>
+        {activeTab !== 'travel' && (
+          <div className="mb-8 max-w-2xl">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-400">AfriChange</p>
+            <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-950 md:text-4xl dark:text-white">{lang === 'fr' ? 'Convertir simplement, même sans réseau.' : 'Simple currency conversion, even offline.'}</h1>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400">{lang === 'fr' ? 'Pensé pour les déplacements en Afrique. Les derniers taux synchronisés restent disponibles sur votre appareil.' : 'Built for travel across Africa. Your latest synchronized rates stay available on your device.'}</p>
+          </div>
+        )}
 
-        <div className="mb-6 flex gap-5 border-b border-slate-200 md:hidden dark:border-slate-800">
-          {tabs.map((tab) => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`border-b-2 pb-3 text-sm ${activeTab === tab.id ? 'border-emerald-700 font-semibold text-emerald-700 dark:border-emerald-400 dark:text-emerald-400' : 'border-transparent text-slate-500'}`}>{tab.label}</button>)}
+        <div className="mb-6 flex gap-5 overflow-x-auto border-b border-slate-200 md:hidden dark:border-slate-800">
+          {tabs.map((tab) => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`whitespace-nowrap border-b-2 pb-3 text-sm ${activeTab === tab.id ? 'border-emerald-700 font-semibold text-emerald-700 dark:border-emerald-400 dark:text-emerald-400' : 'border-transparent text-slate-500'}`}>{tab.label}</button>)}
         </div>
 
         {activeTab === 'converter' && (
@@ -235,14 +245,23 @@ export default function CurrencyConverter() {
 
             {isOffline && <div className="mt-4 flex items-start gap-3 border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"><WifiOff className="mt-0.5 h-4 w-4 flex-none" /><span>{lang === 'fr' ? 'Vous êtes hors connexion. AfriChange utilise le dernier taux enregistré sur cet appareil lorsqu’il est disponible.' : 'You are offline. AfriChange is using the latest rate stored on this device when available.'}</span></div>}
 
+            <div className="mt-10 border-l-2 border-emerald-600 pl-4">
+              <div className="flex items-center justify-between gap-4">
+                <div><div className="flex items-center gap-2"><Plane className="h-4 w-4 text-emerald-700 dark:text-emerald-400" /><h2 className="text-sm font-semibold">{lang === 'fr' ? 'Vous partez bientôt ?' : 'Travelling soon?'}</h2></div><p className="mt-1 text-sm text-slate-500">{lang === 'fr' ? 'Préparez vos taux avant le départ pour les retrouver hors connexion.' : 'Prepare your rates before departure so they remain available offline.'}</p></div>
+                <button onClick={() => setActiveTab('travel')} className="whitespace-nowrap text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400">{lang === 'fr' ? 'Préparer un voyage' : 'Prepare a trip'}</button>
+              </div>
+            </div>
+
             <div className="mt-10">
               <div className="mb-4 flex items-end justify-between"><div><h2 className="text-lg font-semibold tracking-[-0.02em]">{lang === 'fr' ? 'Taux populaires' : 'Popular rates'}</h2><p className="mt-1 text-sm text-slate-500">{lang === 'fr' ? 'Quelques devises utiles pour vos déplacements.' : 'Useful currencies for travel.'}</p></div><button onClick={() => setActiveTab('rates')} className="text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400">{lang === 'fr' ? 'Voir tout' : 'View all'}</button></div>
-              <PopularRatesGrid allRates={allRates} onSelectPair={(from, to) => { setFromCurrency(from); setToCurrency(to); window.scrollTo({ top: 0, behavior: 'smooth' }); }} lang={lang} />
+              <PopularRatesGrid allRates={allRates} onSelectPair={openPair} lang={lang} />
             </div>
           </section>
         )}
 
-        {activeTab === 'rates' && <section><div className="mb-5"><h2 className="text-2xl font-semibold tracking-[-0.03em]">{lang === 'fr' ? 'Taux de change' : 'Exchange rates'}</h2><p className="mt-1 text-sm text-slate-500">{lang === 'fr' ? 'Sélectionnez une paire pour revenir au convertisseur.' : 'Select a pair to return to the converter.'}</p></div><PopularRatesGrid allRates={allRates} onSelectPair={(from, to) => { setFromCurrency(from); setToCurrency(to); setActiveTab('converter'); }} lang={lang} /></section>}
+        {activeTab === 'travel' && <TravelMode lang={lang} onSelectPair={openPair} />}
+
+        {activeTab === 'rates' && <section><div className="mb-5"><h2 className="text-2xl font-semibold tracking-[-0.03em]">{lang === 'fr' ? 'Taux de change' : 'Exchange rates'}</h2><p className="mt-1 text-sm text-slate-500">{lang === 'fr' ? 'Sélectionnez une paire pour revenir au convertisseur.' : 'Select a pair to return to the converter.'}</p></div><PopularRatesGrid allRates={allRates} onSelectPair={openPair} lang={lang} /></section>}
 
         {activeTab === 'history' && <section><div className="mb-5 flex items-center gap-2"><History className="h-5 w-5" /><h2 className="text-2xl font-semibold tracking-[-0.03em]">{lang === 'fr' ? 'Historique et favoris' : 'History and favorites'}</h2></div><div className="grid gap-8 md:grid-cols-2"><div><h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{lang === 'fr' ? 'Favoris' : 'Favorites'}</h3><div className="divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">{favorites.length ? favorites.map((fav) => <button key={fav.pair} onClick={() => { setFromCurrency(fav.from); setToCurrency(fav.to); setAmount(String(fav.amount)); setActiveTab('converter'); }} className="flex w-full items-center justify-between py-3 text-left text-sm hover:text-emerald-700"><span className="font-medium">{fav.from} → {fav.to}</span><span className="text-slate-500">1 {fav.from} = {formatNum(fav.rate, 4)} {fav.to}</span></button>) : <p className="py-5 text-sm text-slate-500">{lang === 'fr' ? 'Aucune paire favorite.' : 'No favorite pair yet.'}</p>}</div></div><ConversionHistory history={history} onClear={handleClearHistory} onSelectPair={(from, to, savedAmount) => { setFromCurrency(from); setToCurrency(to); if (savedAmount) setAmount(String(savedAmount)); setActiveTab('converter'); }} lang={lang} /></div></section>}
       </main>
