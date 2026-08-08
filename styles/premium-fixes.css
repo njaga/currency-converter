@@ -24,6 +24,23 @@ video {
   max-width: 100%;
 }
 
+/* The main product header must behave like an app chrome, not page content. */
+header.sticky.w-full {
+  position: fixed !important;
+  inset: 0 0 auto 0;
+  z-index: 80 !important;
+}
+
+header.sticky.w-full + main {
+  padding-top: 96px !important;
+}
+
+@media (min-width: 768px) {
+  header.sticky.w-full + main {
+    padding-top: 108px !important;
+  }
+}
+
 /* The travel teaser previously used an approximate Africa silhouette. Replace
    it with a neutral route/globe visual until the final brand illustration is set. */
 main section.mt-6 > button.group > svg {
