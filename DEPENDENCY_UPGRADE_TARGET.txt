@@ -1,0 +1,4 @@
+Next.js security target: 15.5.21
+React target: 19.x
+React DOM target: 19.x
+eslint-config-next target: 15.5.21
