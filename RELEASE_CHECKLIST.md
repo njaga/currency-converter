@@ -10,15 +10,15 @@ This branch is the stabilization pass for Kiwango V1. Do not add a new product m
 - [x] Production smoke test starts `next start` and validates `/`, `/app` and `/mentions-legales`.
 - [x] Current branch does not contain the exposed Google Maps key; env files are ignored except templates.
 - [x] Production dependency tree upgraded to Next.js 16.3.0 / React 19-compatible packages and validated through build, smoke tests and dedicated security migration workflow.
-- [ ] Converter works for XOF, XAF, GMD, SLE, GHS, NGN, USD, EUR and GBP through manual/automated conversion tests.
-- [ ] Swap currencies and quick conversions remain correct.
+- [x] Automated critical conversion matrix covers XOF, XAF, GMD, SLE, GHS, NGN, USD, EUR and GBP.
+- [x] Automated swap/reciprocity tests cover critical cross-currency pairs.
 - [x] Rate freshness/source UI distinguishes unavailable, fixed parity, cached/stale and current data.
 - [ ] Country directory handles API success, timeout and full global dataset correctly.
 - [x] Missing country-directory key returns a controlled 503 response rather than crashing the app.
 - [ ] Country shortcut opens `/app?tab=travel&country=XX` and selects the correct destination in browser QA.
 - [ ] Countries sharing XOF/XAF remain distinct destinations in browser QA.
-- [x] Travel Pack persistence now rejects invalid/incomplete packs and IndexedDB write failures, preventing false “offline ready” state.
-- [ ] Multiple prepared destinations can coexist without overwriting each other.
+- [x] Travel Pack persistence rejects invalid/incomplete packs and IndexedDB write failures, preventing false “offline ready” state.
+- [ ] Multiple prepared destinations can coexist without overwriting each other in browser QA.
 - [ ] Offline navigation to `/app` works after one successful online visit on a real browser/device.
 - [x] API routes are excluded from generic service-worker caching.
 - [ ] Rate Check, fees, Budget, Cash Wallet, calculator, ATM, alerts, Scan & Convert and Field Rates have verified empty/error states.
@@ -62,12 +62,12 @@ Test at 320, 375, 390, 430, 768, 1024, 1440 and 1920 px.
 - [x] Client has Fawaz primary + backup and Frankfurter before server fallback.
 - [x] Server fallback can use ExchangeRate-API, then CurrencyAPI when configured.
 - [ ] Exercise every configured provider independently with real credentials.
-- [ ] Fixed EUR/XOF and EUR/XAF parity remains exact in automated conversion tests.
-- [ ] Unsupported currency returns a controlled state instead of a fabricated rate.
+- [x] Fixed EUR/XOF and EUR/XAF parity remains exact in automated conversion tests.
+- [x] Unsupported/missing currency data returns `null` instead of fabricating a rate in automated tests.
 - [ ] Historical charts never interpolate fabricated market observations.
 - [x] Cached rates display synchronization time and stale warnings.
-- [ ] Stale Travel Packs clearly warn the traveler before relying on old data.
-- [ ] Multi-currency countries expose the available currencies instead of silently hiding them.
+- [x] Travel Packs classify freshness and warn after 24h / 72h while staying usable offline.
+- [x] Multi-currency destinations expose a currency selector instead of silently forcing one currency.
 
 ## P1 — Tools
 
