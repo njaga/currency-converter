@@ -4,25 +4,29 @@ This branch is the stabilization pass for Kiwango V1. Do not add a new product m
 
 ## P0 — Release blockers
 
-- [ ] `npm install` completes from a clean checkout.
-- [ ] `npm run lint` completes without errors.
-- [ ] `npm run build` completes without errors.
-- [ ] No secret or real API key is committed.
-- [ ] `/`, `/app`, `/mentions-legales` render without runtime errors.
-- [ ] Converter works for XOF, XAF, GMD, SLE, GHS, NGN, USD, EUR and GBP.
+- [x] `npm ci` completes from a clean checkout in GitHub Actions.
+- [x] `npm run lint` completes without errors.
+- [x] `npm run build` completes without errors.
+- [x] Production smoke test starts `next start` and validates `/`, `/app` and `/mentions-legales`.
+- [x] Current branch does not contain the exposed Google Maps key; env files are ignored except templates.
+- [ ] Upgrade production dependencies so `npm audit --omit=dev --audit-level=high` has no high/critical findings. Current blocker: legacy Next.js 14.2.14 dependency tree.
+- [ ] Converter works for XOF, XAF, GMD, SLE, GHS, NGN, USD, EUR and GBP through manual/automated conversion tests.
 - [ ] Swap currencies and quick conversions remain correct.
-- [ ] Rate freshness/source state is explicit: live, cached/stale, or unavailable.
-- [ ] Country directory handles API success, missing key, timeout and offline fallback.
-- [ ] Country shortcut opens `/app?tab=travel&country=XX` and selects the correct destination.
-- [ ] Countries sharing XOF/XAF remain distinct destinations.
+- [x] Rate freshness/source UI distinguishes unavailable, fixed parity, cached/stale and current data.
+- [ ] Country directory handles API success, timeout and full global dataset correctly.
+- [x] Missing country-directory key returns a controlled 503 response rather than crashing the app.
+- [ ] Country shortcut opens `/app?tab=travel&country=XX` and selects the correct destination in browser QA.
+- [ ] Countries sharing XOF/XAF remain distinct destinations in browser QA.
 - [ ] Travel Pack never reports “ready offline” when synchronization failed.
 - [ ] Multiple prepared destinations can coexist without overwriting each other.
-- [ ] Offline navigation to `/app` works after one successful online visit.
-- [ ] API routes are never blindly cached by the service worker.
-- [ ] Rate Check, fees, Budget, Cash Wallet, calculator, ATM, alerts, Scan & Convert and Field Rates have empty/error states.
-- [ ] Google Places failure falls back cleanly to OpenStreetMap where supported.
-- [ ] Affiliate routes reject unknown services and never expose server secrets.
-- [ ] FR and EN do not expose unfinished languages.
+- [ ] Offline navigation to `/app` works after one successful online visit on a real browser/device.
+- [x] API routes are excluded from generic service-worker caching.
+- [ ] Rate Check, fees, Budget, Cash Wallet, calculator, ATM, alerts, Scan & Convert and Field Rates have verified empty/error states.
+- [ ] Google Places failure falls back cleanly to OpenStreetMap in integration QA.
+- [x] Affiliate redirect only accepts known services and valid HTTP/HTTPS partner URLs.
+- [x] Affiliate route keeps partner secrets/templates server-side.
+- [x] FR and EN are the only maintained language choices exposed by the app.
+- [x] Unused `/api/hello` starter endpoint removed.
 
 ## P1 — Mobile / UX
 
@@ -43,7 +47,7 @@ Test at 320, 375, 390, 430, 768, 1024, 1440 and 1920 px.
 ## P1 — PWA
 
 - [x] App manifest starts installed Kiwango at `/app`.
-- [x] Manifest shortcuts target `/app?tab=...`.
+- [x] Manifest shortcuts target real `/app?tab=...` values.
 - [x] Service worker uses network-first navigation and offline app fallback.
 - [x] API routes are excluded from generic service-worker caching.
 - [ ] Add production 192×192 and 512×512 PNG icons.
@@ -55,11 +59,13 @@ Test at 320, 375, 390, 430, 768, 1024, 1440 and 1920 px.
 
 ## P1 — Data integrity
 
-- [ ] Primary exchange provider and all fallbacks are exercised independently.
-- [ ] Fixed EUR/XOF and EUR/XAF parity remains exact.
+- [x] Client has Fawaz primary + backup and Frankfurter before server fallback.
+- [x] Server fallback can use ExchangeRate-API, then CurrencyAPI when configured.
+- [ ] Exercise every configured provider independently with real credentials.
+- [ ] Fixed EUR/XOF and EUR/XAF parity remains exact in automated conversion tests.
 - [ ] Unsupported currency returns a controlled state instead of a fabricated rate.
 - [ ] Historical charts never interpolate fabricated market observations.
-- [ ] Cached rates display last synchronization time.
+- [x] Cached rates display synchronization time and stale warnings.
 - [ ] Stale Travel Packs clearly warn the traveler before relying on old data.
 - [ ] Multi-currency countries expose the available currencies instead of silently hiding them.
 
