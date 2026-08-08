@@ -2,9 +2,23 @@ import "@/styles/globals.css";
 import "@/styles/premium-fixes.css";
 import "@/styles/mobile-release.css";
 import { useEffect, useState } from "react";
+import AppErrorBoundary from "../components/AppErrorBoundary";
+import PrivacyAnalytics from "../components/PrivacyAnalytics";
+import { reportClientError } from "../lib/telemetry";
 
 export default function App({ Component, pageProps }) {
   const [waitingWorker, setWaitingWorker] = useState(null);
+
+  useEffect(() => {
+    const onError = (event) => reportClientError(event.error || event.message, 'window_error');
+    const onRejection = (event) => reportClientError(event.reason, 'unhandled_rejection');
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onRejection);
+    return () => {
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onRejection);
+    };
+  }, []);
 
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return undefined;
@@ -28,9 +42,7 @@ export default function App({ Component, pageProps }) {
     const register = async () => {
       try {
         registration = await navigator.serviceWorker.register("/sw.js");
-
         if (registration.waiting) setWaitingWorker(registration.waiting);
-
         registration.addEventListener("updatefound", () => {
           const installing = registration.installing;
           if (!installing) return;
@@ -41,13 +53,12 @@ export default function App({ Component, pageProps }) {
           });
         });
       } catch (err) {
-        console.warn("PWA ServiceWorker registration failed:", err);
+        reportClientError(err, 'service_worker_registration');
       }
     };
 
     window.addEventListener("load", register);
     navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
-
     return () => {
       window.removeEventListener("load", register);
       navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
@@ -60,7 +71,8 @@ export default function App({ Component, pageProps }) {
   };
 
   return (
-    <>
+    <AppErrorBoundary>
+      <PrivacyAnalytics />
       <Component {...pageProps} />
       {waitingWorker && (
         <div className="fixed inset-x-3 z-[220] mx-auto max-w-md" style={{ bottom: "calc(12px + env(safe-area-inset-bottom, 0px))" }} role="status" aria-live="polite">
@@ -75,6 +87,6 @@ export default function App({ Component, pageProps }) {
           </div>
         </div>
       )}
-    </>
+    </AppErrorBoundary>
   );
 }
