@@ -1,115 +1,44 @@
 import React, { useMemo, useState } from 'react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import * as Flags from 'country-flag-icons/react/3x2';
 import { CURRENCIES, getCurrencyByCode } from '../lib/currencies';
 import { calculateCrossRate } from '../lib/rates';
 
-const DEFAULT_TARGETS = ['EUR', 'USD', 'GBP', 'XOF', 'NGN', 'GHS', 'GMD', 'SLE', 'KES', 'MAD', 'ZAR'];
-
 const FlagIcon = ({ countryCode }) => {
   if (!countryCode) return null;
   const Component = Flags[countryCode.toUpperCase()];
-  return Component ? <Component className="h-4 w-6 rounded-sm border border-black/5 object-cover" /> : null;
+  return Component ? <Component className="h-5 w-7 rounded-sm border border-black/5 object-cover" /> : null;
 };
+
+const DEFAULT_TARGETS = ['XOF', 'GMD', 'SLE', 'GHS', 'NGN', 'USD', 'GBP', 'KES'];
 
 export default function XeStyleLiveRates({ allRates = {}, onSelectPair, lang = 'fr' }) {
   const [baseCurrency, setBaseCurrency] = useState('EUR');
-  const [amount, setAmount] = useState('1');
-  const locale = lang === 'fr' ? 'fr-FR' : lang === 'es' ? 'es-ES' : 'en-US';
-  const numericAmount = Number(String(amount).replace(',', '.')) || 1;
   const baseInfo = getCurrencyByCode(baseCurrency);
-
-  const targets = useMemo(
-    () => DEFAULT_TARGETS.filter((code) => code !== baseCurrency),
-    [baseCurrency]
-  );
-
-  const formatNumber = (value, decimals = 2) => {
-    if (!Number.isFinite(value)) return '—';
-    return new Intl.NumberFormat(locale, {
-      minimumFractionDigits: Math.min(decimals, 2),
-      maximumFractionDigits: Math.min(Math.max(decimals, 2), 4),
-    }).format(value);
-  };
+  const targets = useMemo(() => DEFAULT_TARGETS.filter((code) => code !== baseCurrency), [baseCurrency]);
+  const locale = lang === 'fr' ? 'fr-FR' : 'en-US';
+  const formatNum = (num) => Number.isFinite(num) ? new Intl.NumberFormat(locale, { maximumFractionDigits: 4 }).format(num) : '—';
 
   return (
-    <div className="border-y border-slate-200 dark:border-slate-800">
-      <div className="flex flex-col gap-4 border-b border-slate-200 py-4 dark:border-slate-800 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-            {lang === 'fr' ? 'Devise de référence' : 'Base currency'}
-          </label>
-          <div className="flex items-center gap-2">
-            <FlagIcon countryCode={baseInfo.country} />
-            <select
-              value={baseCurrency}
-              onChange={(event) => setBaseCurrency(event.target.value)}
-              className="bg-transparent text-sm font-semibold text-slate-950 outline-none dark:text-white"
-            >
-              {CURRENCIES.map((currency) => (
-                <option key={currency.code} value={currency.code}>
-                  {currency.code} — {currency.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="sm:text-right">
-          <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-            {lang === 'fr' ? 'Montant' : 'Amount'}
-          </label>
-          <input
-            value={amount}
-            onChange={(event) => setAmount(event.target.value)}
-            inputMode="decimal"
-            className="w-32 border-b border-slate-300 bg-transparent pb-1 text-right font-mono text-sm font-semibold outline-none focus:border-emerald-700 dark:border-slate-700 dark:focus:border-emerald-400"
-          />
-        </div>
+    <div className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_24px_70px_-52px_rgba(15,23,42,.4)] dark:border-white/10 dark:bg-slate-900/50">
+      <div className="flex flex-col gap-4 border-b border-slate-200/80 bg-slate-50/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-slate-900/70">
+        <div><p className="text-xs font-medium text-slate-400">{lang === 'fr' ? 'Devise de référence' : 'Base currency'}</p><div className="mt-1 flex items-center gap-2"><FlagIcon countryCode={baseInfo.country} /><div className="relative"><select value={baseCurrency} onChange={(e) => setBaseCurrency(e.target.value)} className="appearance-none bg-transparent pr-6 text-sm font-semibold text-slate-950 outline-none dark:text-white">{CURRENCIES.map((currency) => <option key={currency.code} value={currency.code}>{currency.code} · {currency.name}</option>)}</select><ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" /></div></div></div>
+        <div className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] font-medium text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-400"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{lang === 'fr' ? 'Taux synchronisés' : 'Synced rates'}</div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[680px] border-collapse text-left">
-          <thead>
-            <tr className="border-b border-slate-200 text-[11px] uppercase tracking-[0.08em] text-slate-400 dark:border-slate-800">
-              <th className="py-3 pr-4 font-medium">{lang === 'fr' ? 'Devise' : 'Currency'}</th>
-              <th className="py-3 pr-4 font-medium">{lang === 'fr' ? 'Nom' : 'Name'}</th>
-              <th className="py-3 pr-4 text-right font-medium">{lang === 'fr' ? `Pour ${numericAmount} ${baseCurrency}` : `For ${numericAmount} ${baseCurrency}`}</th>
-              <th className="py-3 text-right font-medium"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
-            {targets.map((targetCode) => {
-              const target = getCurrencyByCode(targetCode);
-              const rate = calculateCrossRate(baseCurrency, targetCode, allRates, 'EUR');
-              const value = Number.isFinite(rate) ? rate * numericAmount : null;
-              return (
-                <tr key={targetCode} className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/60">
-                  <td className="py-3.5 pr-4">
-                    <div className="flex items-center gap-2.5">
-                      <FlagIcon countryCode={target.country} />
-                      <span className="text-sm font-semibold text-slate-950 dark:text-white">{targetCode}</span>
-                    </div>
-                  </td>
-                  <td className="py-3.5 pr-4 text-sm text-slate-500 dark:text-slate-400">{target.name}</td>
-                  <td className="py-3.5 pr-4 text-right font-mono text-sm font-semibold text-slate-950 dark:text-white">
-                    {formatNumber(value, target.decimals)}
-                  </td>
-                  <td className="py-3.5 text-right">
-                    <button onClick={() => onSelectPair?.(baseCurrency, targetCode)} className="text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
-                      {lang === 'fr' ? 'Convertir' : 'Convert'}
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="border-t border-slate-200 py-3 text-xs text-slate-400 dark:border-slate-800">
-        {lang === 'fr'
-          ? 'Les valeurs affichées utilisent les derniers taux disponibles dans AfriChange. Aucune variation 24 h fictive n’est générée.'
-          : 'Values use the latest rates available in AfriChange. No fake 24-hour market movement is generated.'}
+      <div className="hidden grid-cols-[1.2fr_.7fr_auto] gap-4 border-b border-slate-100 px-5 py-3 text-[10px] font-semibold uppercase tracking-[.12em] text-slate-400 sm:grid dark:border-white/10"><span>Devise</span><span>1 {baseCurrency}</span><span /></div>
+      <div className="divide-y divide-slate-100 dark:divide-white/10">
+        {targets.map((targetCode) => {
+          const target = getCurrencyByCode(targetCode);
+          const rate = calculateCrossRate(baseCurrency, targetCode, allRates, 'EUR');
+          return (
+            <button key={targetCode} onClick={() => onSelectPair?.(baseCurrency, targetCode)} className="group grid w-full gap-3 px-5 py-4 text-left transition-all duration-200 hover:bg-emerald-50/60 active:bg-emerald-100/60 dark:hover:bg-emerald-950/10 sm:grid-cols-[1.2fr_.7fr_auto] sm:items-center">
+              <div className="flex items-center gap-3"><span className="flex h-9 w-11 items-center justify-center rounded-xl bg-slate-50 ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-white/10"><FlagIcon countryCode={target.country} /></span><div><p className="text-sm font-semibold text-slate-950 dark:text-white">{targetCode}</p><p className="mt-0.5 text-xs text-slate-500">{target.name}</p></div></div>
+              <p className="font-mono text-sm font-semibold tabular-nums text-slate-800 dark:text-slate-200">{formatNum(rate)}</p>
+              <span className="inline-flex h-9 w-9 items-center justify-center justify-self-start rounded-full border border-slate-200 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:border-emerald-300 group-hover:bg-white group-hover:text-emerald-700 dark:border-white/10 dark:group-hover:bg-slate-900 sm:justify-self-end"><ArrowRight className="h-3.5 w-3.5" /></span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
