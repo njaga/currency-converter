@@ -1,8 +1,9 @@
 {
   "name": "AfriChange | Convertisseur de Devises Africaines",
   "short_name": "AfriChange",
-  "description": "Convertisseur de devises africaines et internationales (CFA XOF/XAF, NGN, GHS, GMD, KES, MAD, EUR, USD) fonctionnant 100% hors-ligne.",
+  "description": "Convertisseur de devises africaines et internationales conçu pour rester utile hors connexion grâce aux derniers taux synchronisés.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0f172a",
