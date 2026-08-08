@@ -51,8 +51,21 @@ jobs:
             fi
             sleep 1
           done
+
+          # Public pages
           curl -fsS http://127.0.0.1:3000/ > /dev/null
           curl -fsS http://127.0.0.1:3000/app > /dev/null
           curl -fsS http://127.0.0.1:3000/mentions-legales > /dev/null
+
+          # Missing optional server configuration must fail in a controlled way.
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/countries)" = "503"
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/rates)" = "503"
+
+          # Invalid input must be rejected before any upstream request.
+          test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/rates?base=INVALID')" = "400"
+          test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/historical-rates?base=EUR!&quote=XOF')" = "400"
+          test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/nearby-finance?lat=999&lon=0')" = "400"
+
+          # Unknown affiliate services must stay inside Kiwango rather than redirect externally.
+          LOCATION=$(curl -sI 'http://127.0.0.1:3000/go/not-a-service' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
+          test "$LOCATION" = "/app?tab=travel&affiliate=invalid-service&service=not-a-service"
