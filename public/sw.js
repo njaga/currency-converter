@@ -1,9 +1,9 @@
-const CACHE_NAME = 'kiwango-shell-v2';
+const CACHE_NAME = 'kiwango-shell-v3';
 const OFFLINE_URL = '/app';
 const PRECACHE_ASSETS = ['/', '/app', '/site.webmanifest', '/favicon.svg', '/logo.svg', '/mentions-legales'];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS)).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS)));
 });
 
 self.addEventListener('activate', (event) => {
@@ -14,6 +14,10 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
@@ -22,7 +26,6 @@ self.addEventListener('fetch', (event) => {
   if (!url.protocol.startsWith('http')) return;
   if (url.origin === self.location.origin && url.pathname.startsWith('/api/')) return;
 
-  // Documents: network first so a new Kiwango release is visible immediately.
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -35,7 +38,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Same-origin static assets: cache first, refresh in the background.
   if (url.origin === self.location.origin && ['style', 'script', 'image', 'font', 'manifest'].includes(request.destination)) {
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
