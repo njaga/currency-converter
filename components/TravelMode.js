@@ -42,6 +42,13 @@ function buildPairs(currencyCode) {
   return [...new Set(preferred)].filter((code) => code !== currencyCode).slice(0, 4);
 }
 
+function readRequestedCountry() {
+  if (typeof window === 'undefined') return 'GM';
+  const fromUrl = new URLSearchParams(window.location.search).get('country')?.toUpperCase();
+  const saved = localStorage.getItem('kiwango_quick_destination')?.toUpperCase();
+  return fromUrl || saved || 'GM';
+}
+
 export default function TravelMode({ lang = 'fr', onSelectPair }) {
   const [countries, setCountries] = useState([]);
   const [destinationCode, setDestinationCode] = useState('GM');
@@ -53,21 +60,44 @@ export default function TravelMode({ lang = 'fr', onSelectPair }) {
   const [rates, setRates] = useState({});
 
   useEffect(() => {
+    const requested = readRequestedCountry();
+    setDestinationCode(requested);
     let cancelled = false;
     fetch('/api/countries').then(async (response) => {
       if (!response.ok) throw new Error('countries');
       return response.json();
     }).then((data) => {
       if (cancelled) return;
-      setCountries(data.countries || []);
+      const nextCountries = data.countries || [];
+      setCountries(nextCountries);
       setDirectoryStatus('ready');
+      if (nextCountries.length && !nextCountries.some((country) => country.code === requested)) {
+        setDestinationCode(nextCountries[0].code);
+      }
     }).catch(() => {
       if (cancelled) return;
-      setCountries(fallbackCountries());
+      const fallback = fallbackCountries();
+      setCountries(fallback);
       setDirectoryStatus('fallback');
+      if (fallback.length && !fallback.some((country) => country.code === requested)) {
+        setDestinationCode(fallback[0].code);
+      }
     });
     return () => { cancelled = true; };
   }, []);
+
+  const chooseDestination = (code) => {
+    setDestinationCode(code);
+    setStatus('idle');
+    setPreparedTrip(null);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('kiwango_quick_destination', code);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', 'travel');
+      url.searchParams.set('country', code);
+      window.history.replaceState({}, '', `${url.pathname}${url.search}`);
+    }
+  };
 
   const destination = useMemo(() => countries.find((country) => country.code === destinationCode) || countries[0] || null, [countries, destinationCode]);
   const localName = destination ? localizedCountryName(destination, lang) : '';
@@ -148,7 +178,7 @@ export default function TravelMode({ lang = 'fr', onSelectPair }) {
         <div className="px-1 pt-1"><p className="text-[11px] font-semibold uppercase tracking-[.14em] text-slate-400">Destination</p><h2 className="mt-1 text-lg font-semibold">Où allez-vous ?</h2></div>
         <label className="mt-4 flex min-w-0 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-3 focus-within:border-emerald-400 focus-within:ring-4 focus-within:ring-emerald-500/10 dark:border-white/10 dark:bg-slate-950"><Search className="h-4 w-4 flex-none text-slate-400"/><input value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Pays, code ou devise…" className="w-full min-w-0 bg-transparent text-sm outline-none"/></label>
         <div className="mt-3 flex flex-wrap gap-2">{regions.map((item)=><button key={item} onClick={()=>setRegion(item)} className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition ${region===item?'bg-slate-950 text-white dark:bg-white dark:text-slate-950':'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300'}`}>{item==='all'?'Tous':item}</button>)}</div>
-        <div className="mt-4 max-h-[560px] space-y-1 overflow-y-auto pr-1">{filteredCountries.map((item)=>{const active=destinationCode===item.code;const currency=item.primaryCurrency;return <button key={item.code} onClick={()=>{setDestinationCode(item.code);setStatus('idle');setPreparedTrip(null)}} className={`flex w-full min-w-0 items-center justify-between rounded-2xl border px-3.5 py-3 text-left transition ${active?'border-emerald-300 bg-emerald-50/80 dark:border-emerald-700/50 dark:bg-emerald-950/30':'border-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:border-white/10 dark:hover:bg-white/[.025]'}`}><span className="flex min-w-0 items-center gap-3"><Flag code={item.flag}/><span className="min-w-0"><span className="block truncate text-sm font-semibold">{localizedCountryName(item,lang)}</span><span className="block truncate text-xs text-slate-500">{currency?.code || '—'} · {currency?.name || 'Devise non renseignée'}</span></span></span>{active?<span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-emerald-600 text-white"><Check className="h-3.5 w-3.5"/></span>:<ChevronRight className="h-4 w-4 flex-none text-slate-300"/>}</button>})}{!filteredCountries.length&&<p className="px-3 py-8 text-center text-sm text-slate-500">Aucune destination trouvée.</p>}</div>
+        <div className="mt-4 max-h-[560px] space-y-1 overflow-y-auto pr-1">{filteredCountries.map((item)=>{const active=destinationCode===item.code;const currency=item.primaryCurrency;return <button key={item.code} onClick={()=>chooseDestination(item.code)} className={`flex w-full min-w-0 items-center justify-between rounded-2xl border px-3.5 py-3 text-left transition ${active?'border-emerald-300 bg-emerald-50/80 dark:border-emerald-700/50 dark:bg-emerald-950/30':'border-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:border-white/10 dark:hover:bg-white/[.025]'}`}><span className="flex min-w-0 items-center gap-3"><Flag code={item.flag}/><span className="min-w-0"><span className="block truncate text-sm font-semibold">{localizedCountryName(item,lang)}</span><span className="block truncate text-xs text-slate-500">{currency?.code || '—'} · {currency?.name || 'Devise non renseignée'}</span></span></span>{active?<span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-emerald-600 text-white"><Check className="h-3.5 w-3.5"/></span>:<ChevronRight className="h-4 w-4 flex-none text-slate-300"/>}</button>})}{!filteredCountries.length&&<p className="px-3 py-8 text-center text-sm text-slate-500">Aucune destination trouvée.</p>}</div>
         <p className="mt-3 px-2 text-[11px] text-slate-400">{directoryStatus==='ready'?`${countries.length} destinations chargées`:'Répertoire de secours actif'}</p>
       </div>
 
