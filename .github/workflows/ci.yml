@@ -81,6 +81,8 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/rates?base=INVALID')" = "400"
           test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/historical-rates?base=EUR!&quote=XOF')" = "400"
           test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/nearby-finance?lat=999&lon=0')" = "400"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' --data '{\"event\":\"unknown\"}' http://127.0.0.1:3000/api/telemetry)" = "400"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' --data '{\"event\":\"client_error\",\"context\":\"smoke\",\"message\":\"test\",\"path\":\"/app\"}' http://127.0.0.1:3000/api/telemetry)" = "204"
 
           LOCATION=$(curl -sI 'http://127.0.0.1:3000/go/not-a-service' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
           test "$LOCATION" = "/app?tab=travel&affiliate=invalid-service&service=not-a-service"
