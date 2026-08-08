@@ -1,27 +1,26 @@
 {
-  "id": "/",
+  "id": "/app",
   "name": "Kiwango | Compagnon financier de voyage",
   "short_name": "Kiwango",
-  "description": "Conversion, vérification des taux, frais réels, budget voyage et outils hors connexion.",
-  "start_url": "/",
+  "description": "Conversion, Travel Packs, vérification des taux, budget et outils financiers disponibles même en voyage.",
+  "start_url": "/app",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
   "background_color": "#ffffff",
-  "theme_color": "#0f172a",
+  "theme_color": "#059669",
   "lang": "fr",
+  "dir": "ltr",
   "categories": ["finance", "utilities", "travel"],
   "icons": [
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Convertir", "short_name": "Convertir", "url": "/?tab=converter", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
-    { "name": "Voyage", "short_name": "Voyage", "url": "/?tab=travel", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
-    { "name": "Outils", "short_name": "Outils", "url": "/?tab=tools", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }
+    { "name": "Convertir", "short_name": "Convertir", "description": "Ouvrir le convertisseur", "url": "/app?tab=converter", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
+    { "name": "Voyage", "short_name": "Voyage", "description": "Ouvrir mes Travel Packs", "url": "/app?tab=travel", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
+    { "name": "Outils", "short_name": "Outils", "description": "Ouvrir les outils financiers", "url": "/app?tab=tools", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
+    { "name": "Devises", "short_name": "Devises", "description": "Explorer les devises", "url": "/app?tab=currencies", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }
   ]
 }
