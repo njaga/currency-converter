@@ -1,9 +1,9 @@
 name: Upgrade Kiwango to Next.js 15 Maintenance LTS
 
 on:
-  push:
+  pull_request:
     branches:
-      - chore/kiwango-next15-security
+      - feat/kiwango-v1-release-candidate
     paths:
       - '.github/workflows/upgrade-next15.yml'
 
@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   upgrade:
+    if: github.event.pull_request.head.ref == 'chore/kiwango-next15-security'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
