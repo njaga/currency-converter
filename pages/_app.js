@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 import "@/styles/premium-fixes.css";
+import "@/styles/mobile-release.css";
 import { useEffect } from "react";
 
 export default function App({ Component, pageProps }) {
@@ -17,7 +18,6 @@ export default function App({ Component, pageProps }) {
         return () => window.removeEventListener("load", register);
       }
 
-      // In development mode, unregister active SW to avoid dev chunk caching conflicts.
       navigator.serviceWorker.getRegistrations().then((registrations) => {
         registrations.forEach((registration) => registration.unregister());
       });
