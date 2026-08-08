@@ -1,0 +1,38 @@
+import { useState } from 'react';
+import Link from 'next/link';
+import { ArrowRight, BadgePercent, CircleDollarSign, Globe2, MapPin, Plane, ShieldCheck, WalletCards } from 'lucide-react';
+import CountryQuickSelect from './CountryQuickSelect';
+import LanguageMenu from './LanguageMenu';
+import Logo from './Logo';
+import SiteFooter from './SiteFooter';
+
+export default function KiwangoHome() {
+  const [lang, setLang] = useState('fr');
+  const fr = lang === 'fr';
+  const selectCountry = (country) => {
+    if (typeof window !== 'undefined') localStorage.setItem('kiwango_quick_destination', country.code);
+    window.location.href = `/app?tab=travel&country=${country.code}`;
+  };
+
+  return <div className="min-h-screen overflow-x-clip bg-[linear-gradient(180deg,#f7faf8_0%,#ffffff_34%,#f8fafc_100%)] text-slate-950 dark:bg-slate-950 dark:text-white">
+    <div className="sticky top-0 z-[140] px-3 pt-3 sm:px-5 sm:pt-4">
+      <header className="mx-auto flex h-[66px] w-full max-w-6xl items-center justify-between rounded-[22px] border border-white/80 bg-white/90 px-3 shadow-[0_12px_44px_rgba(15,23,42,.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/90 sm:px-4">
+        <Link href="/" className="flex items-center"><Logo size="md" showText/></Link>
+        <nav className="hidden items-center gap-1 lg:flex">{[[fr?'Convertir':'Convert','/app?tab=converter'],[fr?'Voyage':'Travel','/app?tab=travel'],[fr?'Outils':'Tools','/app?tab=tools'],[fr?'Devises':'Currencies','/app?tab=rates']].map(([label,href])=><Link key={href} href={href} className="rounded-full px-4 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white">{label}</Link>)}</nav>
+        <div className="flex items-center gap-2"><CountryQuickSelect lang={lang} onSelect={selectCountry}/><LanguageMenu value={lang} onChange={setLang}/><Link href="/app" className="hidden rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_22px_rgba(5,150,105,.18)] transition hover:bg-emerald-700 sm:inline-flex">{fr?'Explorer':'Explore'}</Link></div>
+      </header>
+    </div>
+
+    <main>
+      <section className="mx-auto grid w-full max-w-6xl gap-10 px-4 pb-14 pt-16 md:px-6 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:pb-20 lg:pt-24">
+        <div><div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700"><Globe2 className="h-4 w-4"/>{fr?'Voyagez avec vos repères financiers.':'Travel with your financial bearings.'}</div><h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl lg:text-[72px]">{fr?'Comprenez votre argent, partout où vous allez.':'Understand your money, wherever you go.'}</h1><p className="mt-6 max-w-xl text-base leading-7 text-slate-500 sm:text-lg">{fr?'Kiwango réunit conversion, taux réels, budget, cash, voyage et outils hors connexion dans une seule expérience pensée pour les déplacements internationaux.':'Kiwango brings conversion, real rates, budgets, cash, travel and offline tools into one experience for international journeys.'}</p><div className="mt-8 flex flex-wrap gap-3"><Link href="/app?tab=travel" className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950">{fr?'Préparer un voyage':'Prepare a trip'}<ArrowRight className="h-4 w-4"/></Link><Link href="/app?tab=converter" className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:border-emerald-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">{fr?'Convertir maintenant':'Convert now'}</Link></div></div>
+        <div className="relative min-h-[440px] overflow-hidden rounded-[38px] border border-slate-200/80 bg-slate-950 p-6 text-white shadow-[0_30px_90px_rgba(15,23,42,.18)] sm:p-8"><div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl"/><div className="relative"><p className="text-xs font-semibold uppercase tracking-[.16em] text-emerald-300">Travel Pack</p><h2 className="mt-3 max-w-sm text-3xl font-semibold tracking-[-.04em]">{fr?'Un pays. Sa devise. Vos outils prêts avant le départ.':'One country. Its currency. Your tools ready before departure.'}</h2><div className="mt-8 rounded-[28px] border border-white/10 bg-white/[.06] p-5 backdrop-blur"><div className="flex items-center justify-between"><div><p className="text-xs text-slate-400">{fr?'Destination':'Destination'}</p><p className="mt-1 text-lg font-semibold">Gambie · GMD</p></div><MapPin className="h-6 w-6 text-emerald-400"/></div><div className="mt-6 grid grid-cols-2 gap-3"><div className="rounded-2xl bg-white/[.06] p-4"><p className="text-[11px] text-slate-400">GMD ↔ XOF</p><p className="mt-1 text-lg font-semibold">{fr?'Prêt hors ligne':'Offline ready'}</p></div><div className="rounded-2xl bg-white/[.06] p-4"><p className="text-[11px] text-slate-400">Cash Wallet</p><p className="mt-1 text-lg font-semibold">3 250 GMD</p></div></div><div className="mt-3 rounded-2xl bg-emerald-500/15 p-4 text-sm text-emerald-200">{fr?'Taux synchronisés · Budget actif · Services à proximité disponibles':'Rates synced · Budget active · Nearby services available'}</div></div></div><Plane className="absolute bottom-8 right-8 h-24 w-24 rotate-[-12deg] text-emerald-400/25"/></div>
+      </section>
+
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 md:px-6"><div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">{[[CircleDollarSign,fr?'Rate Check':'Rate Check',fr?'Vérifiez le taux réellement proposé.':'Check the rate you are actually offered.'],[WalletCards,fr?'Budget & Cash':'Budget & Cash',fr?'Suivez dépenses et espèces en voyage.':'Track spending and cash while travelling.'],[BadgePercent,fr?'Frais réels':'Real fees',fr?'Comparez ce que vous recevez vraiment.':'Compare what you actually receive.'],[ShieldCheck,fr?'Hors connexion':'Offline',fr?'Gardez vos taux utiles sans réseau.':'Keep useful rates without a network.']].map(([Icon,title,copy])=><article key={title} className="rounded-[26px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_40px_rgba(15,23,42,.04)] dark:border-white/10 dark:bg-white/[.035]"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"><Icon className="h-5 w-5"/></div><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{copy}</p></article>)}</div></section>
+
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 md:px-6"><div className="overflow-hidden rounded-[34px] bg-emerald-600 px-6 py-10 text-white sm:px-10 lg:flex lg:items-center lg:justify-between lg:gap-10"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-emerald-100">Kiwango</p><h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-[-.04em] sm:text-4xl">{fr?'Choisissez votre destination. Le reste se prépare autour de votre monnaie locale.':'Choose your destination. Everything else prepares around the local currency.'}</h2></div><Link href="/app?tab=travel" className="mt-6 inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-emerald-700 lg:mt-0">{fr?'Explorer les destinations':'Explore destinations'}<ArrowRight className="h-4 w-4"/></Link></div></section>
+    </main>
+    <SiteFooter lang={lang}/>
+  </div>;
+}
