@@ -1,8 +1,15 @@
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Logo from './Logo';
 
-export default function SiteFooter({ lang = 'fr' }) {
-  const fr = lang === 'fr';
+export default function SiteFooter({ lang }) {
+  const [resolvedLang, setResolvedLang] = useState(lang || 'fr');
+  useEffect(() => {
+    if (lang) { setResolvedLang(lang); return; }
+    const saved = localStorage.getItem('app_lang');
+    if (saved === 'fr' || saved === 'en') setResolvedLang(saved);
+  }, [lang]);
+  const fr = resolvedLang === 'fr';
   const popular = [
     ['Gambie','GM'],
     ['Sénégal','SN'],
