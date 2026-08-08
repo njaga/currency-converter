@@ -1,0 +1,33 @@
+html,
+body,
+#__next {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+html,
+body {
+  overscroll-behavior-x: none;
+}
+
+/* `overflow-x: hidden` creates a scrolling ancestor in some browsers and can
+   break sticky positioning. Clip horizontal paint without creating one. */
+.overflow-x-hidden {
+  overflow-x: clip !important;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+@supports not (overflow: clip) {
+  html,
+  body,
+  #__next {
+    overflow-x: hidden;
+  }
+}
