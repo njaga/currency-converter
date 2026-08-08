@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://xof-converter.vercel.app/sitemap.xml
