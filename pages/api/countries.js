@@ -1,4 +1,5 @@
 import { fetchCountryDirectory } from '../../lib/countries-server';
+import { reportServerIssue } from '../../lib/server-monitoring';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -13,6 +14,12 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.REST_COUNTRIES_API_KEY;
+  await reportServerIssue('country_directory_unavailable', {
+    authenticatedProviderConfigured: Boolean(apiKey),
+    countryCount: Array.isArray(countries) ? countries.length : 0,
+    provider: provider || 'none',
+  });
+
   return res.status(503).json({
     error: 'Country directory unavailable',
     code: apiKey ? 'COUNTRY_DIRECTORY_UPSTREAM_ERROR' : 'COUNTRY_DIRECTORY_NOT_CONFIGURED',
