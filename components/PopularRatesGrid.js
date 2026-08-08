@@ -29,7 +29,7 @@ const MARKET_PAIRS = [
 export default function PopularRatesGrid({ allRates = {}, onSelectPair, lang = 'fr' }) {
   const [activeRegion, setActiveRegion] = useState(REGIONS.ALL);
   const pairs = useMemo(() => activeRegion === REGIONS.ALL ? MARKET_PAIRS : MARKET_PAIRS.filter((pair) => pair.region === activeRegion), [activeRegion]);
-  const locale = lang === 'fr' ? 'fr-FR' : lang === 'es' ? 'es-ES' : 'en-US';
+  const locale = lang === 'fr' ? 'fr-FR' : 'en-US';
 
   const formatRate = (value, decimals = 2) => {
     if (!Number.isFinite(value)) return '—';
@@ -37,8 +37,8 @@ export default function PopularRatesGrid({ allRates = {}, onSelectPair, lang = '
   };
 
   return (
-    <div>
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+    <div className="min-w-0 max-w-full overflow-hidden">
+      <div className="mb-4 flex max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {Object.values(REGIONS).map((region) => (
           <button key={region} onClick={() => setActiveRegion(region)} className={`whitespace-nowrap border-b-2 px-1 pb-2 text-xs font-medium ${activeRegion === region ? 'border-emerald-700 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400' : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
             {REGION_NAMES[lang]?.[region] || REGION_NAMES.fr[region]}
@@ -46,32 +46,46 @@ export default function PopularRatesGrid({ allRates = {}, onSelectPair, lang = '
         ))}
       </div>
 
-      <div className="overflow-x-auto border-y border-slate-200 dark:border-slate-800">
-        <table className="w-full min-w-[640px] border-collapse text-left">
-          <thead>
-            <tr className="border-b border-slate-200 text-[11px] uppercase tracking-[0.08em] text-slate-400 dark:border-slate-800">
-              <th className="py-3 pr-4 font-medium">{lang === 'fr' ? 'Paire' : 'Pair'}</th>
-              <th className="py-3 pr-4 font-medium">{lang === 'fr' ? 'Devise' : 'Currency'}</th>
-              <th className="py-3 text-right font-medium">{lang === 'fr' ? 'Taux' : 'Rate'}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
-            {pairs.map((pair) => {
-              const from = getCurrencyByCode(pair.from);
-              const to = getCurrencyByCode(pair.to);
-              const rate = calculateCrossRate(pair.from, pair.to, allRates, 'EUR');
-              return (
-                <tr key={`${pair.from}-${pair.to}`} onClick={() => onSelectPair?.(pair.from, pair.to)} className="cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/60">
-                  <td className="py-3.5 pr-4">
-                    <div className="flex items-center gap-2.5"><div className="flex -space-x-1"><FlagIcon countryCode={from.country} /><FlagIcon countryCode={to.country} /></div><span className="text-sm font-semibold">{pair.from} / {pair.to}</span></div>
-                  </td>
-                  <td className="py-3.5 pr-4 text-sm text-slate-500">{to.name}</td>
-                  <td className="py-3.5 text-right font-mono text-sm font-semibold">1 {pair.from} = {formatRate(rate, to.decimals)} {pair.to}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="max-w-full overflow-hidden border-y border-slate-200 dark:border-slate-800">
+        <div className="hidden md:block">
+          <table className="w-full table-fixed border-collapse text-left">
+            <thead>
+              <tr className="border-b border-slate-200 text-[11px] uppercase tracking-[0.08em] text-slate-400 dark:border-slate-800">
+                <th className="w-[34%] py-3 pr-4 font-medium">{lang === 'fr' ? 'Paire' : 'Pair'}</th>
+                <th className="w-[32%] py-3 pr-4 font-medium">{lang === 'fr' ? 'Devise' : 'Currency'}</th>
+                <th className="w-[34%] py-3 text-right font-medium">{lang === 'fr' ? 'Taux' : 'Rate'}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
+              {pairs.map((pair) => {
+                const from = getCurrencyByCode(pair.from);
+                const to = getCurrencyByCode(pair.to);
+                const rate = calculateCrossRate(pair.from, pair.to, allRates, 'EUR');
+                return (
+                  <tr key={`${pair.from}-${pair.to}`} onClick={() => onSelectPair?.(pair.from, pair.to)} className="cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/60">
+                    <td className="py-3.5 pr-4"><div className="flex min-w-0 items-center gap-2.5"><div className="flex flex-none -space-x-1"><FlagIcon countryCode={from.country} /><FlagIcon countryCode={to.country} /></div><span className="truncate text-sm font-semibold">{pair.from} / {pair.to}</span></div></td>
+                    <td className="truncate py-3.5 pr-4 text-sm text-slate-500">{to.name}</td>
+                    <td className="truncate py-3.5 text-right font-mono text-sm font-semibold">1 {pair.from} = {formatRate(rate, to.decimals)} {pair.to}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="divide-y divide-slate-100 md:hidden dark:divide-slate-900">
+          {pairs.map((pair) => {
+            const from = getCurrencyByCode(pair.from);
+            const to = getCurrencyByCode(pair.to);
+            const rate = calculateCrossRate(pair.from, pair.to, allRates, 'EUR');
+            return (
+              <button key={`${pair.from}-${pair.to}`} onClick={() => onSelectPair?.(pair.from, pair.to)} className="flex w-full min-w-0 items-center justify-between gap-4 py-3.5 text-left transition active:bg-slate-50 dark:active:bg-slate-900/60">
+                <span className="flex min-w-0 items-center gap-2.5"><span className="flex flex-none -space-x-1"><FlagIcon countryCode={from.country} /><FlagIcon countryCode={to.country} /></span><span className="min-w-0"><span className="block text-sm font-semibold">{pair.from} / {pair.to}</span><span className="block truncate text-xs text-slate-500">{to.name}</span></span></span>
+                <span className="flex-none text-right font-mono text-xs font-semibold">{formatRate(rate, to.decimals)}<span className="ml-1 text-slate-400">{pair.to}</span></span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
