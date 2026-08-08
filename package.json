@@ -1,13 +1,12 @@
 {
-  "name": "kiwango",
-  "version": "0.2.0",
+  "name": "currency-converter",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "generate-icons": "node scripts/generate-icons.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "country-flag-icons": "^1.6.12",
