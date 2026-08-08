@@ -31,8 +31,10 @@ jobs:
         run: npm ci
 
       - name: Production dependency audit
-        continue-on-error: true
         run: npm audit --omit=dev --audit-level=high
+
+      - name: Critical currency tests
+        run: npm run test:core
 
       - name: Lint
         run: npm run lint
@@ -52,12 +54,10 @@ jobs:
             sleep 1
           done
 
-          # Public pages
           curl -fsS http://127.0.0.1:3000/ > /dev/null
           curl -fsS http://127.0.0.1:3000/app > /dev/null
           curl -fsS http://127.0.0.1:3000/mentions-legales > /dev/null
 
-          # Country directory: public fallback may return a full directory even without a key.
           COUNTRY_STATUS=$(curl -s -o /tmp/countries.json -w '%{http_code}' http://127.0.0.1:3000/api/countries)
           if [ "$COUNTRY_STATUS" = "200" ]; then
             node -e "const d=require('/tmp/countries.json'); if(!Array.isArray(d.countries)||d.countries.length<100) process.exit(1)"
@@ -65,14 +65,10 @@ jobs:
             test "$COUNTRY_STATUS" = "503"
           fi
 
-          # No server-side rate key in CI should remain a controlled configuration state.
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/rates)" = "503"
-
-          # Invalid input must be rejected before any upstream request.
           test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/rates?base=INVALID')" = "400"
           test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/historical-rates?base=EUR!&quote=XOF')" = "400"
           test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/nearby-finance?lat=999&lon=0')" = "400"
 
-          # Unknown affiliate services must stay inside Kiwango rather than redirect externally.
           LOCATION=$(curl -sI 'http://127.0.0.1:3000/go/not-a-service' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
           test "$LOCATION" = "/app?tab=travel&affiliate=invalid-service&service=not-a-service"
