@@ -1,124 +1,76 @@
 import Head from 'next/head';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, Shield, Database, AlertTriangle, Code, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Database, ExternalLink, Scale, ShieldCheck, WifiOff } from 'lucide-react';
 import Logo from '../components/Logo';
 
 const sections = [
   {
-    icon: Shield,
+    icon: ShieldCheck,
     title: 'Protection des données',
-    content: 'AfriChange ne collecte ni ne stocke aucune donnée personnelle. Toutes les conversions favorites sont stockées uniquement dans votre navigateur (localStorage et IndexedDB).'
+    content: "L'application ne nécessite aucun compte pour convertir des devises. L'historique, les favoris et les voyages préparés sont enregistrés localement dans votre navigateur via IndexedDB. AfriChange n'utilise pas ces données pour établir un profil utilisateur.",
   },
   {
     icon: Database,
-    title: 'Sources des données',
-    content: 'Les taux de change sont fournis par ExchangeRate-API et mis à jour régulièrement pour assurer la précision des conversions.'
+    title: 'Sources des taux',
+    content: "Les taux variables proviennent de plusieurs fournisseurs configurés par l'application, notamment des sources ouvertes et, lorsqu'il est configuré, un fournisseur de secours côté serveur. Les parités EUR/XOF et EUR/XAF sont gérées séparément comme parités fixes. La source et la fraîcheur des données sont indiquées dans l'interface.",
   },
   {
-    icon: AlertTriangle,
+    icon: WifiOff,
+    title: 'Fonctionnement hors connexion',
+    content: "Après une synchronisation réussie, les derniers taux disponibles peuvent être conservés sur l'appareil afin de continuer les conversions hors connexion. Un taux ancien ou indisponible n'est pas présenté comme une donnée de marché en direct.",
+  },
+  {
+    icon: Scale,
     title: 'Limitation de responsabilité',
-    content: 'Les taux affichés sont fournis à titre indicatif. Pour des transactions financières importantes, vérifiez les taux auprès de votre institution financière.'
-  }
+    content: "Les conversions sont fournies à titre indicatif. Elles ne constituent ni un service de change, ni un conseil financier, ni une garantie du taux qui sera appliqué par une banque, un opérateur de transfert ou un commerçant.",
+  },
 ];
 
 export default function MentionsLegales() {
   return (
     <>
       <Head>
-        <title>Mentions Légales | AfriChange</title>
-        <meta name="description" content="Mentions légales du convertisseur AfriChange — convertisseur de devises africaines PWA." />
-        <meta name="robots" content="noindex, follow" />
+        <title>Mentions légales | AfriChange</title>
+        <meta name="description" content="Mentions légales, confidentialité et fonctionnement des données du convertisseur de devises africaines AfriChange." />
+        <meta name="robots" content="index, follow" />
       </Head>
 
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors">
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-[40%] -right-[20%] w-[80%] h-[80%] rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-3xl" />
-        </div>
-
-        <header className="relative z-10 border-b border-slate-200/50 dark:border-slate-800/50 backdrop-blur-sm bg-white/80 dark:bg-slate-900/80">
-          <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link 
-              href="/" 
-              className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 transition-colors font-medium"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Retour
+      <div className="min-h-screen overflow-x-clip bg-[linear-gradient(180deg,#ffffff_0%,#f8faf9_100%)] text-slate-950 dark:bg-[linear-gradient(180deg,#020617_0%,#07110d_100%)] dark:text-white">
+        <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-[0_4px_24px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/95">
+          <div className="mx-auto flex h-[68px] w-full max-w-6xl items-center justify-between gap-4 px-4 md:px-6">
+            <Logo size="md" />
+            <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+              <ArrowLeft className="h-4 w-4" /> Retour au convertisseur
             </Link>
-            <Logo size="sm" showText={true} />
           </div>
         </header>
 
-        <main className="relative z-10 max-w-3xl mx-auto px-4 py-8 space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/50 shadow-lg"
-          >
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">
-              Mentions Légales
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              AfriChange — Convertisseur de devises africaines (PWA)
-            </p>
-          </motion.div>
+        <main className="mx-auto w-full max-w-4xl px-4 py-10 md:px-6 md:py-16">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">Informations</p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.045em] md:text-5xl">Mentions légales & confidentialité</h1>
+            <p className="mt-4 text-sm leading-7 text-slate-500 dark:text-slate-400">Comment l'application traite vos données, d'où viennent les taux et quelles sont les limites du service.</p>
+          </div>
 
-          {sections.map((section, i) => (
-            <motion.div
-              key={section.title}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * (i + 1) }}
-              className="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/50 shadow-lg"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                  <section.icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                  {section.title}
-                </h2>
-              </div>
-              <p className="text-slate-600 dark:text-slate-300 leading-relaxed pl-[52px]">
-                {section.content}
-              </p>
-            </motion.div>
-          ))}
+          <div className="mt-10 overflow-hidden rounded-[30px] border border-slate-200/80 bg-white/85 shadow-[0_20px_60px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-white/[0.035]">
+            {sections.map((section, index) => {
+              const Icon = section.icon;
+              return (
+                <section key={section.title} className={`grid gap-5 p-6 md:grid-cols-[52px_1fr] md:p-8 ${index ? 'border-t border-slate-200/80 dark:border-white/10' : ''}`}>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"><Icon className="h-5 w-5" /></div>
+                  <div><h2 className="text-lg font-semibold tracking-[-0.02em]">{section.title}</h2><p className="mt-2 text-sm leading-7 text-slate-500 dark:text-slate-400">{section.content}</p></div>
+                </section>
+              );
+            })}
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/50 shadow-lg"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                <Code className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                Développement
-              </h2>
-            </div>
-            <p className="text-slate-600 dark:text-slate-300 pl-[52px]">
-              Développé par{' '}
-              <a 
-                href="https://ndiagandiaye.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline font-medium"
-              >
-                Ndiaga Ndiaye
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </p>
-          </motion.div>
+          <div className="mt-6 rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-6 text-sm dark:border-white/10 dark:bg-white/[0.025]">
+            <p className="font-semibold">Éditeur & développement</p>
+            <p className="mt-2 leading-7 text-slate-500 dark:text-slate-400">Projet conçu et développé par <a href="https://ndiagandiaye.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:underline dark:text-emerald-400">Ndiaga Ndiaye <ExternalLink className="h-3.5 w-3.5" /></a>.</p>
+          </div>
         </main>
 
-        <footer className="relative z-10 border-t border-slate-200/50 dark:border-slate-800/50 py-6 mt-12">
-          <div className="max-w-3xl mx-auto px-4 text-center text-sm text-slate-400">
-            © {new Date().getFullYear()} AfriChange
-          </div>
-        </footer>
+        <footer className="border-t border-slate-200/70 dark:border-white/10"><div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-7 text-xs text-slate-500 md:px-6"><span>© {new Date().getFullYear()} AfriChange</span><Link href="/" className="hover:text-emerald-700">Accueil</Link></div></footer>
       </div>
     </>
   );
