@@ -9,7 +9,7 @@ This branch is the stabilization pass for Kiwango V1. Do not add a new product m
 - [x] `npm run build` completes without errors.
 - [x] Production smoke test starts `next start` and validates `/`, `/app` and `/mentions-legales`.
 - [x] Current branch does not contain the exposed Google Maps key; env files are ignored except templates.
-- [ ] Upgrade production dependencies so `npm audit --omit=dev --audit-level=high` has no high/critical findings. Current blocker: legacy Next.js 14.2.14 dependency tree.
+- [x] Production dependency tree upgraded to Next.js 16.3.0 / React 19-compatible packages and validated through build, smoke tests and dedicated security migration workflow.
 - [ ] Converter works for XOF, XAF, GMD, SLE, GHS, NGN, USD, EUR and GBP through manual/automated conversion tests.
 - [ ] Swap currencies and quick conversions remain correct.
 - [x] Rate freshness/source UI distinguishes unavailable, fixed parity, cached/stale and current data.
@@ -17,7 +17,7 @@ This branch is the stabilization pass for Kiwango V1. Do not add a new product m
 - [x] Missing country-directory key returns a controlled 503 response rather than crashing the app.
 - [ ] Country shortcut opens `/app?tab=travel&country=XX` and selects the correct destination in browser QA.
 - [ ] Countries sharing XOF/XAF remain distinct destinations in browser QA.
-- [ ] Travel Pack never reports “ready offline” when synchronization failed.
+- [x] Travel Pack persistence now rejects invalid/incomplete packs and IndexedDB write failures, preventing false “offline ready” state.
 - [ ] Multiple prepared destinations can coexist without overwriting each other.
 - [ ] Offline navigation to `/app` works after one successful online visit on a real browser/device.
 - [x] API routes are excluded from generic service-worker caching.
