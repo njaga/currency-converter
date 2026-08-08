@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import KiwangoHome from '../components/KiwangoHome';
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://xof-converter.vercel.app').replace(/\/$/, '');
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
 
 export default function Home() {
   const schemas = [
@@ -17,9 +17,9 @@ export default function Home() {
       <meta property="og:url" content={SITE_URL} />
       <meta property="og:title" content="Kiwango | Comprenez votre argent partout où vous allez" />
       <meta property="og:description" content="Conversion, voyage, taux réels, budget, cash et outils hors connexion dans une seule expérience." />
-      <meta property="og:image" content={`${SITE_URL}/og-image.svg`} />
+      <meta property="og:image" content={`${SITE_URL}/og-image.png`} />
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:image" content={`${SITE_URL}/og-image.svg`} />
+      <meta name="twitter:image" content={`${SITE_URL}/og-image.png`} />
       {schemas.map((schema,index)=><script key={index} type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/>)}
     </Head>
     <KiwangoHome />
