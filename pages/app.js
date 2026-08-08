@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import CurrencyConverter from '../components/CurrencyConverter';
+import SiteFooter from '../components/SiteFooter';
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://xof-converter.vercel.app').replace(/\/$/, '');
 
@@ -11,6 +12,9 @@ export default function AppPage() {
       <link rel="canonical" href={`${SITE_URL}/app`} />
       <meta name="robots" content="index, follow" />
     </Head>
-    <CurrencyConverter />
+    <div className="kiwango-app-page">
+      <CurrencyConverter />
+      <SiteFooter />
+    </div>
   </>;
 }
