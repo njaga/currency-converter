@@ -7,8 +7,8 @@ import { getCurrencyByCode } from '../lib/currencies';
 export default function ConversionHistory({ history = [], onClear, onSelectPair, lang = 'fr' }) {
   if (!history || history.length === 0) {
     return (
-      <div className="p-6 rounded-3xl bg-white/70 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/50 backdrop-blur-md text-center">
-        <History className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+      <div className="max-w-full rounded-3xl border border-slate-200/60 bg-white/70 p-6 text-center backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-800/50">
+        <History className="mx-auto mb-2 h-8 w-8 text-slate-300 dark:text-slate-600" />
         <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
           {getTranslation(lang, 'noHistory')}
         </p>
@@ -33,31 +33,31 @@ export default function ConversionHistory({ history = [], onClear, onSelectPair,
   };
 
   return (
-    <div className="p-5 rounded-3xl bg-white/70 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/50 backdrop-blur-md">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-            <History className="w-4 h-4" />
+    <div className="min-w-0 max-w-full overflow-hidden rounded-3xl border border-slate-200/60 bg-white/70 p-5 backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-800/50">
+      <div className="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="flex-none rounded-lg bg-blue-500/10 p-1.5 text-blue-600 dark:text-blue-400">
+            <History className="h-4 w-4" />
           </div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+          <h3 className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
             {getTranslation(lang, 'history')}
           </h3>
-          <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+          <span className="flex-none rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">
             {history.length}
           </span>
         </div>
 
         <button
           onClick={onClear}
-          className="flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 p-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+          className="inline-flex flex-none items-center gap-1 rounded-lg p-1 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/30 dark:hover:text-rose-300"
           aria-label={getTranslation(lang, 'clearHistory')}
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="h-3.5 w-3.5" />
           <span>{getTranslation(lang, 'clearHistory')}</span>
         </button>
       </div>
 
-      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+      <div className="max-h-60 max-w-full space-y-2 overflow-x-hidden overflow-y-auto pr-1">
         <AnimatePresence>
           {history.map((item, idx) => {
             const fromCurr = getCurrencyByCode(item.from);
@@ -70,22 +70,22 @@ export default function ConversionHistory({ history = [], onClear, onSelectPair,
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 onClick={() => onSelectPair && onSelectPair(item.from, item.to, item.amount)}
-                className="group flex items-center justify-between p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer transition-all"
+                className="group flex min-w-0 max-w-full cursor-pointer flex-col gap-2 rounded-2xl border border-slate-200/50 bg-slate-50/80 p-3 transition-all hover:border-blue-300 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-blue-700 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-800 dark:text-slate-200">
-                  <span className="font-mono">
+                <div className="flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <span className="min-w-0 break-all font-mono">
                     {formatNumber(item.amount, fromCurr.decimals)} {item.from}
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
-                  <span className="font-mono text-blue-600 dark:text-blue-400 font-bold">
+                  <ArrowRight className="h-3.5 w-3.5 flex-none text-slate-400 transition-colors group-hover:text-blue-500" />
+                  <span className="min-w-0 break-all font-mono font-bold text-blue-600 dark:text-blue-400">
                     {formatNumber(item.result, toCurr.decimals)} {item.to}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                <div className="flex flex-none flex-wrap items-center gap-2 text-[11px] text-slate-400">
                   {item.isOffline && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">
-                      <Database className="w-2.5 h-2.5" /> {getTranslation(lang, 'offlineBadge')}
+                    <span className="inline-flex items-center gap-0.5 rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                      <Database className="h-2.5 w-2.5 flex-none" /> {getTranslation(lang, 'offlineBadge')}
                     </span>
                   )}
                   <span className="font-mono">{formatTime(item.timestamp)}</span>
