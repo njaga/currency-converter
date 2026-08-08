@@ -21,6 +21,6 @@
     { "name": "Convertir", "short_name": "Convertir", "description": "Ouvrir le convertisseur", "url": "/app?tab=converter", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
     { "name": "Voyage", "short_name": "Voyage", "description": "Ouvrir mes Travel Packs", "url": "/app?tab=travel", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
     { "name": "Outils", "short_name": "Outils", "description": "Ouvrir les outils financiers", "url": "/app?tab=tools", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
-    { "name": "Devises", "short_name": "Devises", "description": "Explorer les devises", "url": "/app?tab=currencies", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }
+    { "name": "Devises", "short_name": "Devises", "description": "Explorer les devises", "url": "/app?tab=rates", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }
   ]
 }
