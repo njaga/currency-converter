@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:core": "node --test __tests__/conversion.node.test.mjs"
   },
   "dependencies": {
     "country-flag-icons": "^1.6.12",
