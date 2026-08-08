@@ -64,6 +64,12 @@ jobs:
           curl -fsS http://127.0.0.1:3000/robots.txt > /tmp/robots.txt
           grep -q 'http://localhost:3000/sitemap.xml' /tmp/robots.txt
 
+          curl -fsS http://127.0.0.1:3000/site.webmanifest > /tmp/manifest.json
+          node -e "const m=require('/tmp/manifest.json'); if(m.start_url!=='/app'||m.display!=='standalone'||!m.icons?.some(i=>i.purpose==='maskable')) process.exit(1)"
+          curl -fsS http://127.0.0.1:3000/pwa-maskable.svg > /dev/null
+          curl -fsS http://127.0.0.1:3000/sw.js > /tmp/sw.js
+          grep -q 'SKIP_WAITING' /tmp/sw.js
+
           COUNTRY_STATUS=$(curl -s -o /tmp/countries.json -w '%{http_code}' http://127.0.0.1:3000/api/countries)
           if [ "$COUNTRY_STATUS" = "200" ]; then
             node -e "const d=require('/tmp/countries.json'); if(!Array.isArray(d.countries)||d.countries.length<100) process.exit(1)"
