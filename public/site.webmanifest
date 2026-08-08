@@ -1,13 +1,14 @@
 {
-  "name": "AfriChange | Convertisseur de Devises Africaines",
-  "short_name": "AfriChange",
-  "description": "Convertisseur de devises africaines et internationales conçu pour rester utile hors connexion grâce aux derniers taux synchronisés.",
+  "id": "/",
+  "name": "Kiwango | Compagnon financier de voyage",
+  "short_name": "Kiwango",
+  "description": "Conversion, vérification des taux, frais réels, budget voyage et outils hors connexion.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0f172a",
-  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
   "lang": "fr",
   "categories": ["finance", "utilities", "travel"],
   "icons": [
@@ -17,5 +18,10 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    { "name": "Convertir", "short_name": "Convertir", "url": "/?tab=converter", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
+    { "name": "Voyage", "short_name": "Voyage", "url": "/?tab=travel", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
+    { "name": "Outils", "short_name": "Outils", "url": "/?tab=tools", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }
   ]
 }
