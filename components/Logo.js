@@ -7,16 +7,17 @@ export default function Logo({ size = 'md', showText = true, variant = 'auto', c
 
   return (
     <div className={`flex min-w-0 items-center gap-2.5 ${className}`}>
-      <div className={`${iconSizes[size]} relative flex flex-shrink-0 items-center justify-center rounded-full bg-emerald-600 shadow-[0_8px_22px_rgba(5,150,105,0.2)]`} aria-hidden="true">
-        <svg viewBox="0 0 32 32" className="h-[58%] w-[58%]" fill="none">
-          <circle cx="16" cy="16" r="11.25" stroke="white" strokeWidth="1.8" />
-          <path d="M4.75 16h22.5M16 4.75c3.35 3.05 5 6.8 5 11.25S19.35 24.2 16 27.25M16 4.75C12.65 7.8 11 11.55 11 16s1.65 8.2 5 11.25" stroke="white" strokeWidth="1.55" strokeLinecap="round" />
-          <path d="M7.2 9.4c2.3 1.2 5.3 1.85 8.8 1.85s6.5-.65 8.8-1.85M7.2 22.6c2.3-1.2 5.3-1.85 8.8-1.85s6.5.65 8.8 1.85" stroke="white" strokeWidth="1.2" strokeLinecap="round" opacity="0.9" />
+      <div className={`${iconSizes[size]} relative flex flex-shrink-0 items-center justify-center rounded-[30%] bg-slate-950 shadow-[0_10px_28px_rgba(15,23,42,0.18)] dark:bg-white`} aria-hidden="true">
+        <svg viewBox="0 0 32 32" className="h-[64%] w-[64%]" fill="none">
+          <path d="M8.5 7.5v17" stroke="#10B981" strokeWidth="3.2" strokeLinecap="round" />
+          <path d="M10 16h4.2l7.3-8.5" stroke="currentColor" className="text-white dark:text-slate-950" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="m14.2 16 7.8 8.5" stroke="currentColor" className="text-white dark:text-slate-950" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="23.7" cy="7.2" r="2.2" fill="#10B981" />
         </svg>
       </div>
       {showText && (
-        <span className={`${textSizes[size]} truncate font-bold tracking-[-0.045em] ${textColor}`}>
-          Afri<span className="text-emerald-600 dark:text-emerald-400">Change</span>
+        <span className={`${textSizes[size]} truncate font-semibold tracking-[-0.045em] ${textColor}`}>
+          Kiwango
         </span>
       )}
     </div>
