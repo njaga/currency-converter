@@ -57,8 +57,15 @@ jobs:
           curl -fsS http://127.0.0.1:3000/app > /dev/null
           curl -fsS http://127.0.0.1:3000/mentions-legales > /dev/null
 
-          # Missing optional server configuration must fail in a controlled way.
-          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/countries)" = "503"
+          # Country directory: public fallback may return a full directory even without a key.
+          COUNTRY_STATUS=$(curl -s -o /tmp/countries.json -w '%{http_code}' http://127.0.0.1:3000/api/countries)
+          if [ "$COUNTRY_STATUS" = "200" ]; then
+            node -e "const d=require('/tmp/countries.json'); if(!Array.isArray(d.countries)||d.countries.length<100) process.exit(1)"
+          else
+            test "$COUNTRY_STATUS" = "503"
+          fi
+
+          # No server-side rate key in CI should remain a controlled configuration state.
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/rates)" = "503"
 
           # Invalid input must be rejected before any upstream request.
