@@ -1,8 +1,6 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import CurrencyConverter from '../components/CurrencyConverter';
-import LandingFeatures from '../components/LandingFeatures';
-import MarketingSections from '../components/MarketingSections';
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://xof-converter.vercel.app').replace(/\/$/, '');
 
@@ -59,16 +57,9 @@ export default function Home() {
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/favicon.svg" />
         <meta name="author" content="Ndiaga Ndiaye" />
-
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       </Head>
-
       <CurrencyConverter />
-
-      <div className="mx-auto max-w-5xl px-4 md:px-6">
-        <LandingFeatures lang="fr" />
-        <MarketingSections lang="fr" />
-      </div>
     </>
   );
 }
