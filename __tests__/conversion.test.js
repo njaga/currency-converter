@@ -1,37 +1,38 @@
-import { calculateCrossRate, STATIC_BASELINE_RATES_EUR } from '../lib/rates';
-import { FIXED_PARITIES, getCurrencyByCode } from '../lib/currencies';
+import { calculateCrossRate } from '../lib/rates';
+import { getCurrencyByCode } from '../lib/currencies';
 
-describe('AfriChange Currency Converter Core Logic', () => {
-  test('Fixed parity conversion between EUR and XOF (Franc CFA)', () => {
-    const rate = calculateCrossRate('EUR', 'XOF', STATIC_BASELINE_RATES_EUR, 'EUR');
-    expect(rate).toBe(655.957);
+const verifiedFixture = {
+  EUR: 1,
+  XOF: 655.957,
+  XAF: 655.957,
+  NGN: 1700,
+  GMD: 80,
+};
+
+describe('AfriChange currency core', () => {
+  test('uses the official fixed EUR/XOF parity', () => {
+    expect(calculateCrossRate('EUR', 'XOF', verifiedFixture, 'EUR')).toBe(655.957);
   });
 
-  test('Fixed parity conversion between XOF and XAF is 1.0', () => {
-    const rate = calculateCrossRate('XOF', 'XAF', STATIC_BASELINE_RATES_EUR, 'EUR');
-    expect(rate).toBe(1.0);
+  test('uses the fixed XOF/XAF parity', () => {
+    expect(calculateCrossRate('XOF', 'XAF', verifiedFixture, 'EUR')).toBe(1);
   });
 
-  test('Identity conversion (same currency) returns 1.0', () => {
-    const rate = calculateCrossRate('NGN', 'NGN', STATIC_BASELINE_RATES_EUR, 'EUR');
-    expect(rate).toBe(1.0);
+  test('returns 1 for identity conversions', () => {
+    expect(calculateCrossRate('NGN', 'NGN', verifiedFixture, 'EUR')).toBe(1);
   });
 
-  test('Cross rate triangulation between XOF and NGN', () => {
-    const rate = calculateCrossRate('XOF', 'NGN', STATIC_BASELINE_RATES_EUR, 'EUR');
-    expect(rate).toBeGreaterThan(0);
-    // rate(XOF -> NGN) = rate(EUR -> NGN) / rate(EUR -> XOF)
-    const expected = STATIC_BASELINE_RATES_EUR.NGN / STATIC_BASELINE_RATES_EUR.XOF;
-    expect(rate).toBeCloseTo(expected, 4);
+  test('triangulates non-fixed pairs from one normalized base table', () => {
+    const rate = calculateCrossRate('GMD', 'NGN', verifiedFixture, 'EUR');
+    expect(rate).toBeCloseTo(verifiedFixture.NGN / verifiedFixture.GMD, 8);
   });
 
-  test('Currency metadata lookup returns correct decimals and symbol', () => {
-    const xof = getCurrencyByCode('XOF');
-    expect(xof.symbol).toBe('CFA');
-    expect(xof.decimals).toBe(0);
+  test('returns null when a required rate is missing', () => {
+    expect(calculateCrossRate('GMD', 'KES', verifiedFixture, 'EUR')).toBeNull();
+  });
 
-    const ngn = getCurrencyByCode('NGN');
-    expect(ngn.symbol).toBe('₦');
-    expect(ngn.decimals).toBe(2);
+  test('currency metadata keeps expected symbols and decimals', () => {
+    expect(getCurrencyByCode('XOF')).toMatchObject({ symbol: 'CFA', decimals: 0 });
+    expect(getCurrencyByCode('NGN')).toMatchObject({ symbol: '₦', decimals: 2 });
   });
 });
