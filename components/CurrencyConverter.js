@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowRightLeft, ChevronDown, Download, Moon, Plane, RefreshCw, Share2, Sparkles, Star, Sun, WifiOff, Wrench } from 'lucide-react';
+import { ArrowRightLeft, ChevronDown, Download, Moon, Plane, RefreshCw, Share2, Sparkles, Star, Sun, WifiOff } from 'lucide-react';
 import * as Flags from 'country-flag-icons/react/3x2';
 import Link from 'next/link';
 
@@ -59,6 +59,8 @@ export default function CurrencyConverter() {
     setIsDark(savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches);
     const savedLang = localStorage.getItem('app_lang');
     if (savedLang === 'fr' || savedLang === 'en') setLang(savedLang); else localStorage.setItem('app_lang', 'fr');
+    const requestedTab = new URLSearchParams(window.location.search).get('tab');
+    if (['converter', 'travel', 'tools', 'rates'].includes(requestedTab)) setActiveTab(requestedTab);
     Promise.all([getFavorites(8), getConversionHistory(20)]).then(([savedFavorites, savedHistory]) => { setFavorites(savedFavorites); setHistory(savedHistory); });
     const updateNetwork = () => setIsOffline(!navigator.onLine);
     const captureInstallPrompt = (event) => { event.preventDefault(); setPwaPrompt(event); };
