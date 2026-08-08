@@ -37,6 +37,7 @@ jobs:
           npm ls next react react-dom eslint-config-next
           npm run lint
           npm run build
+          npm audit --omit=dev --audit-level=high || true
 
       - name: Commit generated package files
         run: |
