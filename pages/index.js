@@ -43,12 +43,12 @@ export default function Home() {
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:title" content="Kiwango | Votre argent, compris partout où vous voyagez" />
       <meta property="og:description" content="Conversion, voyage, frais réels, budget et outils hors connexion dans une seule application." />
-      <meta property="og:image" content={`${SITE_URL}/og-image.png`} />
+      <meta property="og:image" content={`${SITE_URL}/og-image.svg`} />
       <meta property="og:locale" content="fr_FR" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content="Kiwango | Compagnon financier de voyage" />
       <meta name="twitter:description" content="Convertissez, vérifiez les taux et gérez votre argent en voyage, même hors connexion." />
-      <meta name="twitter:image" content={`${SITE_URL}/og-image.png`} />
+      <meta name="twitter:image" content={`${SITE_URL}/og-image.svg`} />
       <link rel="canonical" href={canonicalUrl} />
       <link rel="manifest" href="/site.webmanifest" />
       <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
