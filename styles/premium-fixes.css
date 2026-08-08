@@ -24,6 +24,78 @@ video {
   max-width: 100%;
 }
 
+/* The travel teaser previously used an approximate Africa silhouette. Replace
+   it with a neutral route/globe visual until the final brand illustration is set. */
+main section.mt-6 > button.group > svg {
+  display: none;
+}
+
+main section.mt-6 > button.group::after {
+  content: '';
+  position: absolute;
+  right: -42px;
+  bottom: -52px;
+  width: 260px;
+  height: 260px;
+  border-radius: 9999px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  background:
+    linear-gradient(90deg, transparent 49.6%, rgba(16, 185, 129, 0.15) 49.8%, rgba(16, 185, 129, 0.15) 50.2%, transparent 50.4%),
+    linear-gradient(transparent 49.6%, rgba(16, 185, 129, 0.15) 49.8%, rgba(16, 185, 129, 0.15) 50.2%, transparent 50.4%),
+    radial-gradient(circle at center, rgba(16, 185, 129, 0.1) 0 42%, transparent 43%),
+    rgba(236, 253, 245, 0.66);
+  box-shadow: inset 0 0 0 34px rgba(255, 255, 255, 0.42);
+  pointer-events: none;
+  transition: transform 300ms ease;
+}
+
+main section.mt-6 > button.group::before {
+  content: '✈';
+  position: absolute;
+  right: 158px;
+  bottom: 52px;
+  z-index: 2;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 9999px;
+  background: #059669;
+  color: white;
+  font-size: 18px;
+  box-shadow: 0 10px 28px rgba(5, 150, 105, 0.22);
+  transform: rotate(-16deg);
+  pointer-events: none;
+}
+
+main section.mt-6 > button.group:hover::after {
+  transform: translate3d(-5px, -5px, 0) scale(1.02);
+}
+
+.dark main section.mt-6 > button.group::after {
+  border-color: rgba(52, 211, 153, 0.2);
+  background:
+    linear-gradient(90deg, transparent 49.6%, rgba(52, 211, 153, 0.13) 49.8%, rgba(52, 211, 153, 0.13) 50.2%, transparent 50.4%),
+    linear-gradient(transparent 49.6%, rgba(52, 211, 153, 0.13) 49.8%, rgba(52, 211, 153, 0.13) 50.2%, transparent 50.4%),
+    radial-gradient(circle at center, rgba(16, 185, 129, 0.12) 0 42%, transparent 43%),
+    rgba(6, 78, 59, 0.12);
+  box-shadow: inset 0 0 0 34px rgba(2, 6, 23, 0.18);
+}
+
+@media (max-width: 1279px) {
+  main section.mt-6 > button.group::after {
+    width: 220px;
+    height: 220px;
+    right: -48px;
+    bottom: -58px;
+  }
+
+  main section.mt-6 > button.group::before {
+    right: 128px;
+    bottom: 42px;
+  }
+}
+
 @supports not (overflow: clip) {
   html,
   body,
