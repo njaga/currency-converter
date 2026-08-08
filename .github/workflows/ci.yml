@@ -44,6 +44,15 @@ jobs:
 
       - name: Production smoke test
         run: |
+          expect_status() {
+            EXPECTED="$1"
+            LABEL="$2"
+            shift 2
+            ACTUAL=$(curl -s -o /dev/null -w '%{http_code}' "$@")
+            echo "$LABEL => HTTP $ACTUAL (expected $EXPECTED)"
+            test "$ACTUAL" = "$EXPECTED"
+          }
+
           npm run start -- -p 3000 > /tmp/kiwango-next.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true; cat /tmp/kiwango-next.log' EXIT
@@ -71,18 +80,20 @@ jobs:
           grep -q 'SKIP_WAITING' /tmp/sw.js
 
           COUNTRY_STATUS=$(curl -s -o /tmp/countries.json -w '%{http_code}' http://127.0.0.1:3000/api/countries)
+          echo "countries => HTTP $COUNTRY_STATUS"
           if [ "$COUNTRY_STATUS" = "200" ]; then
             node -e "const d=require('/tmp/countries.json'); if(!Array.isArray(d.countries)||d.countries.length<100) process.exit(1)"
           else
             test "$COUNTRY_STATUS" = "503"
           fi
 
-          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/rates)" = "503"
-          test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/rates?base=INVALID')" = "400"
-          test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/historical-rates?base=EUR!&quote=XOF')" = "400"
-          test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:3000/api/nearby-finance?lat=999&lon=0')" = "400"
-          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' --data '{\"event\":\"unknown\"}' http://127.0.0.1:3000/api/telemetry)" = "400"
-          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' --data '{\"event\":\"client_error\",\"context\":\"smoke\",\"message\":\"test\",\"path\":\"/app\"}' http://127.0.0.1:3000/api/telemetry)" = "204"
+          expect_status 503 rates-unconfigured http://127.0.0.1:3000/api/rates
+          expect_status 400 rates-invalid-base 'http://127.0.0.1:3000/api/rates?base=INVALID'
+          expect_status 400 historical-invalid 'http://127.0.0.1:3000/api/historical-rates?base=EUR!&quote=XOF'
+          expect_status 400 nearby-invalid 'http://127.0.0.1:3000/api/nearby-finance?lat=999&lon=0'
+          expect_status 400 telemetry-invalid -X POST -H 'Content-Type: application/json' --data '{"event":"unknown"}' http://127.0.0.1:3000/api/telemetry
+          expect_status 204 telemetry-valid -X POST -H 'Content-Type: application/json' --data '{"event":"client_error","context":"smoke","message":"test","path":"/app"}' http://127.0.0.1:3000/api/telemetry
 
           LOCATION=$(curl -sI 'http://127.0.0.1:3000/go/not-a-service' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
+          echo "affiliate invalid redirect => $LOCATION"
           test "$LOCATION" = "/app?tab=travel&affiliate=invalid-service&service=not-a-service"
