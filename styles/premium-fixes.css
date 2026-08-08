@@ -65,16 +65,32 @@ header.sticky.w-full + main { padding-top: 104px !important; }
 
 /* Sharing / installation live elsewhere in the product, not in the nav. */
 header.sticky.w-full button[aria-label='Partager'],
+header.sticky.w-full button:has(.lucide-share-2),
 header.sticky.w-full button:has(.lucide-download) {
   display: none !important;
 }
 
-/* Dropdowns rendered inside the fixed header must remain above content. */
-header.sticky.w-full [role='menu'] { z-index: 160 !important; }
+/* Dropdowns rendered inside the floating header must remain above content. */
+header.sticky.w-full [role='menu'] { z-index: 190 !important; }
+
+/* CurrencyConverter still contains its legacy compact footer. The /app page
+   renders the full SiteFooter after the product shell, so hide only that inner one. */
+.kiwango-app-page > div:first-child > footer {
+  display: none !important;
+}
+
+.kiwango-app-page > footer {
+  margin-top: 3rem;
+}
 
 @media (max-width: 767px) {
   header.sticky.w-full { padding: 8px 8px 0; }
-  header.sticky.w-full > div { height: 58px !important; border-radius: 20px; padding-left: .75rem !important; padding-right: .75rem !important; }
+  header.sticky.w-full > div {
+    height: 58px !important;
+    border-radius: 20px;
+    padding-left: .75rem !important;
+    padding-right: .75rem !important;
+  }
   header.sticky.w-full + main { padding-top: 88px !important; }
 }
 
