@@ -38,7 +38,7 @@ export default function PopularRatesGrid({ allRates = {}, onSelectPair, lang = '
 
   return (
     <div className="min-w-0 max-w-full overflow-hidden">
-      <div className="mb-4 flex max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mb-4 flex max-w-full flex-wrap gap-x-3 gap-y-2 pb-1">
         {Object.values(REGIONS).map((region) => (
           <button key={region} onClick={() => setActiveRegion(region)} className={`whitespace-nowrap border-b-2 px-1 pb-2 text-xs font-medium ${activeRegion === region ? 'border-emerald-700 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400' : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
             {REGION_NAMES[lang]?.[region] || REGION_NAMES.fr[region]}
