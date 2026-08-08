@@ -13,9 +13,10 @@
   "lang": "fr",
   "dir": "ltr",
   "categories": ["finance", "utilities", "travel"],
+  "prefer_related_applications": false,
   "icons": [
     { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+    { "src": "/pwa-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
   ],
   "shortcuts": [
     { "name": "Convertir", "short_name": "Convertir", "description": "Ouvrir le convertisseur", "url": "/app?tab=converter", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
