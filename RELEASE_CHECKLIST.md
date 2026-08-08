@@ -1,105 +1,152 @@
 # Kiwango V1 — Release Candidate Checklist
 
-This branch is the stabilization pass for Kiwango V1. Do not add a new product module unless it fixes a release blocker.
+This branch is the stabilization pass for Kiwango V1. Product scope is frozen: only reliability, privacy, security, accessibility, performance, SEO, PWA and release-readiness changes should enter this branch.
 
 ## P0 — Release blockers
 
 - [x] `npm ci` completes from a clean checkout in GitHub Actions.
 - [x] `npm run lint` completes without errors.
 - [x] `npm run build` completes without errors.
-- [x] Production smoke test starts `next start` and validates `/`, `/app` and `/mentions-legales`.
-- [x] Current branch does not contain the exposed Google Maps key; env files are ignored except templates.
-- [x] Production dependency tree upgraded to Next.js 16.3.0 / React 19-compatible packages and validated through build, smoke tests and dedicated security migration workflow.
+- [x] Production smoke tests start `next start` and validate homepage, app, legal page, destination SEO, sitemap, robots, PWA assets and critical API behavior.
+- [x] Production dependency audit blocks high/critical vulnerabilities.
+- [x] Next.js 16.3.0 / React 19 security migration validated through lint, Turbopack build and production smoke tests.
+- [x] No real API secret is committed; `.env`/`.env.local` are ignored and `.env.example` contains placeholders only.
 - [x] Automated critical conversion matrix covers XOF, XAF, GMD, SLE, GHS, NGN, USD, EUR and GBP.
 - [x] Automated swap/reciprocity tests cover critical cross-currency pairs.
-- [x] Rate freshness/source UI distinguishes unavailable, fixed parity, cached/stale and current data.
-- [ ] Country directory handles API success, timeout and full global dataset correctly.
-- [x] Missing country-directory key returns a controlled 503 response rather than crashing the app.
-- [ ] Country shortcut opens `/app?tab=travel&country=XX` and selects the correct destination in browser QA.
-- [ ] Countries sharing XOF/XAF remain distinct destinations in browser QA.
-- [x] Travel Pack persistence rejects invalid/incomplete packs and IndexedDB write failures, preventing false “offline ready” state.
-- [ ] Multiple prepared destinations can coexist without overwriting each other in browser QA.
-- [ ] Offline navigation to `/app` works after one successful online visit on a real browser/device.
+- [x] Unsupported/missing currency data returns `null` instead of a fabricated rate.
+- [x] EUR/XOF and EUR/XAF fixed parity remains exact in automated tests.
+- [x] Country directory has authenticated, public and local fallback paths.
+- [x] Missing/upstream country directory failures return controlled states rather than crashing the app.
+- [x] Travel Pack persistence rejects invalid/incomplete packs and IndexedDB write failures.
+- [x] Prepared trips are stored by country and invalid records are filtered when reloaded.
+- [x] Multi-currency destinations expose a currency selector.
+- [x] Travel Packs classify freshness and warn after 24h / 72h while staying usable offline.
 - [x] API routes are excluded from generic service-worker caching.
-- [ ] Rate Check, fees, Budget, Cash Wallet, calculator, ATM, alerts, Scan & Convert and Field Rates have verified empty/error states.
-- [ ] Google Places failure falls back cleanly to OpenStreetMap in integration QA.
-- [x] Affiliate redirect only accepts known services and valid HTTP/HTTPS partner URLs.
-- [x] Affiliate route keeps partner secrets/templates server-side.
+- [x] Affiliate redirects only accept known services and valid HTTP/HTTPS partner URLs.
+- [x] Affiliate templates/identifiers remain server-side.
 - [x] FR and EN are the only maintained language choices exposed by the app.
-- [x] Unused `/api/hello` starter endpoint removed.
+- [x] Client runtime errors have an application error boundary and sanitized reporting path.
+- [x] Rate-provider, country-directory and nearby-finance outages have sanitized server monitoring hooks.
+- [x] Monitoring/telemetry endpoints are covered by production smoke tests.
 
-## P1 — Mobile / UX
+## P1 — Browser / mobile QA still requiring real devices
 
 Test at 320, 375, 390, 430, 768, 1024, 1440 and 1920 px.
 
-- [ ] No horizontal document scroll on any main tab.
-- [ ] Floating header remains usable while scrolling.
-- [ ] Language and country dropdowns stay inside the viewport and above surrounding content.
-- [ ] Mobile dock does not cover actions/content.
-- [ ] Safe-area spacing is correct in standalone iOS mode.
-- [ ] Inputs remain visible when the mobile keyboard opens.
-- [ ] Long currency/country names do not break cards.
-- [ ] Large converted values do not overflow.
-- [ ] Loading, empty, error and offline states have consistent visual treatment.
-- [ ] Focus states are visible for keyboard users.
-- [ ] Motion respects `prefers-reduced-motion`.
+- [ ] No horizontal document scroll on every main tab on real browsers.
+- [ ] Floating header remains usable during long scroll sessions.
+- [ ] Language and country dropdowns remain inside the viewport.
+- [ ] Mobile dock never covers the final interactive control.
+- [ ] Safe-area spacing verified in standalone iOS mode.
+- [ ] Inputs remain visible when iOS/Android virtual keyboards open.
+- [ ] Long country/currency names verified visually.
+- [ ] Very large converted values verified visually.
+- [ ] Focus states verified with keyboard navigation.
+- [x] CSS includes `prefers-reduced-motion` handling and mobile release guards.
+- [x] Mobile inputs avoid iOS auto-zoom and the currency modal uses dynamic viewport units.
 
 ## P1 — PWA
 
-- [x] App manifest starts installed Kiwango at `/app`.
-- [x] Manifest shortcuts target real `/app?tab=...` values.
+- [x] Manifest starts installed Kiwango at `/app`.
+- [x] Manifest shortcuts target real app tabs.
 - [x] Service worker uses network-first navigation and offline app fallback.
 - [x] API routes are excluded from generic service-worker caching.
-- [ ] Add production 192×192 and 512×512 PNG icons.
-- [ ] Add dedicated maskable icon with safe-zone artwork.
-- [ ] Add iOS touch icon PNG.
-- [ ] Test install on Chrome Android, Chrome desktop and Safari iOS Add to Home Screen.
-- [ ] Test service-worker upgrade from the previous cache version.
-- [ ] Run Lighthouse PWA/performance/accessibility checks on production build.
+- [x] New service-worker versions wait and surface an explicit “Mettre à jour” action.
+- [x] Dedicated maskable SVG uses safe-zone artwork.
+- [x] iOS installation guidance explains Share → Add to Home Screen when no native prompt exists.
+- [ ] Add production 192×192 PNG icon.
+- [ ] Add production 512×512 PNG icon.
+- [ ] Add production maskable PNG icon.
+- [ ] Add iOS Apple Touch Icon PNG.
+- [ ] Test installation on Chrome Android.
+- [ ] Test installation on Chrome desktop.
+- [ ] Test Safari iOS Add to Home Screen.
+- [ ] Test service-worker upgrade on an already-installed production PWA.
+- [ ] Run Lighthouse PWA/performance/accessibility checks against the production deployment.
 
-## P1 — Data integrity
+## P1 — Data integrity / providers
 
-- [x] Client has Fawaz primary + backup and Frankfurter before server fallback.
-- [x] Server fallback can use ExchangeRate-API, then CurrencyAPI when configured.
-- [ ] Exercise every configured provider independently with real credentials.
-- [x] Fixed EUR/XOF and EUR/XAF parity remains exact in automated conversion tests.
-- [x] Unsupported/missing currency data returns `null` instead of fabricating a rate in automated tests.
-- [ ] Historical charts never interpolate fabricated market observations.
-- [x] Cached rates display synchronization time and stale warnings.
-- [x] Travel Packs classify freshness and warn after 24h / 72h while staying usable offline.
-- [x] Multi-currency destinations expose a currency selector instead of silently forcing one currency.
+- [x] Client rate layer has primary + backup provider paths and IndexedDB cache fallback.
+- [x] Server fallback supports ExchangeRate-API then CurrencyAPI when configured.
+- [x] Cached rates expose synchronization time and stale warnings.
+- [x] Historical Insights display an unavailable state rather than simulate data.
+- [x] Historical chart does not invent a line when there are insufficient real points.
+- [ ] Exercise ExchangeRate-API independently with production credentials.
+- [ ] Exercise CurrencyAPI independently with production credentials.
+- [ ] Exercise REST Countries authenticated source with production credentials.
+- [ ] Exercise Google Places with the restricted production key.
+- [ ] Confirm Google Places → OpenStreetMap fallback on a real integration failure.
 
-## P1 — Tools
+## P1 — Financial tools
 
-- [ ] Rate Check supports offered-rate and amount-received workflows.
-- [ ] Fee presets and custom fixed/percentage fees produce correct net amounts.
-- [ ] Budget categories, additions, deletions and remaining balance persist locally.
-- [ ] Cash Wallet reversible transactions restore the correct balance.
-- [ ] Calculator safely rejects unsupported expressions.
-- [ ] ATM estimator distinguishes requested cash, ATM fee and bank fee.
-- [ ] Alerts support above/below thresholds and deletion.
-- [ ] Scan & Convert has an honest manual fallback when OCR is unavailable.
-- [ ] Field Rates can be added/deleted and compare correctly to reference rate.
-- [ ] 7/30/90 day insights gracefully handle incomplete historical data.
+Automated lint/build and guarded input logic are green. Final manual functional QA is still required.
+
+- [ ] Rate Check: offered-rate and amount-received workflows manually verified.
+- [ ] Fees: percentage, fixed and preset fees manually verified.
+- [ ] Budget: add/delete/category/persistence manually verified.
+- [ ] Cash Wallet: reversible additions/expenses manually verified.
+- [ ] Calculator: valid expressions and rejected invalid/division-by-zero cases manually verified.
+- [ ] ATM: cash requested, ATM fee and bank fee manually verified.
+- [ ] Alerts: above/below thresholds and deletion manually verified.
+- [ ] Scan & Convert: native OCR path and honest manual fallback manually verified.
+- [ ] Field Rates: add/delete/reference comparison manually verified.
+- [ ] Insights: 7/30/90-day incomplete/complete series manually verified.
 
 ## P2 — SEO / acquisition
 
-- [ ] Generate indexable destination pages with stable slugs.
-- [ ] Generate currency landing pages only where they provide unique useful content.
-- [ ] Dynamic sitemap contains only canonical public pages.
-- [ ] Add FR/EN hreflang alternates.
-- [ ] Add destination-specific title, description and Open Graph metadata.
-- [ ] Add appropriate Schema.org structured data.
-- [ ] Prevent `/app?tab=...` variants from creating duplicate indexed pages.
+- [x] Indexable destination pages use stable country slugs under `/voyage/[destination]`.
+- [x] Destination pages expose country/currency preparation content and link into the real Travel Pack workspace.
+- [x] Dynamic sitemap includes canonical public destination pages.
+- [x] Dynamic `robots.txt` uses `NEXT_PUBLIC_SITE_URL`.
+- [x] Destination-specific title, description, canonical and Open Graph metadata implemented.
+- [x] Destination structured data implemented.
+- [x] Popular footer destinations link to public destination guides for internal linking.
+- [x] Legacy XOF Converter domain fallback removed from homepage/app metadata.
+- [ ] Complete FR/EN public-route strategy and hreflang alternates before claiming localized SEO pages.
+- [ ] Add currency landing pages only if each page can provide genuinely unique useful content.
 
-## P2 — Monetization / analytics
+## P2 — Privacy analytics / monitoring / monetization
 
-- [ ] Configure real affiliate templates only from server environment variables.
-- [ ] Validate each partner permits the intended traffic/source/country.
-- [ ] Track outbound affiliate click by service and destination without storing sensitive traveler data.
-- [ ] Add privacy-friendly product analytics for destination search, Travel Pack preparation and tool usage.
-- [ ] Add error monitoring for client runtime and server API failures.
+- [x] Optional Umami integration is environment-driven; no analytics script loads without configuration.
+- [x] Analytics excludes URL query/hash values, respects Do Not Track and enables performance metrics.
+- [x] Product events are allowlisted and exclude free-form financial/user data.
+- [x] Destination selection, Travel Pack preparation/refresh, tool opening and affiliate clicks have privacy-safe event hooks.
+- [x] Client error telemetry strips query parameters and limits payload size/fields.
+- [x] Server monitoring never intentionally sends coordinates, amounts, API keys, IP addresses or user identifiers.
+- [x] Monitoring endpoint/token remain server-only environment variables.
+- [ ] Create/configure the production Umami website ID and script URL.
+- [ ] Configure a production monitoring webhook/log sink and verify alert delivery.
+- [ ] Configure real affiliate templates from approved partner programs.
+- [ ] Verify each affiliate partner permits Kiwango’s traffic source and target markets.
+
+## Release-day configuration
+
+Required/recommended production variables:
+
+```env
+NEXT_PUBLIC_SITE_URL=https://your-production-domain.example
+
+NEXT_PUBLIC_UMAMI_SCRIPT_URL=
+NEXT_PUBLIC_UMAMI_WEBSITE_ID=
+NEXT_PUBLIC_UMAMI_DOMAINS=
+
+MONITORING_WEBHOOK_URL=
+MONITORING_WEBHOOK_TOKEN=
+
+EXCHANGE_RATE_API_KEY=
+CURRENCY_API_KEY=
+REST_COUNTRIES_API_KEY=
+GOOGLE_MAPS_API_KEY=
+
+AFFILIATE_FLIGHTS_URL_TEMPLATE=
+AFFILIATE_HOTELS_URL_TEMPLATE=
+AFFILIATE_ESIM_URL_TEMPLATE=
+AFFILIATE_ACTIVITIES_URL_TEMPLATE=
+AFFILIATE_TRANSFER_URL_TEMPLATE=
+AFFILIATE_INSURANCE_URL_TEMPLATE=
+AFFILIATE_CAMPAIGN=kiwango
+```
 
 ## Release definition
 
-Kiwango V1 is releasable when every P0 item is complete and no known P1 issue can cause incorrect money information, lost local travel data, broken offline access, unusable mobile navigation or exposed secrets.
+Kiwango V1 is code-ready when the CI is green and no known P0 issue remains. Public release still requires the unchecked real-device/provider checks that can cause incorrect money information, broken offline access, unusable mobile navigation or missing production observability.
