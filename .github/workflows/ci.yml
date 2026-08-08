@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -57,6 +57,12 @@ jobs:
           curl -fsS http://127.0.0.1:3000/ > /dev/null
           curl -fsS http://127.0.0.1:3000/app > /dev/null
           curl -fsS http://127.0.0.1:3000/mentions-legales > /dev/null
+          curl -fsS http://127.0.0.1:3000/voyage/gambie > /tmp/gambie.html
+          grep -q 'Gambie' /tmp/gambie.html
+          curl -fsS http://127.0.0.1:3000/sitemap.xml > /tmp/sitemap.xml
+          grep -q '/voyage/gambie' /tmp/sitemap.xml
+          curl -fsS http://127.0.0.1:3000/robots.txt > /tmp/robots.txt
+          grep -q 'http://localhost:3000/sitemap.xml' /tmp/robots.txt
 
           COUNTRY_STATUS=$(curl -s -o /tmp/countries.json -w '%{http_code}' http://127.0.0.1:3000/api/countries)
           if [ "$COUNTRY_STATUS" = "200" ]; then
