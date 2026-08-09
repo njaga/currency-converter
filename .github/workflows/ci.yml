@@ -70,6 +70,8 @@ jobs:
           curl -fsS http://127.0.0.1:3000/app > /dev/null
           curl -fsS http://127.0.0.1:3000/convertisseur > /dev/null
           curl -fsS http://127.0.0.1:3000/voyage > /dev/null
+          curl -fsS http://127.0.0.1:3000/payer > /tmp/payer.html
+          grep -q 'Comment payer moins cher en voyage' /tmp/payer.html
           curl -fsS http://127.0.0.1:3000/outils > /dev/null
           curl -fsS http://127.0.0.1:3000/devises > /dev/null
           curl -fsS http://127.0.0.1:3000/mentions-legales > /dev/null
@@ -77,6 +79,7 @@ jobs:
           grep -q 'Gambie' /tmp/gambie.html
           curl -fsS http://127.0.0.1:3000/sitemap.xml > /tmp/sitemap.xml
           grep -q '/voyage/gambie' /tmp/sitemap.xml
+          grep -q '/payer' /tmp/sitemap.xml
           curl -fsS http://127.0.0.1:3000/robots.txt > /tmp/robots.txt
           grep -q 'http://localhost:3000/sitemap.xml' /tmp/robots.txt
           grep -q 'Disallow: /api/' /tmp/robots.txt

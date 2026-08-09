@@ -17,6 +17,7 @@ import Logo from './Logo';
 import MobileDock from './MobileDock';
 import OfflineBadge from './OfflineBadge';
 import PopularRatesGrid from './PopularRatesGrid';
+import PaymentAdvisor from './PaymentAdvisor';
 import ProductTools from './ProductTools';
 import TravelMode from './TravelMode';
 
@@ -59,7 +60,7 @@ export default function CurrencyConverter({ initialTab = 'converter' }) {
     if (savedLang === 'fr' || savedLang === 'en') setLang(savedLang); else localStorage.setItem('app_lang', 'fr');
     const params = new URLSearchParams(window.location.search);
     const requestedTab = params.get('tab');
-    if (['converter', 'travel', 'tools'].includes(requestedTab)) setActiveTab(requestedTab);
+    if (['converter', 'travel', 'advisor', 'tools'].includes(requestedTab)) setActiveTab(requestedTab);
     const requestedFrom = params.get('from')?.toUpperCase();
     const requestedTo = params.get('to')?.toUpperCase();
     if (requestedFrom && CURRENCIES.some((currency) => currency.code === requestedFrom)) setFromCurrency(requestedFrom);
@@ -146,7 +147,7 @@ export default function CurrencyConverter({ initialTab = 'converter' }) {
 
   const fromInfo = getCurrencyByCode(fromCurrency); const toInfo = getCurrencyByCode(toCurrency); const numericAmount = parseAmount(amount); const hasAmount = Number.isFinite(numericAmount) && numericAmount > 0;
   const locale = lang === 'fr' ? 'fr-FR' : 'en-US'; const formatNum = (value, decimals = 2) => new Intl.NumberFormat(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value || 0);
-  const tabs = [{id:'converter',label:lang==='fr'?'Convertir':'Convert'},{id:'travel',label:lang==='fr'?'Voyage':'Travel'},{id:'tools',label:lang==='fr'?'Outils':'Tools'}];
+  const tabs = [{id:'converter',label:lang==='fr'?'Convertir':'Convert'},{id:'travel',label:lang==='fr'?'Voyage':'Travel'},{id:'advisor',label:lang==='fr'?'Comment payer ?':'How to pay?'},{id:'tools',label:lang==='fr'?'Outils':'Tools'}];
 
   const renderCurrencyPanel = (type) => {
     const isFrom = type === 'from'; const info = isFrom ? fromInfo : toInfo; const code = isFrom ? fromCurrency : toCurrency;
@@ -177,6 +178,7 @@ export default function CurrencyConverter({ initialTab = 'converter' }) {
       </>}
 
       {activeTab==='travel'&&<TravelMode lang={lang} onSelectPair={openPair}/>} 
+      {activeTab === 'advisor' && <PaymentAdvisor allRates={allRates} fromCurrency={fromCurrency} toCurrency={toCurrency} currencies={CURRENCIES} lang={lang} isOffline={isOffline} rateSource={rateSource} lastUpdated={lastUpdated} />}
       {activeTab === 'tools' && <ProductTools allRates={allRates} fromCurrency={fromCurrency} toCurrency={toCurrency} currencies={CURRENCIES} lang={lang} />}
     </main>
 

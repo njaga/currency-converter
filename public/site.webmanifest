@@ -23,6 +23,7 @@
   "shortcuts": [
     { "name": "Convertir", "short_name": "Convertir", "description": "Ouvrir le convertisseur", "url": "/convertisseur", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
     { "name": "Voyage", "short_name": "Voyage", "description": "Ouvrir mes Travel Packs", "url": "/voyage", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
+    { "name": "Comment payer ?", "short_name": "Payer", "description": "Comparer carte, DAB, change et DCC", "url": "/payer", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
     { "name": "Outils", "short_name": "Outils", "description": "Ouvrir les outils financiers", "url": "/outils", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
     { "name": "Devises", "short_name": "Devises", "description": "Explorer les devises", "url": "/convertisseur#devises", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }
   ]

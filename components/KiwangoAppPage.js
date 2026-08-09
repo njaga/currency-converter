@@ -15,6 +15,11 @@ const META = {
     description: 'Préparez votre destination, vos devises, vos dates, votre checklist, vos DAB et bureaux de change pour les consulter hors connexion.',
     schemaType: 'WebPage',
   },
+  advisor: {
+    title: 'Comment payer moins cher en voyage | Kiwango',
+    description: 'Comparez carte, DAB, bureau de change et conversion dynamique pour choisir le moyen de paiement au coût réel le plus faible.',
+    schemaType: 'WebApplication',
+  },
   tools: {
     title: 'Outils financiers de voyage | Kiwango',
     description: 'Vérifiez un taux proposé, calculez les frais, préparez un budget et gérez votre cash pendant le voyage.',
