@@ -1,0 +1,99 @@
+name: Kiwango CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - feat/kiwango-v1-release-candidate
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Critical currency tests
+        run: npm run test:core
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Production smoke test
+        run: |
+          expect_status() {
+            EXPECTED="$1"
+            LABEL="$2"
+            shift 2
+            ACTUAL=$(curl -s -o /dev/null -w '%{http_code}' "$@")
+            echo "$LABEL => HTTP $ACTUAL (expected $EXPECTED)"
+            test "$ACTUAL" = "$EXPECTED"
+          }
+
+          npm run start -- -p 3000 > /tmp/kiwango-next.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true; cat /tmp/kiwango-next.log' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/ > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          curl -fsS http://127.0.0.1:3000/ > /dev/null
+          curl -fsS http://127.0.0.1:3000/app > /dev/null
+          curl -fsS http://127.0.0.1:3000/mentions-legales > /dev/null
+          curl -fsS http://127.0.0.1:3000/voyage/gambie > /tmp/gambie.html
+          grep -q 'Gambie' /tmp/gambie.html
+          curl -fsS http://127.0.0.1:3000/sitemap.xml > /tmp/sitemap.xml
+          grep -q '/voyage/gambie' /tmp/sitemap.xml
+          curl -fsS http://127.0.0.1:3000/robots.txt > /tmp/robots.txt
+          grep -q 'http://localhost:3000/sitemap.xml' /tmp/robots.txt
+
+          curl -fsS http://127.0.0.1:3000/site.webmanifest > /tmp/manifest.json
+          node -e "const m=require('/tmp/manifest.json'); if(m.start_url!=='/app'||m.display!=='standalone'||!m.icons?.some(i=>i.purpose==='maskable')) process.exit(1)"
+          curl -fsS http://127.0.0.1:3000/pwa-maskable.svg > /dev/null
+          curl -fsS http://127.0.0.1:3000/sw.js > /tmp/sw.js
+          grep -q 'SKIP_WAITING' /tmp/sw.js
+
+          COUNTRY_STATUS=$(curl -s -o /tmp/countries.json -w '%{http_code}' http://127.0.0.1:3000/api/countries)
+          echo "countries => HTTP $COUNTRY_STATUS"
+          if [ "$COUNTRY_STATUS" = "200" ]; then
+            node -e "const d=require('/tmp/countries.json'); if(!Array.isArray(d.countries)||d.countries.length<100) process.exit(1)"
+          else
+            test "$COUNTRY_STATUS" = "503"
+          fi
+
+          expect_status 503 rates-unconfigured http://127.0.0.1:3000/api/rates
+          expect_status 400 rates-invalid-base 'http://127.0.0.1:3000/api/rates?base=INVALID'
+          expect_status 400 historical-invalid 'http://127.0.0.1:3000/api/historical-rates?base=EUR!&quote=XOF'
+          expect_status 400 nearby-invalid 'http://127.0.0.1:3000/api/nearby-finance?lat=999&lon=0'
+          expect_status 400 telemetry-invalid -X POST -H 'Content-Type: application/json' --data '{"event":"unknown"}' http://127.0.0.1:3000/api/telemetry
+          expect_status 204 telemetry-valid -X POST -H 'Content-Type: application/json' --data '{"event":"client_error","context":"smoke","message":"test","path":"/app"}' http://127.0.0.1:3000/api/telemetry
+
+          LOCATION=$(curl -sI 'http://127.0.0.1:3000/go/not-a-service' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
+          echo "affiliate invalid redirect => $LOCATION"
+          test "$LOCATION" = "/app?tab=travel&affiliate=invalid-service&service=not-a-service"

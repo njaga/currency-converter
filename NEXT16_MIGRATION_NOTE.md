@@ -1,0 +1,1 @@
+Temporary migration branch for testing Kiwango on Next.js 16.3.x. Do not merge until lint, build, smoke tests and production dependency audit are clean.

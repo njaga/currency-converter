@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Kiwango">
+  <rect width="512" height="512" rx="112" fill="#059669"/>
+  <circle cx="256" cy="256" r="162" fill="#ffffff" opacity="0.08"/>
+  <g transform="translate(126 126)">
+    <rect x="0" y="0" width="72" height="260" rx="28" fill="#ffffff"/>
+    <path d="M76 126 188 10c15-16 41-17 58-2 17 16 18 43 2 60l-80 82 86 93c16 17 15 44-2 60-17 16-44 15-60-2L76 174Z" fill="#ffffff"/>
+    <circle cx="212" cy="130" r="22" fill="#10b981"/>
+  </g>
+</svg>

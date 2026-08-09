@@ -1,50 +1,44 @@
 # Kiwango
 
-**Travel money companion — conversion, rate checking, global destination packs, budgets and offline tools in one PWA.**
+**Travel money companion — conversion, destination Travel Packs, rate checking, budgets, cash tools and offline access in one PWA.**
 
-Kiwango is designed for travelers, cross-border workers and anyone who needs to understand and manage money across currencies when connectivity can be unreliable.
+Kiwango is designed for travelers and cross-border users who need to understand money across currencies, including when connectivity is unreliable.
 
-Current deployment: https://xof-converter.vercel.app
+## What Kiwango includes
 
-## Product idea
-
-Kiwango goes beyond a basic currency converter. The product combines reliable rate conversion with practical travel-money workflows:
-
-- currency conversion with clear rate freshness;
-- a global country directory with automatic local-currency discovery;
-- offline Travel Packs per destination, even when several countries share one currency;
-- Rate Check for evaluating a rate offered by a bureau, hotel or merchant;
-- fee-aware “amount actually received” calculator;
-- travel budget tracking with categories and progress;
-- Cash Wallet for physical cash;
-- multi-currency calculator;
-- ATM withdrawal estimator;
-- local above/below rate alerts;
-- Scan & Convert with browser-native OCR when available and manual fallback otherwise;
-- locally recorded field rates with comparison to the reference rate;
-- verified historical trends over 7, 30 or 90 days;
+- currency conversion with explicit source/freshness states;
+- global country directory with automatic local-currency discovery;
+- offline Travel Packs per destination;
+- multi-currency destination support;
+- Rate Check for evaluating an offered exchange rate;
+- percentage/fixed-fee calculator;
+- travel budget and Cash Wallet;
+- multi-currency calculator and ATM estimator;
+- local rate alerts;
+- Scan & Convert with honest manual fallback when OCR is unavailable;
+- private field-rate observations;
+- verified historical trends where real dated data exists;
 - configurable payment-method comparison;
-- nearby ATMs, banks, exchange services and transfer points;
-- a local contextual summary built from the user’s own budget, cash and alerts;
-- contextual partner links for flights, hotels, eSIM, transfers, activities and insurance.
+- nearby ATM/bank/exchange discovery via Google Places with OpenStreetMap fallback;
+- contextual partner links for flights, hotels, eSIM, transfers, activities and insurance;
+- privacy-first optional analytics and sanitized technical monitoring.
 
-The application never fabricates a market or historical rate simply to keep a feature looking active.
+Kiwango never fabricates a market or historical rate simply to keep a feature active.
 
-## Global destination engine
+## Architecture principles
 
-Kiwango treats a **country as the travel object**, not a currency. Senegal, Côte d’Ivoire, Mali and Benin therefore remain separate destinations even though they share XOF.
+### Country first, currency second
 
-The country directory is normalized server-side from REST Countries and includes country code, display name, capital, region and all currencies associated with the destination. The selected country determines the primary local currency used to build the Travel Pack.
+A destination is modeled as a country, not as a currency. Senegal, Côte d’Ivoire, Mali and Benin remain distinct Travel Packs even though they share XOF.
 
-## Offline-first architecture
+### Offline first
 
 ```text
 Internet available
       │
-      ├── global country directory
-      ├── Fawaz exchange-rate dataset
-      ├── Frankfurter
-      └── optional server-side fallback
+      ├── country directory
+      ├── exchange-rate providers
+      └── optional server fallbacks
                │
                ▼
       validation / normalization
@@ -57,96 +51,79 @@ Internet available
 
 Offline
       │
-      ├── latest IndexedDB snapshot
+      ├── cached rate snapshot
       ├── prepared Travel Packs
-      └── official EUR/XOF/XAF fixed parity when applicable
+      └── official EUR/XOF/XAF parity when applicable
 ```
 
-Rate-provider and Google Maps API keys are never embedded in the browser bundle.
+Travel Packs are not marked ready unless the required rate data is valid and successfully persisted.
 
-## Travel Packs
+## Public destination pages
 
-A Travel Pack prepares a destination before departure. Kiwango stores useful currency pairs locally and generates a quick cheat sheet for common amounts. If reliable data cannot be retrieved, the pack is not falsely marked as synchronized.
+Kiwango exposes indexable guides under:
 
-Each destination also exposes a contextual **Prepare your trip** section. Affiliate destinations are routed through `/go/[service]`, keeping partner URLs and identifiers outside UI components.
+```text
+/voyage/gambie
+/voyage/senegal
+/voyage/cote-d-ivoire
+/voyage/ghana
+...
+```
 
-## Kiwango Tools
+The sitemap and robots file are generated dynamically from the configured production domain.
 
-### Rate Check
-Compare either an offered rate or the amount actually received with Kiwango’s reference rate. The tool estimates the percentage difference, expected amount and potential loss.
+## Privacy analytics
 
-### Real fees
-Combine percentage and fixed fees, use quick fee presets, and compare gross, net and final received amounts.
+Analytics are optional and environment-driven. Kiwango supports Umami without cookies, excludes URL query/hash values, respects browser Do Not Track and only emits allowlisted product events.
 
-### Budget Voyage
-Create a local travel budget, categorize expenses, follow progress and remove incorrect entries.
+Tracked product events intentionally avoid free-form financial data and user identifiers. Examples include:
 
-### Cash Wallet
-Track the estimated amount of physical cash still in your pocket, with reversible additions and expenses.
+- destination selected;
+- Travel Pack prepared/refreshed;
+- tool opened;
+- affiliate service clicked.
 
-### Calculator & ATM estimator
-Calculate expressions such as `450 * 3 + 120`, convert the result, and estimate withdrawals including ATM and bank fees.
+No analytics script is loaded when Umami is not configured.
 
-### Alerts
-Create local rate thresholds above or below a target. True background push notifications still require a push service.
+## Error/API monitoring
 
-### Scan & Convert
-Use the camera or an image of a price/receipt. Kiwango uses the browser’s native text detector when supported and falls back to assisted manual entry instead of pretending OCR succeeded.
+Client runtime errors pass through a React error boundary and a small first-party telemetry endpoint. Server monitoring hooks cover critical provider failures such as exchange rates, destination directory and nearby financial services.
 
-### Field rates
-Record rates actually offered by a bureau, hotel or merchant, add a note and compare observations with the current reference rate. These observations remain private on the device until a moderated community backend exists.
-
-## Insights
-
-Kiwango includes verified 7/30/90-day historical series where the provider has real dated snapshots. It also includes a customizable payment-method comparator, a contextual local summary, and nearby financial-services discovery.
-
-When `GOOGLE_MAPS_API_KEY` is configured, nearby financial services use **Google Places API (New)**. If Google Places is unavailable or not configured, Kiwango falls back to OpenStreetMap / Overpass so the feature can still remain useful.
+The monitoring payload is intentionally restricted. Kiwango does not intentionally send API keys, coordinates, monetary amounts, IP addresses, emails or user identifiers to the configured monitoring sink.
 
 ## Affiliate architecture
 
-Partner cards are configured with server-only URL templates rather than hard-coded links. Supported placeholders are:
+Partner URLs are configured using server-only templates and routed through `/go/[service]`.
+
+Supported placeholders:
 
 - `{countryCode}`
 - `{country}`
 - `{currency}`
 - `{lang}`
 
-The server fills those values and redirects through `/go/flights`, `/go/hotels`, `/go/esim`, `/go/activities`, `/go/transfer` or `/go/insurance`. This lets Kiwango switch partners without changing the product UI.
-
-Affiliate links use `rel="sponsored"` in the interface and the legal page discloses that Kiwango may receive a commission without increasing the user’s price.
-
-## Supported currencies
-
-The core registry focuses on Africa and major international currencies. The global travel directory can discover additional ISO currencies dynamically; unknown currency codes still receive a safe generic display entry in the converter rather than breaking the interface.
-
-The EUR/XOF and EUR/XAF fixed parities are handled explicitly by the conversion engine.
-
-## Local data
-
-IndexedDB stores exchange-rate snapshots, conversion history, favorites and prepared Travel Packs. Additional personal travel tools such as budget, Cash Wallet, local alerts and field observations are stored locally in the browser. No account is required for the current core experience.
+Supported services include flights, hotels, eSIM, activities, transfer and insurance. The UI discloses the affiliate relationship and links use `rel="sponsored"`.
 
 ## PWA
 
-The app includes a web manifest and service worker. Application resources are cached for reuse, while `/api/*` responses are excluded from the service-worker cache because exchange-rate freshness is managed explicitly by the rate layer and IndexedDB.
+The installed application starts at `/app` and includes shortcuts for Convertir, Voyage, Outils and Devises.
 
-PWA shortcuts open Convert, Voyage and Tools directly.
-
-## Languages
-
-The maintained interface languages are French and English.
+The service worker uses network-first navigation, keeps `/api/*` out of generic caching and exposes an explicit update action when a new Kiwango version is waiting. iOS users receive Add to Home Screen guidance when no native install prompt is available.
 
 ## Tech stack
 
-- Next.js Pages Router
-- React
+- Next.js 16 Pages Router
+- React 19
 - Tailwind CSS
 - IndexedDB
 - Service Worker / PWA APIs
-- REST Countries for the global destination directory
+- REST Countries
 - Fawaz exchange-rate dataset
-- Frankfurter fallback
+- Frankfurter
+- ExchangeRate-API / CurrencyAPI optional server fallbacks
 - Google Places API (New)
 - OpenStreetMap / Overpass fallback
+- Umami optional privacy analytics
 
 ## Development
 
@@ -158,11 +135,21 @@ npm install
 npm run dev
 ```
 
-Main environment variables:
+## Production environment
 
 ```env
-NEXT_PUBLIC_SITE_URL=https://your-domain.example
+NEXT_PUBLIC_SITE_URL=https://your-production-domain.example
+
+NEXT_PUBLIC_UMAMI_SCRIPT_URL=
+NEXT_PUBLIC_UMAMI_WEBSITE_ID=
+NEXT_PUBLIC_UMAMI_DOMAINS=
+
+MONITORING_WEBHOOK_URL=
+MONITORING_WEBHOOK_TOKEN=
+
 EXCHANGE_RATE_API_KEY=
+CURRENCY_API_KEY=
+REST_COUNTRIES_API_KEY=
 GOOGLE_MAPS_API_KEY=
 
 AFFILIATE_FLIGHTS_URL_TEMPLATE=
@@ -174,16 +161,28 @@ AFFILIATE_INSURANCE_URL_TEMPLATE=
 AFFILIATE_CAMPAIGN=kiwango
 ```
 
-Never prefix a secret provider key with `NEXT_PUBLIC_`.
+Never prefix a provider secret with `NEXT_PUBLIC_`.
+
+## Release validation
+
+GitHub Actions blocks the Release Candidate on:
+
+- production dependency vulnerabilities at high/critical level;
+- critical currency-core tests;
+- ESLint;
+- Next.js production build;
+- production smoke tests for public pages, destination SEO, PWA assets and critical APIs.
+
+See [`RELEASE_CHECKLIST.md`](./RELEASE_CHECKLIST.md) for the remaining real-device/provider validation before public V1 release.
 
 ## Data integrity rules
 
 - no random or simulated market/historical data presented as real;
-- no secret provider key in client-side code;
-- no rate without a traceable source or cached timestamp, except an official fixed parity;
-- no silent substitution of stale data for live data;
-- unavailable data must remain visibly unavailable;
-- community or operator pricing is never presented as live unless a reliable source actually exists.
+- no provider secret in client-side code;
+- no market rate without a source or cached timestamp, except official fixed parity;
+- stale data must be visibly identified;
+- unavailable data remains unavailable rather than being fabricated;
+- operator/community pricing is never presented as live without a reliable source.
 
 ## Author
 

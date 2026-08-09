@@ -2,43 +2,108 @@ import React, { useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Bell, Calculator, Camera, CircleDollarSign, Landmark, MapPin, PiggyBank, ReceiptText, ScanLine, Trash2, WalletCards } from 'lucide-react';
 import { calculateCrossRate } from '../lib/rates';
 
-const TOOL_ITEMS = [
-  ['rate-check', 'Vérifier un taux', CircleDollarSign, 'Comparer une offre réelle au marché'],
-  ['fees', 'Frais réels', ReceiptText, 'Voir ce que vous recevez vraiment'],
-  ['budget', 'Budget', PiggyBank, 'Piloter les dépenses du voyage'],
-  ['wallet', 'Cash Wallet', WalletCards, 'Suivre les espèces restantes'],
-  ['calculator', 'Calculatrice', Calculator, 'Calculer puis convertir'],
-  ['atm', 'Retrait ATM', Landmark, 'Estimer un retrait avec frais'],
-  ['alerts', 'Alertes', Bell, 'Surveiller vos seuils locaux'],
-  ['scan', 'Scan & Convert', ScanLine, 'Lire un prix avec la caméra'],
-  ['field', 'Taux terrain', MapPin, 'Mémoriser les offres observées'],
+const TOOLS = [
+  ['rate-check', 'Vérifier un taux', CircleDollarSign],
+  ['fees', 'Frais réels', ReceiptText],
+  ['budget', 'Budget', PiggyBank],
+  ['wallet', 'Cash Wallet', WalletCards],
+  ['calculator', 'Calculatrice', Calculator],
+  ['atm', 'Retrait ATM', Landmark],
+  ['alerts', 'Alertes', Bell],
+  ['scan', 'Scan & Convert', ScanLine],
+  ['field', 'Taux terrain', MapPin],
 ];
 
-const read = (key, fallback) => { if (typeof window === 'undefined') return fallback; try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
-const write = (key, value) => { if (typeof window !== 'undefined') localStorage.setItem(key, JSON.stringify(value)); };
-const number = (v) => Number(String(v ?? '').replace(/\s/g, '').replace(',', '.'));
-const fmt = (n, locale = 'fr-FR', digits = 2) => Number.isFinite(n) ? new Intl.NumberFormat(locale, { maximumFractionDigits: digits }).format(n) : '—';
+const read = (key, fallback) => {
+  if (typeof window === 'undefined') return fallback;
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+};
+const write = (key, value) => {
+  if (typeof window === 'undefined') return;
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+};
+const parseNumber = (value) => {
+  const raw = String(value ?? '').trim().replace(/\s/g, '').replace(',', '.');
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+};
+const positive = (value) => { const n = parseNumber(value); return n !== null && n > 0 ? n : null; };
+const nonNegative = (value) => { const n = parseNumber(value); return n !== null && n >= 0 ? n : null; };
+const fmt = (value, locale = 'fr-FR', digits = 2) => Number.isFinite(value)
+  ? new Intl.NumberFormat(locale, { maximumFractionDigits: digits }).format(value)
+  : '—';
 
 function safeCalculate(expression) {
   const raw = String(expression).replace(/\s+/g, '');
+  if (!raw) return null;
   const tokens = raw.match(/\d+(?:\.\d+)?|[()+\-*/]/g);
   if (!tokens || tokens.join('') !== raw) return null;
-  let i = 0;
-  const parseExpression = () => { let value = parseTerm(); while (tokens[i] === '+' || tokens[i] === '-') { const op = tokens[i++]; const rhs = parseTerm(); value = op === '+' ? value + rhs : value - rhs; } return value; };
-  const parseTerm = () => { let value = parseFactor(); while (tokens[i] === '*' || tokens[i] === '/') { const op = tokens[i++]; const rhs = parseFactor(); value = op === '*' ? value * rhs : value / rhs; } return value; };
-  const parseFactor = () => { if (tokens[i] === '-') { i += 1; return -parseFactor(); } if (tokens[i] === '(') { i += 1; const value = parseExpression(); if (tokens[i] !== ')') throw new Error('parenthesis'); i += 1; return value; } const value = Number(tokens[i++]); if (!Number.isFinite(value)) throw new Error('number'); return value; };
-  try { const result = parseExpression(); return i === tokens.length && Number.isFinite(result) ? result : null; } catch { return null; }
+  let index = 0;
+  const factor = () => {
+    if (tokens[index] === '-') { index += 1; return -factor(); }
+    if (tokens[index] === '(') {
+      index += 1;
+      const value = expressionParser();
+      if (tokens[index] !== ')') throw new Error('parenthesis');
+      index += 1;
+      return value;
+    }
+    const value = Number(tokens[index++]);
+    if (!Number.isFinite(value)) throw new Error('number');
+    return value;
+  };
+  const term = () => {
+    let value = factor();
+    while (tokens[index] === '*' || tokens[index] === '/') {
+      const op = tokens[index++];
+      const rhs = factor();
+      if (op === '/' && rhs === 0) throw new Error('division-by-zero');
+      value = op === '*' ? value * rhs : value / rhs;
+    }
+    return value;
+  };
+  const expressionParser = () => {
+    let value = term();
+    while (tokens[index] === '+' || tokens[index] === '-') {
+      const op = tokens[index++];
+      const rhs = term();
+      value = op === '+' ? value + rhs : value - rhs;
+    }
+    return value;
+  };
+  try {
+    const result = expressionParser();
+    return index === tokens.length && Number.isFinite(result) ? result : null;
+  } catch { return null; }
 }
 
-function Shell({ title, subtitle, children, accent }) {
+function Shell({ title, subtitle, accent, children }) {
   return <section className="min-w-0 overflow-hidden rounded-[30px] border border-slate-200/80 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,.055)] dark:border-white/10 dark:bg-white/[.035]">
-    <div className="border-b border-slate-200/70 p-5 sm:p-7 dark:border-white/10"><div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-2xl font-semibold tracking-[-.035em]">{title}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">{subtitle}</p></div>{accent}</div></div>
+    <div className="border-b border-slate-200/70 p-5 sm:p-7 dark:border-white/10">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div><h2 className="text-2xl font-semibold tracking-[-.035em]">{title}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{subtitle}</p></div>
+        {accent}
+      </div>
+    </div>
     <div className="p-5 sm:p-7">{children}</div>
   </section>;
 }
-const Input = ({ label, ...props }) => <label className="block min-w-0">{label&&<span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">{label}</span>}<input {...props} className={`w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 dark:border-white/10 dark:bg-slate-950 ${props.className || ''}`} /></label>;
-const Select = ({ label, children, ...props }) => <label className="block min-w-0">{label&&<span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">{label}</span>}<select {...props} className="w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-400 dark:border-white/10 dark:bg-slate-950">{children}</select></label>;
-const Stat = ({ label, value, accent = false }) => <div className={`min-w-0 rounded-2xl p-4 ${accent?'bg-emerald-50 text-emerald-950 dark:bg-emerald-950/25 dark:text-emerald-100':'bg-slate-50 dark:bg-white/[.035]'}`}><p className="text-xs text-slate-500">{label}</p><p className="mt-1 break-words text-lg font-semibold tracking-[-.02em]">{value}</p></div>;
+function Input({ label, className = '', ...props }) {
+  return <label className="block min-w-0">{label && <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">{label}</span>}<input {...props} className={`w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 dark:border-white/10 dark:bg-slate-950 ${className}`} /></label>;
+}
+function Select({ label, children, ...props }) {
+  return <label className="block min-w-0">{label && <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">{label}</span>}<select {...props} className="w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-400 dark:border-white/10 dark:bg-slate-950">{children}</select></label>;
+}
+function Stat({ label, value, accent = false }) {
+  return <div className={`rounded-2xl p-4 ${accent ? 'bg-emerald-50 dark:bg-emerald-950/25' : 'bg-slate-50 dark:bg-white/[.035]'}`}><p className="text-xs text-slate-500">{label}</p><p className="mt-1 break-words text-lg font-semibold">{value}</p></div>;
+}
+function ErrorNote({ children }) {
+  return <div className="mt-4 flex gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><AlertTriangle className="mt-0.5 h-4 w-4 flex-none"/><span>{children}</span></div>;
+}
+function Pair({ base, quote, setBase, setQuote, options }) {
+  return <div className="grid gap-3 sm:grid-cols-2"><Select label="Devise de départ" value={base} onChange={(e) => setBase(e.target.value)}>{options}</Select><Select label="Devise reçue" value={quote} onChange={(e) => setQuote(e.target.value)}>{options}</Select></div>;
+}
 
 export default function ProductTools({ allRates = {}, fromCurrency = 'EUR', toCurrency = 'XOF', currencies = [], lang = 'fr' }) {
   const locale = lang === 'fr' ? 'fr-FR' : 'en-US';
@@ -46,91 +111,119 @@ export default function ProductTools({ allRates = {}, fromCurrency = 'EUR', toCu
   const [base, setBase] = useState(fromCurrency);
   const [quote, setQuote] = useState(toCurrency);
   const marketRate = useMemo(() => calculateCrossRate(base, quote, allRates, 'EUR'), [base, quote, allRates]);
-  const options = currencies.map((c) => <option key={c.code} value={c.code}>{c.code} · {c.name}</option>);
+  const options = currencies.map((currency) => <option key={currency.code} value={currency.code}>{currency.code} · {currency.name}</option>);
+  const shared = { allRates, marketRate, base, quote, setBase, setQuote, options, locale };
 
   return <div className="min-w-0">
-    <div className="mb-6 max-w-3xl"><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-emerald-700 dark:text-emerald-400">Kiwango tools</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-4xl">Chaque décision d’argent du voyage, dans une seule boîte à outils.</h1><p className="mt-3 text-sm leading-6 text-slate-500">Les outils partagent les mêmes taux de référence, mais vos budgets, alertes et observations restent enregistrés localement sur cet appareil.</p></div>
-    <div className="grid min-w-0 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]"><aside className="min-w-0"><div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:sticky lg:top-24 lg:grid-cols-1">{TOOL_ITEMS.map(([id,label,Icon,desc]) => <button key={id} onClick={() => setTool(id)} className={`group flex min-w-0 items-start gap-3 rounded-2xl border px-3 py-3 text-left transition ${tool === id ? 'border-slate-950 bg-slate-950 text-white shadow-[0_12px_30px_rgba(15,23,42,.12)] dark:border-white dark:bg-white dark:text-slate-950' : 'border-transparent bg-white text-slate-600 hover:border-slate-200 hover:bg-slate-50 dark:bg-white/[.035] dark:text-slate-300 dark:hover:border-white/10'}`}><Icon className="mt-0.5 h-4 w-4 flex-none"/><span className="min-w-0"><span className="block truncate text-xs font-semibold">{label}</span><span className={`mt-1 hidden text-[10px] leading-4 lg:block ${tool===id?'text-white/60 dark:text-slate-500':'text-slate-400'}`}>{desc}</span></span></button>)}</div></aside>
-      <div className="min-w-0">{tool === 'rate-check' && <RateCheck {...{marketRate,base,quote,setBase,setQuote,options,locale}}/>}{tool === 'fees' && <FeeCalculator {...{marketRate,base,quote,setBase,setQuote,options,locale}}/>}{tool === 'budget' && <Budget locale={locale}/>} {tool === 'wallet' && <CashWallet locale={locale}/>} {tool === 'calculator' && <SmartCalculator {...{marketRate,base,quote,setBase,setQuote,options,locale}}/>} {tool === 'atm' && <AtmCalculator {...{marketRate,base,quote,setBase,setQuote,options,locale}}/>} {tool === 'alerts' && <RateAlerts {...{allRates,marketRate,base,quote,setBase,setQuote,options,locale}}/>} {tool === 'scan' && <ScanConvert {...{marketRate,base,quote,setBase,setQuote,options,locale}}/>} {tool === 'field' && <FieldRates {...{marketRate,base,quote,setBase,setQuote,options,locale}}/>}</div>
+    <div className="mb-6 max-w-3xl"><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-emerald-700">Kiwango tools</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-4xl">Vos outils d’argent en voyage.</h1><p className="mt-3 text-sm leading-6 text-slate-500">Les mêmes taux de référence alimentent chaque outil. Budgets, alertes et observations restent enregistrés sur cet appareil.</p></div>
+    <div className="grid min-w-0 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
+      <aside><div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:sticky lg:top-24 lg:grid-cols-1">{TOOLS.map(([id, label, Icon]) => <button key={id} onClick={() => setTool(id)} className={`flex items-center gap-3 rounded-2xl px-3 py-3 text-left text-xs font-semibold transition ${tool === id ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950' : 'bg-white text-slate-600 hover:bg-slate-50 dark:bg-white/[.035]'}`}><Icon className="h-4 w-4"/>{label}</button>)}</div></aside>
+      <div className="min-w-0">
+        {tool === 'rate-check' && <RateCheck {...shared}/>} {tool === 'fees' && <Fees {...shared}/>} {tool === 'budget' && <Budget locale={locale}/>} {tool === 'wallet' && <Wallet locale={locale}/>} {tool === 'calculator' && <Calc {...shared}/>} {tool === 'atm' && <Atm {...shared}/>} {tool === 'alerts' && <Alerts {...shared}/>} {tool === 'scan' && <Scan {...shared}/>} {tool === 'field' && <Field {...shared}/>} 
+      </div>
     </div>
   </div>;
 }
 
-function PairFields({ base, quote, setBase, setQuote, options }) { return <div className="grid gap-3 sm:grid-cols-2"><Select label="Devise de départ" value={base} onChange={(e)=>setBase(e.target.value)}>{options}</Select><Select label="Devise reçue" value={quote} onChange={(e)=>setQuote(e.target.value)}>{options}</Select></div>; }
-
-function RateCheck({ marketRate, base, quote, setBase, setQuote, options, locale }) {
-  const [mode,setMode]=useState('rate'); const [offered,setOffered]=useState(''); const [amount,setAmount]=useState('100'); const [received,setReceived]=useState('');
-  const amt=number(amount), receivedNum=number(received); const derivedRate=Number.isFinite(amt)&&amt>0&&Number.isFinite(receivedNum)?receivedNum/amt:null; const offer=mode==='received'?derivedRate:number(offered); const diff=Number.isFinite(offer)&&marketRate?((offer-marketRate)/marketRate)*100:null; const loss=Number.isFinite(amt)&&marketRate&&Number.isFinite(offer)?amt*(marketRate-offer):null; const expected=Number.isFinite(amt)&&marketRate?amt*marketRate:null;
-  const verdict=diff==null?null:diff>=-1?['Bon taux','bg-emerald-50 text-emerald-700']:diff>=-3?['Acceptable','bg-amber-50 text-amber-700']:['Défavorable','bg-rose-50 text-rose-700'];
-  return <Shell title="Rate Check" subtitle="Entrez soit le taux annoncé, soit ce qu’on vous remet réellement. Kiwango calcule l’écart par rapport au taux de référence." accent={verdict&&<span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${verdict[1]}`}>{verdict[0]}</span>}>
-    <PairFields {...{base,quote,setBase,setQuote,options}}/><div className="mt-4 flex flex-wrap gap-2">{[['rate','Je connais le taux'],['received','Je connais le montant reçu']].map(([id,label])=><button key={id} onClick={()=>setMode(id)} className={`rounded-full px-3 py-2 text-xs font-semibold ${mode===id?'bg-slate-950 text-white dark:bg-white dark:text-slate-950':'bg-slate-100 text-slate-500 dark:bg-white/5'}`}>{label}</button>)}</div>
-    <div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label={`Montant donné (${base})`} value={amount} onChange={e=>setAmount(e.target.value)} inputMode="decimal"/>{mode==='rate'?<Input label={`Taux proposé (1 ${base})`} value={offered} onChange={e=>setOffered(e.target.value)} inputMode="decimal" placeholder={`… ${quote}`}/>:<Input label={`Montant reçu (${quote})`} value={received} onChange={e=>setReceived(e.target.value)} inputMode="decimal"/>}</div>
-    <div className="mt-5 grid gap-3 sm:grid-cols-3"><Stat label="Taux de référence" value={`1 ${base} = ${fmt(marketRate,locale,4)} ${quote}`}/><Stat label="Vous devriez recevoir" value={`${fmt(expected,locale)} ${quote}`} accent/><Stat label="Écart de l’offre" value={diff==null?'—':`${diff>=0?'+':''}${fmt(diff,locale)} %`}/></div>{loss>0&&<div className="mt-4 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900"><AlertTriangle className="mt-0.5 h-4 w-4 flex-none"/><span>Cette offre vous fait perdre environ <strong>{fmt(loss,locale)} {quote}</strong> par rapport au taux de référence.</span></div>}
+function RateCheck(props) {
+  const { marketRate, base, quote, locale } = props;
+  const [mode, setMode] = useState('rate');
+  const [offered, setOffered] = useState('');
+  const [amount, setAmount] = useState('100');
+  const [received, setReceived] = useState('');
+  const amt = positive(amount);
+  const receivedValue = positive(received);
+  const directRate = positive(offered);
+  const offer = mode === 'received' && amt && receivedValue ? receivedValue / amt : mode === 'rate' ? directRate : null;
+  const valid = amt && offer && Number.isFinite(marketRate) && marketRate > 0;
+  const diff = valid ? ((offer - marketRate) / marketRate) * 100 : null;
+  const expected = amt && marketRate ? amt * marketRate : null;
+  const loss = valid ? Math.max(0, amt * (marketRate - offer)) : null;
+  const verdict = diff === null ? null : diff >= -1 ? 'Bon taux' : diff >= -3 ? 'Acceptable' : 'Défavorable';
+  return <Shell title="Rate Check" subtitle="Comparez une offre réelle au taux de référence." accent={verdict && <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold dark:bg-white/10">{verdict}</span>}>
+    <Pair {...props}/><div className="mt-4 flex flex-wrap gap-2">{[['rate','Je connais le taux'],['received','Je connais le montant reçu']].map(([id, label]) => <button key={id} onClick={() => setMode(id)} className={`rounded-full px-3 py-2 text-xs font-semibold ${mode === id ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950' : 'bg-slate-100 text-slate-500 dark:bg-white/5'}`}>{label}</button>)}</div>
+    <div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label={`Montant donné (${base})`} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal"/>{mode === 'rate' ? <Input label={`Taux proposé (1 ${base})`} value={offered} onChange={(e) => setOffered(e.target.value)} inputMode="decimal"/> : <Input label={`Montant reçu (${quote})`} value={received} onChange={(e) => setReceived(e.target.value)} inputMode="decimal"/>}</div>
+    <div className="mt-5 grid gap-3 sm:grid-cols-3"><Stat label="Référence" value={`1 ${base} = ${fmt(marketRate, locale, 4)} ${quote}`}/><Stat label="Attendu" value={`${fmt(expected, locale)} ${quote}`} accent/><Stat label="Écart" value={diff === null ? '—' : `${diff >= 0 ? '+' : ''}${fmt(diff, locale)} %`}/></div>
+    {((mode === 'rate' && offered && directRate === null) || (mode === 'received' && received && receivedValue === null)) && <ErrorNote>Entrez une valeur strictement positive.</ErrorNote>}
+    {loss > 0 && <ErrorNote>Perte estimée : {fmt(loss, locale)} {quote}.</ErrorNote>}
   </Shell>;
 }
 
-function FeeCalculator({ marketRate, base, quote, setBase, setQuote, options, locale }) {
-  const [amount,setAmount]=useState('100'); const [pct,setPct]=useState('2'); const [fixed,setFixed]=useState('0'); const a=number(amount),p=number(pct)||0,f=number(fixed)||0; const percentageFee=Number.isFinite(a)?a*p/100:0; const totalFee=percentageFee+f; const net=Math.max(0,(Number.isFinite(a)?a:0)-totalFee); const result=marketRate?net*marketRate:null; const noFee=marketRate&&Number.isFinite(a)?a*marketRate:null;
-  return <Shell title="Frais réels" subtitle="Simulez une carte, un transfert ou un bureau de change avec frais fixes et variables, puis visualisez le coût réel.">
-    <PairFields {...{base,quote,setBase,setQuote,options}}/><div className="mt-4 grid gap-3 sm:grid-cols-3"><Input label={`Montant (${base})`} value={amount} onChange={e=>setAmount(e.target.value)}/><Input label="Commission (%)" value={pct} onChange={e=>setPct(e.target.value)}/><Input label={`Frais fixes (${base})`} value={fixed} onChange={e=>setFixed(e.target.value)}/></div><div className="mt-3 flex flex-wrap gap-2">{[0,1,2,2.5,3,5].map(v=><button key={v} onClick={()=>setPct(String(v))} className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-200 dark:bg-white/5">{v}%</button>)}</div>
-    <div className="mt-5 grid gap-3 sm:grid-cols-4"><Stat label="Sans frais" value={`${fmt(noFee,locale)} ${quote}`}/><Stat label="Frais totaux" value={`${fmt(totalFee,locale)} ${base}`}/><Stat label="Net converti" value={`${fmt(net,locale)} ${base}`}/><Stat label="Vous recevez" value={`${fmt(result,locale)} ${quote}`} accent/></div>
-  </Shell>;
+function Fees(props) {
+  const { marketRate, base, quote, locale } = props;
+  const [amount, setAmount] = useState('100');
+  const [pct, setPct] = useState('2');
+  const [fixed, setFixed] = useState('0');
+  const a = positive(amount); const pc = nonNegative(pct); const fx = nonNegative(fixed);
+  const valid = a !== null && pc !== null && fx !== null;
+  const fee = valid ? a * pc / 100 + fx : null;
+  const net = valid ? Math.max(0, a - fee) : null;
+  const result = net !== null && marketRate ? net * marketRate : null;
+  const noFee = a && marketRate ? a * marketRate : null;
+  return <Shell title="Frais réels" subtitle="Les commissions négatives sont refusées et les champs incomplets ne produisent plus de faux résultats."><Pair {...props}/><div className="mt-4 grid gap-3 sm:grid-cols-3"><Input label={`Montant (${base})`} value={amount} onChange={(e) => setAmount(e.target.value)}/><Input label="Commission (%)" value={pct} onChange={(e) => setPct(e.target.value)}/><Input label={`Frais fixes (${base})`} value={fixed} onChange={(e) => setFixed(e.target.value)}/></div><div className="mt-3 flex flex-wrap gap-2">{[0,1,2,2.5,3,5].map((value) => <button key={value} onClick={() => setPct(String(value))} className="rounded-full bg-slate-100 px-3 py-1.5 text-xs dark:bg-white/5">{value}%</button>)}</div>{!valid && <ErrorNote>Montant positif requis ; frais et commission doivent être supérieurs ou égaux à zéro.</ErrorNote>}<div className="mt-5 grid gap-3 sm:grid-cols-4"><Stat label="Sans frais" value={`${fmt(noFee, locale)} ${quote}`}/><Stat label="Frais" value={`${fmt(fee, locale)} ${base}`}/><Stat label="Net" value={`${fmt(net, locale)} ${base}`}/><Stat label="Vous recevez" value={`${fmt(result, locale)} ${quote}`} accent/></div></Shell>;
 }
 
 function Budget({ locale }) {
-  const [budget,setBudget]=useState(()=>read('kiwango_budget',{name:'Mon voyage',currency:'XOF',total:150000,expenses:[]})); const [label,setLabel]=useState(''); const [amount,setAmount]=useState(''); const [category,setCategory]=useState('Autre'); const spent=budget.expenses.reduce((s,e)=>s+Number(e.amount||0),0); const remaining=budget.total-spent; const progress=budget.total>0?Math.min(100,Math.max(0,spent/budget.total*100)):0; const save=n=>{setBudget(n);write('kiwango_budget',n)}; const remove=id=>save({...budget,expenses:budget.expenses.filter(e=>e.id!==id)});
-  const categories=['Transport','Repas','Hôtel','Shopping','Activité','Autre'];
-  return <Shell title="Budget Voyage" subtitle="Définissez une enveloppe, catégorisez vos dépenses et voyez immédiatement le rythme de consommation du budget." accent={<span className="text-xs font-semibold text-slate-500">{fmt(progress,locale,0)}% utilisé</span>}>
-    <div className="grid gap-3 sm:grid-cols-3"><Input label="Nom du voyage" value={budget.name} onChange={e=>save({...budget,name:e.target.value})}/><Input label="Budget total" value={budget.total} onChange={e=>save({...budget,total:number(e.target.value)||0})}/><Input label="Devise" value={budget.currency} onChange={e=>save({...budget,currency:e.target.value.toUpperCase()})}/></div><div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10"><div className={`h-full rounded-full transition-all ${progress>90?'bg-rose-500':progress>70?'bg-amber-500':'bg-emerald-500'}`} style={{width:`${progress}%`}}/></div>
-    <div className="mt-5 grid gap-3 sm:grid-cols-3"><Stat label="Budget" value={`${fmt(budget.total,locale)} ${budget.currency}`}/><Stat label="Dépensé" value={`${fmt(spent,locale)} ${budget.currency}`}/><Stat label="Restant" value={`${fmt(remaining,locale)} ${budget.currency}`} accent/></div>
-    <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_130px_130px_auto]"><Input label="Dépense" value={label} onChange={e=>setLabel(e.target.value)} placeholder="Taxi, restaurant…"/><Select label="Catégorie" value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</Select><Input label="Montant" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0"/><button onClick={()=>{const a=number(amount);if(!label||!Number.isFinite(a)||a<=0)return;save({...budget,expenses:[{id:Date.now(),label,category,amount:a,at:Date.now()},...budget.expenses]});setLabel('');setAmount('')}} className="self-end rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white">Ajouter</button></div>
-    <div className="mt-5 divide-y divide-slate-100 dark:divide-white/10">{budget.expenses.slice(0,12).map(e=><div key={e.id} className="flex min-w-0 items-center justify-between gap-3 py-3 text-sm"><span className="min-w-0"><span className="block truncate font-medium">{e.label}</span><span className="text-xs text-slate-400">{e.category||'Autre'}</span></span><span className="flex flex-none items-center gap-2"><strong>{fmt(e.amount,locale)} {budget.currency}</strong><button onClick={()=>remove(e.id)} className="rounded-full p-2 text-slate-300 hover:bg-rose-50 hover:text-rose-600"><Trash2 className="h-3.5 w-3.5"/></button></span></div>)}{!budget.expenses.length&&<p className="py-8 text-center text-sm text-slate-400">Aucune dépense enregistrée.</p>}</div>
-  </Shell>;
+  const [budget, setBudget] = useState(() => read('kiwango_budget', { name: 'Mon voyage', currency: 'XOF', total: 150000, expenses: [] }));
+  const [label, setLabel] = useState(''); const [amount, setAmount] = useState(''); const [category, setCategory] = useState('Autre');
+  const expenses = Array.isArray(budget.expenses) ? budget.expenses : [];
+  const total = nonNegative(budget.total) ?? 0;
+  const spent = expenses.reduce((sum, item) => sum + (nonNegative(item.amount) ?? 0), 0);
+  const save = (next) => { setBudget(next); write('kiwango_budget', next); };
+  const add = () => { const value = positive(amount); if (!label.trim() || value === null) return; save({ ...budget, expenses: [{ id: Date.now(), label: label.trim(), category, amount: value }, ...expenses] }); setLabel(''); setAmount(''); };
+  return <Shell title="Budget Voyage" subtitle="Ajouts et suppressions persistent localement."><div className="grid gap-3 sm:grid-cols-3"><Input label="Voyage" value={budget.name || ''} onChange={(e) => save({ ...budget, name: e.target.value })}/><Input label="Budget total" value={budget.total ?? ''} onChange={(e) => save({ ...budget, total: nonNegative(e.target.value) ?? 0 })}/><Input label="Devise" value={budget.currency || 'XOF'} onChange={(e) => save({ ...budget, currency: e.target.value.toUpperCase() })}/></div><div className="mt-5 grid gap-3 sm:grid-cols-3"><Stat label="Budget" value={`${fmt(total, locale)} ${budget.currency}`}/><Stat label="Dépensé" value={`${fmt(spent, locale)} ${budget.currency}`}/><Stat label="Restant" value={`${fmt(total - spent, locale)} ${budget.currency}`} accent/></div><div className="mt-5 grid gap-2 sm:grid-cols-[1fr_130px_130px_auto]"><Input label="Dépense" value={label} onChange={(e) => setLabel(e.target.value)}/><Select label="Catégorie" value={category} onChange={(e) => setCategory(e.target.value)}>{['Transport','Repas','Hôtel','Shopping','Activité','Autre'].map((x) => <option key={x}>{x}</option>)}</Select><Input label="Montant" value={amount} onChange={(e) => setAmount(e.target.value)}/><button onClick={add} className="self-end rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white">Ajouter</button></div><Rows rows={expenses} currency={budget.currency} locale={locale} remove={(id) => save({ ...budget, expenses: expenses.filter((item) => item.id !== id) })}/></Shell>;
+}
+function Rows({ rows, currency, locale, remove }) {
+  return <div className="mt-5 divide-y divide-slate-100 dark:divide-white/10">{rows.slice(0,12).map((item) => <div key={item.id} className="flex items-center justify-between gap-3 py-3 text-sm"><span className="min-w-0 truncate">{item.label || item.note}</span><span className="flex items-center gap-2"><strong>{fmt(item.amount, locale)} {currency}</strong><button onClick={() => remove(item.id)} className="p-2 text-slate-400"><Trash2 className="h-3.5 w-3.5"/></button></span></div>)}{!rows.length && <p className="py-7 text-center text-sm text-slate-400">Aucun mouvement enregistré.</p>}</div>;
 }
 
-function CashWallet({ locale }) {
-  const [wallet,setWallet]=useState(()=>read('kiwango_wallet',{currency:'GMD',balance:0,entries:[]})); const [amount,setAmount]=useState(''); const [note,setNote]=useState(''); const save=n=>{setWallet(n);write('kiwango_wallet',n)}; const add=sign=>{const a=number(amount);if(!Number.isFinite(a)||a<=0)return;save({...wallet,balance:wallet.balance+sign*a,entries:[{id:Date.now(),amount:sign*a,note:note||(sign>0?'Ajout cash':'Dépense'),at:Date.now()},...wallet.entries]});setAmount('');setNote('')}; const remove=e=>save({...wallet,balance:wallet.balance-e.amount,entries:wallet.entries.filter(x=>x.id!==e.id)});
-  return <Shell title="Cash Wallet" subtitle="Suivez le cash physique dans votre poche. Chaque ajout ou dépense ajuste automatiquement le solde estimé.">
-    <div className="flex flex-col gap-4 rounded-[26px] bg-slate-950 p-6 text-white sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs text-slate-400">Solde cash estimé</p><p className="mt-2 text-4xl font-semibold tracking-[-.05em]">{fmt(wallet.balance,locale)} <span className="text-lg text-slate-400">{wallet.currency}</span></p><p className="mt-2 text-xs text-slate-500">{wallet.entries.length} mouvements enregistrés</p></div><Input label="Devise" value={wallet.currency} onChange={e=>save({...wallet,currency:e.target.value.toUpperCase()})} className="max-w-28 !border-white/10 !bg-white/10 !text-white"/></div>
-    <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]"><Input label="Libellé" value={note} onChange={e=>setNote(e.target.value)} placeholder="Retrait, taxi…"/><Input label="Montant" value={amount} onChange={e=>setAmount(e.target.value)}/><button onClick={()=>add(1)} className="self-end rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white">+ Cash</button><button onClick={()=>add(-1)} className="self-end rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold dark:bg-white/10">Dépense</button></div>
-    <div className="mt-5 divide-y divide-slate-100 dark:divide-white/10">{wallet.entries.slice(0,12).map(e=><div key={e.id} className="flex items-center justify-between gap-3 py-3 text-sm"><span className="min-w-0 truncate">{e.note}</span><span className="flex flex-none items-center gap-2"><strong className={e.amount<0?'text-rose-600':'text-emerald-600'}>{e.amount>0?'+':''}{fmt(e.amount,locale)} {wallet.currency}</strong><button onClick={()=>remove(e)} className="rounded-full p-2 text-slate-300 hover:bg-rose-50 hover:text-rose-600"><Trash2 className="h-3.5 w-3.5"/></button></span></div>)}</div>
-  </Shell>;
+function Wallet({ locale }) {
+  const [wallet, setWallet] = useState(() => read('kiwango_wallet', { currency: 'GMD', balance: 0, entries: [] }));
+  const [amount, setAmount] = useState(''); const [note, setNote] = useState(''); const [error, setError] = useState('');
+  const entries = Array.isArray(wallet.entries) ? wallet.entries : [];
+  const balance = Number.isFinite(Number(wallet.balance)) ? Number(wallet.balance) : 0;
+  const save = (next) => { setWallet(next); write('kiwango_wallet', next); };
+  const add = (sign) => { const value = positive(amount); if (value === null) { setError('Entrez un montant positif.'); return; } if (sign < 0 && value > balance) { setError('Cette dépense dépasse le cash disponible.'); return; } setError(''); save({ ...wallet, balance: balance + sign * value, entries: [{ id: Date.now(), amount: sign * value, note: note.trim() || (sign > 0 ? 'Ajout cash' : 'Dépense') }, ...entries] }); setAmount(''); setNote(''); };
+  const remove = (id) => { const entry = entries.find((item) => item.id === id); if (!entry) return; save({ ...wallet, balance: balance - Number(entry.amount || 0), entries: entries.filter((item) => item.id !== id) }); };
+  return <Shell title="Cash Wallet" subtitle="Une dépense ne peut plus créer un solde cash négatif."><div className="rounded-[26px] bg-slate-950 p-6 text-white"><p className="text-xs text-slate-400">Solde cash</p><p className="mt-2 text-4xl font-semibold">{fmt(balance, locale)} <span className="text-lg text-slate-400">{wallet.currency}</span></p></div><div className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]"><Input label="Libellé" value={note} onChange={(e) => setNote(e.target.value)}/><Input label="Montant" value={amount} onChange={(e) => setAmount(e.target.value)}/><button onClick={() => add(1)} className="self-end rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white">+ Cash</button><button onClick={() => add(-1)} className="self-end rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold dark:bg-white/10">Dépense</button></div>{error && <ErrorNote>{error}</ErrorNote>}<Rows rows={entries} currency={wallet.currency} locale={locale} remove={remove}/></Shell>;
 }
 
-function SmartCalculator({ marketRate, base, quote, setBase, setQuote, options, locale }) {
-  const [expr,setExpr]=useState('450 * 3 + 120'); const result=safeCalculate(expr); const converted=Number.isFinite(result)&&marketRate?result*marketRate:null;
-  return <Shell title="Calculatrice multi-devise" subtitle="Additionnez une course, un repas ou plusieurs achats puis convertissez le total sans quitter le calcul.">
-    <PairFields {...{base,quote,setBase,setQuote,options}}/><Input label="Expression" value={expr} onChange={e=>setExpr(e.target.value.replace(',','.'))} className="mt-4 font-mono text-lg"/><div className="mt-3 flex flex-wrap gap-2">{['100 + 250 + 80','450 * 3 + 120','1200 / 4','(250 + 90) * 2'].map(v=><button key={v} onClick={()=>setExpr(v)} className="rounded-full bg-slate-100 px-3 py-1.5 font-mono text-[11px] text-slate-500 hover:bg-slate-200 dark:bg-white/5">{v}</button>)}</div><div className="mt-5 grid gap-3 sm:grid-cols-2"><Stat label={`Total en ${base}`} value={`${fmt(result,locale)} ${base}`}/><Stat label={`Équivalent en ${quote}`} value={`${fmt(converted,locale)} ${quote}`} accent/></div>
-  </Shell>;
+function Calc(props) {
+  const { base, quote, marketRate, locale } = props;
+  const [expr, setExpr] = useState('450 * 3 + 120');
+  const result = safeCalculate(expr);
+  const converted = result !== null && marketRate ? result * marketRate : null;
+  return <Shell title="Calculatrice multi-devise" subtitle="Expressions arithmétiques simples uniquement ; division par zéro et syntaxe non supportée sont rejetées."><Pair {...props}/><Input label="Expression" value={expr} onChange={(e) => setExpr(e.target.value.replace(',','.'))} className="mt-4 font-mono text-lg"/>{expr.trim() && result === null && <ErrorNote>Expression invalide ou non supportée.</ErrorNote>}<div className="mt-5 grid gap-3 sm:grid-cols-2"><Stat label={`Total en ${base}`} value={`${fmt(result, locale)} ${base}`}/><Stat label={`Équivalent en ${quote}`} value={`${fmt(converted, locale)} ${quote}`} accent/></div></Shell>;
+}
+function Atm(props) {
+  const { base, quote, marketRate, locale } = props;
+  const [need, setNeed] = useState('100'); const [atmFee, setAtmFee] = useState('0'); const [bankPct, setBankPct] = useState('2');
+  const n = positive(need); const af = nonNegative(atmFee); const bp = nonNegative(bankPct); const valid = n !== null && af !== null && bp !== null;
+  const cash = valid && marketRate ? n * marketRate : null; const bank = cash !== null ? cash * bp / 100 : null; const total = cash !== null ? cash + af + bank : null;
+  return <Shell title="Retrait ATM" subtitle="Le cash demandé, les frais ATM et les frais bancaires restent séparés."><Pair {...props}/><div className="mt-4 grid gap-3 sm:grid-cols-3"><Input label={`Besoin en ${base}`} value={need} onChange={(e) => setNeed(e.target.value)}/><Input label={`Frais ATM (${quote})`} value={atmFee} onChange={(e) => setAtmFee(e.target.value)}/><Input label="Frais banque (%)" value={bankPct} onChange={(e) => setBankPct(e.target.value)}/></div>{!valid && <ErrorNote>Le besoin doit être positif et les frais ne peuvent pas être négatifs.</ErrorNote>}<div className="mt-5 grid gap-3 sm:grid-cols-4"><Stat label="Cash demandé" value={`${fmt(cash, locale)} ${quote}`}/><Stat label="Frais ATM" value={`${fmt(af, locale)} ${quote}`}/><Stat label="Frais banque" value={`${fmt(bank, locale)} ${quote}`}/><Stat label="Coût total estimé" value={`${fmt(total, locale)} ${quote}`} accent/></div></Shell>;
 }
 
-function AtmCalculator({ marketRate, base, quote, setBase, setQuote, options, locale }) {
-  const [need,setNeed]=useState('100000'); const [atmFee,setAtmFee]=useState('0'); const [bankPct,setBankPct]=useState('2'); const target=number(need); const localNeeded=marketRate&&Number.isFinite(target)?target*marketRate:null; const bankFee=localNeeded?localNeeded*(number(bankPct)||0)/100:0; const total=localNeeded?localNeeded+(number(atmFee)||0)+bankFee:null;
-  return <Shell title="Retrait ATM" subtitle="Estimez combien retirer dans la devise locale et visualisez séparément les frais du distributeur et de votre banque.">
-    <PairFields {...{base,quote,setBase,setQuote,options}}/><div className="mt-4 grid gap-3 sm:grid-cols-3"><Input label={`Besoin en ${base}`} value={need} onChange={e=>setNeed(e.target.value)}/><Input label={`Frais ATM (${quote})`} value={atmFee} onChange={e=>setAtmFee(e.target.value)}/><Input label="Frais banque (%)" value={bankPct} onChange={e=>setBankPct(e.target.value)}/></div><div className="mt-5 grid gap-3 sm:grid-cols-3"><Stat label="Équivalent local" value={`${fmt(localNeeded,locale)} ${quote}`}/><Stat label="Frais bancaires estimés" value={`${fmt(bankFee+(number(atmFee)||0),locale)} ${quote}`}/><Stat label="Retrait à prévoir" value={`${fmt(total,locale)} ${quote}`} accent/></div><p className="mt-4 text-xs leading-5 text-slate-400">Le distributeur peut imposer ses propres limites ou proposer une conversion dynamique. Vérifiez toujours le montant affiché avant validation.</p>
-  </Shell>;
+function Alerts(props) {
+  const { allRates, base, quote, locale } = props;
+  const [alerts, setAlerts] = useState(() => read('kiwango_alerts', []));
+  const [target, setTarget] = useState(''); const [direction, setDirection] = useState('above'); const [error, setError] = useState('');
+  const save = (next) => { setAlerts(next); write('kiwango_alerts', next); };
+  const add = () => { const value = positive(target); if (value === null) { setError('Le seuil doit être strictement positif.'); return; } setError(''); save([{ id: Date.now(), base, quote, target: value, direction }, ...alerts]); setTarget(''); };
+  return <Shell title="Alertes de taux" subtitle="Seuils locaux strictement positifs."><Pair {...props}/><div className="mt-4 grid gap-2 sm:grid-cols-[150px_1fr_auto]"><Select label="Condition" value={direction} onChange={(e) => setDirection(e.target.value)}><option value="above">Au-dessus de</option><option value="below">En dessous de</option></Select><Input label={`Seuil en ${quote}`} value={target} onChange={(e) => setTarget(e.target.value)}/><button onClick={add} className="self-end rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white">Créer</button></div>{error && <ErrorNote>{error}</ErrorNote>}<div className="mt-5 space-y-2">{alerts.map((alert) => { const current = calculateCrossRate(alert.base, alert.quote, allRates, 'EUR'); const hit = Number.isFinite(current) && (alert.direction === 'below' ? current <= alert.target : current >= alert.target); return <div key={alert.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 p-4 text-sm dark:border-white/10"><span><strong>{alert.base}/{alert.quote}</strong> · {alert.direction === 'below' ? '≤' : '≥'} {fmt(alert.target, locale, 4)} · actuel {fmt(current, locale, 4)}</span><span className="flex items-center gap-2"><span className={hit ? 'font-semibold text-emerald-600' : 'text-slate-400'}>{hit ? 'Seuil atteint' : 'En veille'}</span><button onClick={() => save(alerts.filter((item) => item.id !== alert.id))}><Trash2 className="h-4 w-4"/></button></span></div>; })}{!alerts.length && <p className="py-7 text-center text-sm text-slate-400">Aucune alerte locale.</p>}</div></Shell>;
 }
 
-function RateAlerts({ allRates, base, quote, setBase, setQuote, options, locale }) {
-  const [alerts,setAlerts]=useState(()=>read('kiwango_alerts',[])); const [target,setTarget]=useState(''); const [direction,setDirection]=useState('above'); const save=n=>{setAlerts(n);write('kiwango_alerts',n)}; const add=()=>{const t=number(target);if(!Number.isFinite(t))return;save([{id:Date.now(),base,quote,target:t,direction},...alerts]);setTarget('')};
-  return <Shell title="Alertes de taux" subtitle="Créez des seuils locaux au-dessus ou au-dessous d’un taux. Ils sont évalués à chaque ouverture de Kiwango.">
-    <PairFields {...{base,quote,setBase,setQuote,options}}/><div className="mt-4 grid gap-2 sm:grid-cols-[150px_1fr_auto]"><Select label="Condition" value={direction} onChange={e=>setDirection(e.target.value)}><option value="above">Au-dessus de</option><option value="below">En dessous de</option></Select><Input label={`Seuil en ${quote}`} value={target} onChange={e=>setTarget(e.target.value)}/><button onClick={add} className="self-end rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white">Créer</button></div><div className="mt-5 space-y-2">{alerts.map(a=>{const current=calculateCrossRate(a.base,a.quote,allRates,'EUR');const hit=Number.isFinite(current)&&(a.direction==='below'?current<=a.target:current>=a.target);return <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 p-4 text-sm dark:border-white/10"><span><strong>{a.base}/{a.quote}</strong><span className="ml-2 text-slate-500">{a.direction==='below'?'≤':'≥'} {fmt(a.target,locale,4)}</span><span className="ml-2 text-xs text-slate-400">actuel {fmt(current,locale,4)}</span></span><span className="flex items-center gap-2"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${hit?'bg-emerald-50 text-emerald-700':'bg-slate-100 text-slate-500 dark:bg-white/10'}`}>{hit?'Seuil atteint':'En veille'}</span><button onClick={()=>save(alerts.filter(x=>x.id!==a.id))} className="rounded-full p-2 text-slate-300 hover:text-rose-600"><Trash2 className="h-3.5 w-3.5"/></button></span></div>})}{!alerts.length&&<p className="py-7 text-center text-sm text-slate-400">Aucune alerte locale.</p>}</div>
-  </Shell>;
+function Scan(props) {
+  const { base, quote, marketRate, locale } = props;
+  const [amount, setAmount] = useState(''); const [status, setStatus] = useState('idle'); const fileRef = useRef();
+  const handle = async (event) => { const file = event.target.files?.[0]; if (!file) return; setStatus('manual'); if (typeof window !== 'undefined' && 'TextDetector' in window) { try { setStatus('scanning'); const bitmap = await createImageBitmap(file); const detector = new window.TextDetector(); const blocks = await detector.detect(bitmap); const text = blocks.map((block) => block.rawValue).join(' '); const matches = [...text.matchAll(/\d[\d\s.,]*/g)].map((match) => match[0].trim()).filter(Boolean); if (matches[0]) setAmount(matches[0]); setStatus(matches.length ? 'done' : 'manual'); } catch { setStatus('manual'); } } };
+  const value = positive(amount);
+  return <Shell title="Scan & Convert" subtitle="Si l’OCR n’est pas disponible, saisissez simplement le montant manuellement."><button onClick={() => fileRef.current?.click()} className="flex min-h-40 w-full flex-col items-center justify-center rounded-[26px] border border-dashed border-slate-300"><Camera className="h-8 w-8"/><span className="mt-2 text-sm font-semibold">Prendre ou choisir une photo</span><span className="text-xs text-slate-500">{status === 'scanning' ? 'Analyse en cours…' : status === 'done' ? 'Montant détecté — vérifiez-le' : 'Saisie manuelle toujours disponible'}</span></button><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handle} className="hidden"/><div className="mt-4"><Pair {...props}/></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label={`Montant (${base})`} value={amount} onChange={(e) => setAmount(e.target.value)}/><Stat label="Équivalent" value={`${fmt(value && marketRate ? value * marketRate : null, locale)} ${quote}`} accent/></div></Shell>;
 }
 
-function ScanConvert({ marketRate, base, quote, setBase, setQuote, options, locale }) {
-  const [image,setImage]=useState(null); const [amount,setAmount]=useState(''); const [status,setStatus]=useState('idle'); const fileRef=useRef();
-  const handle=async(e)=>{const file=e.target.files?.[0];if(!file)return;if(image)URL.revokeObjectURL(image);setImage(URL.createObjectURL(file));setStatus('manual');if(typeof window!=='undefined'&&'TextDetector' in window){try{setStatus('scanning');const bmp=await createImageBitmap(file);const detector=new window.TextDetector();const blocks=await detector.detect(bmp);const text=blocks.map(b=>b.rawValue).join(' ');const matches=[...text.matchAll(/\d[\d\s.,]*/g)].map(m=>m[0].trim()).filter(Boolean);if(matches[0])setAmount(matches[0]);setStatus(matches.length?'done':'manual')}catch{setStatus('manual')}}};
-  return <Shell title="Scan & Convert" subtitle="Prenez une photo d’un prix ou d’un reçu. Kiwango tente l’OCR natif du navigateur puis vous laisse confirmer le montant avant conversion.">
-    <div className="grid gap-4 md:grid-cols-2"><button onClick={()=>fileRef.current?.click()} className="flex min-h-56 flex-col items-center justify-center rounded-[26px] border border-dashed border-slate-300 bg-slate-50 p-5 text-center transition hover:border-emerald-400 dark:border-white/15 dark:bg-white/[.025]"><Camera className="h-8 w-8 text-emerald-600"/><span className="mt-3 text-sm font-semibold">Prendre ou choisir une photo</span><span className="mt-1 text-xs text-slate-500">{status==='scanning'?'Analyse en cours…':status==='done'?'Montant détecté — vérifiez-le':'Étiquette, menu, facture ou reçu'}</span></button>{image?<img src={image} alt="Aperçu du prix scanné" className="h-56 w-full rounded-[26px] object-cover"/>:<div className="flex h-56 items-center justify-center rounded-[26px] bg-slate-100 text-xs text-slate-400 dark:bg-white/5">Aperçu</div>}</div><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handle} className="hidden"/>
-    <div className="mt-4"><PairFields {...{base,quote,setBase,setQuote,options}}/></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label={`Montant détecté (${base})`} value={amount} onChange={e=>setAmount(e.target.value)}/><Stat label="Équivalent" value={`${fmt(number(amount)&&marketRate?number(amount)*marketRate:null,locale)} ${quote}`} accent/></div>
-  </Shell>;
-}
-
-function FieldRates({ marketRate, base, quote, setBase, setQuote, options, locale }) {
-  const [entries,setEntries]=useState(()=>read('kiwango_field_rates',[])); const [rate,setRate]=useState(''); const [place,setPlace]=useState(''); const [note,setNote]=useState(''); const save=n=>{setEntries(n);write('kiwango_field_rates',n)}; const add=()=>{const r=number(rate);if(!Number.isFinite(r)||!place)return;save([{id:Date.now(),base,quote,rate:r,place,note,at:Date.now()},...entries]);setRate('');setPlace('');setNote('')};
-  return <Shell title="Taux terrain" subtitle="Conservez les taux réellement proposés par un hôtel, un cambiste ou un commerce. Les observations restent privées sur cet appareil.">
-    <PairFields {...{base,quote,setBase,setQuote,options}}/><div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label="Lieu / établissement" value={place} onChange={e=>setPlace(e.target.value)} placeholder="Bureau de change, hôtel…"/><Input label={`Taux observé (1 ${base})`} value={rate} onChange={e=>setRate(e.target.value)} placeholder={`… ${quote}`}/></div><div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]"><Input label="Note optionnelle" value={note} onChange={e=>setNote(e.target.value)} placeholder="Commission incluse, aéroport…"/><button onClick={add} className="self-end rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white">Enregistrer</button></div><p className="mt-4 text-xs text-slate-500">Référence actuelle : 1 {base} = {fmt(marketRate,locale,4)} {quote}</p>
-    <div className="mt-3 space-y-2">{entries.slice(0,12).map(e=>{const delta=e.base===base&&e.quote===quote&&marketRate?((e.rate-marketRate)/marketRate)*100:null;return <div key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 p-4 text-sm dark:border-white/10"><span className="min-w-0"><strong className="block truncate">{e.place}</strong><span className="text-xs text-slate-500">{e.base}/{e.quote}{e.note?` · ${e.note}`:''}</span></span><span className="flex items-center gap-2"><span className="text-right"><strong className="block">1 {e.base} = {fmt(e.rate,locale,4)} {e.quote}</strong>{delta!=null&&<span className={`text-xs ${delta>=-1?'text-emerald-600':delta<-3?'text-rose-600':'text-amber-600'}`}>{delta>=0?'+':''}{fmt(delta,locale)}% vs référence</span>}</span><button onClick={()=>save(entries.filter(x=>x.id!==e.id))} className="rounded-full p-2 text-slate-300 hover:text-rose-600"><Trash2 className="h-3.5 w-3.5"/></button></span></div>})}</div>
-  </Shell>;
+function Field(props) {
+  const { base, quote, marketRate, locale } = props;
+  const [entries, setEntries] = useState(() => read('kiwango_field_rates', [])); const [rate, setRate] = useState(''); const [place, setPlace] = useState(''); const [note, setNote] = useState(''); const [error, setError] = useState('');
+  const save = (next) => { setEntries(next); write('kiwango_field_rates', next); };
+  const add = () => { const value = positive(rate); if (value === null || !place.trim()) { setError('Indiquez un lieu et un taux strictement positif.'); return; } setError(''); save([{ id: Date.now(), base, quote, rate: value, place: place.trim(), note: note.trim() }, ...entries]); setRate(''); setPlace(''); setNote(''); };
+  return <Shell title="Taux terrain" subtitle="Enregistrez uniquement des taux réels strictement positifs."><Pair {...props}/><div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label="Lieu" value={place} onChange={(e) => setPlace(e.target.value)}/><Input label={`Taux observé (1 ${base})`} value={rate} onChange={(e) => setRate(e.target.value)}/></div><div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]"><Input label="Note" value={note} onChange={(e) => setNote(e.target.value)}/><button onClick={add} className="self-end rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white">Enregistrer</button></div>{error && <ErrorNote>{error}</ErrorNote>}<div className="mt-5 space-y-2">{entries.slice(0,12).map((entry) => { const delta = entry.base === base && entry.quote === quote && marketRate ? ((entry.rate - marketRate) / marketRate) * 100 : null; return <div key={entry.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 p-4 text-sm dark:border-white/10"><span className="min-w-0"><strong className="block truncate">{entry.place}</strong><span className="text-xs text-slate-500">1 {entry.base} = {fmt(entry.rate, locale, 4)} {entry.quote}{delta !== null ? ` · ${delta >= 0 ? '+' : ''}${fmt(delta, locale)}% vs référence` : ''}</span></span><button onClick={() => save(entries.filter((item) => item.id !== entry.id))}><Trash2 className="h-4 w-4"/></button></div>; })}{!entries.length && <p className="py-7 text-center text-sm text-slate-400">Aucun taux terrain enregistré.</p>}</div></Shell>;
 }
