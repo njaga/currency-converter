@@ -3,7 +3,7 @@
   "name": "Kiwango | Compagnon financier de voyage",
   "short_name": "Kiwango",
   "description": "Conversion, Travel Packs, vérification des taux, budget et outils financiers disponibles même en voyage.",
-  "start_url": "/app",
+  "start_url": "/convertisseur",
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
@@ -19,9 +19,9 @@
     { "src": "/pwa-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Convertir", "short_name": "Convertir", "description": "Ouvrir le convertisseur", "url": "/app?tab=converter", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
-    { "name": "Voyage", "short_name": "Voyage", "description": "Ouvrir mes Travel Packs", "url": "/app?tab=travel", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
-    { "name": "Outils", "short_name": "Outils", "description": "Ouvrir les outils financiers", "url": "/app?tab=tools", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
-    { "name": "Devises", "short_name": "Devises", "description": "Explorer les devises", "url": "/app?tab=rates", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }
+    { "name": "Convertir", "short_name": "Convertir", "description": "Ouvrir le convertisseur", "url": "/convertisseur", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
+    { "name": "Voyage", "short_name": "Voyage", "description": "Ouvrir mes Travel Packs", "url": "/voyage", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
+    { "name": "Outils", "short_name": "Outils", "description": "Ouvrir les outils financiers", "url": "/outils", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] },
+    { "name": "Devises", "short_name": "Devises", "description": "Explorer les devises", "url": "/devises", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }
   ]
 }
