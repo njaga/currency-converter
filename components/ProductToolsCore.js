@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Bell, Calculator, Camera, CircleDollarSign, Landmark, MapPin, PiggyBank, ReceiptText, ScanLine, Trash2, WalletCards } from 'lucide-react';
 import { calculateCrossRate } from '../lib/rates';
 
@@ -89,8 +89,31 @@ function Shell({ title, subtitle, accent, children }) {
     <div className="p-5 sm:p-7">{children}</div>
   </section>;
 }
-function Input({ label, className = '', ...props }) {
-  return <label className="block min-w-0">{label && <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">{label}</span>}<input {...props} className={`w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 dark:border-white/10 dark:bg-slate-950 ${className}`} /></label>;
+function Input({ label, className = '', value = '', onChange, onBlur, ...props }) {
+  const [draft, setDraft] = useState(String(value ?? ''));
+  const timerRef = useRef(null);
+
+  useEffect(() => { setDraft(String(value ?? '')); }, [value]);
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  const commit = (next) => {
+    clearTimeout(timerRef.current);
+    onChange?.({ target: { value: next } });
+  };
+
+  const handleChange = (event) => {
+    const next = event.target.value;
+    setDraft(next);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => commit(next), 350);
+  };
+
+  const handleBlur = (event) => {
+    commit(draft);
+    onBlur?.(event);
+  };
+
+  return <label className="block min-w-0">{label && <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">{label}</span>}<input {...props} value={draft} onChange={handleChange} onBlur={handleBlur} className={`w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 dark:border-white/10 dark:bg-slate-950 ${className}`} /></label>;
 }
 function Select({ label, children, ...props }) {
   return <label className="block min-w-0">{label && <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">{label}</span>}<select {...props} className="w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-400 dark:border-white/10 dark:bg-slate-950">{children}</select></label>;
