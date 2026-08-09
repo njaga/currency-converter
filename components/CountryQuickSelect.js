@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, MapPin, Search } from 'lucide-react';
 import { TRAVEL_DESTINATIONS } from '../lib/travel';
 import { trackEvent } from '../lib/telemetry';
+import { getCountryDirectory } from '../lib/country-directory-client';
 
 const fallbackCountries = TRAVEL_DESTINATIONS.map((item) => ({ code: item.code, name: item.country, currencies: [{ code: item.currency, name: item.currency }], primaryCurrency: { code: item.currency, name: item.currency } }));
 
@@ -12,7 +13,7 @@ function countryLabel(country, lang) {
 
 export default function CountryQuickSelect({ lang = 'fr', onSelect }) {
   const [countries, setCountries] = useState([]); const [open, setOpen] = useState(false); const [query, setQuery] = useState(''); const rootRef = useRef(null);
-  useEffect(() => { fetch('/api/countries').then((r) => r.ok ? r.json() : Promise.reject()).then((data) => setCountries(data.countries?.length ? data.countries : fallbackCountries)).catch(() => setCountries(fallbackCountries)); }, []);
+  useEffect(() => { let active = true; getCountryDirectory(fallbackCountries).then(({ countries: directory }) => { if (active) setCountries(directory); }); return () => { active = false; }; }, []);
   useEffect(() => { const close=(event)=>{if(!rootRef.current?.contains(event.target))setOpen(false)};const escape=(event)=>{if(event.key==='Escape')setOpen(false)};document.addEventListener('pointerdown',close);document.addEventListener('keydown',escape);return()=>{document.removeEventListener('pointerdown',close);document.removeEventListener('keydown',escape)};},[]);
   const filtered=useMemo(()=>{const needle=query.trim().toLowerCase();if(!needle)return countries.slice(0,12);return countries.filter((country)=>{const label=countryLabel(country,lang);const currencies=(country.currencies||[]).map((c)=>`${c.code} ${c.name||''}`).join(' ');return `${label} ${country.name||''} ${country.code} ${currencies}`.toLowerCase().includes(needle)}).slice(0,16)},[countries,query,lang]);
 

@@ -3,15 +3,15 @@ import { AlertTriangle, Bell, Calculator, Camera, CircleDollarSign, Landmark, Ma
 import { calculateCrossRate } from '../lib/rates';
 
 const TOOLS = [
-  ['rate-check', 'Vérifier un taux', CircleDollarSign],
-  ['fees', 'Frais réels', ReceiptText],
-  ['budget', 'Budget', PiggyBank],
-  ['wallet', 'Cash Wallet', WalletCards],
-  ['calculator', 'Calculatrice', Calculator],
-  ['atm', 'Retrait ATM', Landmark],
-  ['alerts', 'Alertes', Bell],
-  ['scan', 'Scan & Convert', ScanLine],
-  ['field', 'Taux terrain', MapPin],
+  { id: 'rate-check', label: 'Vérifier un taux', description: 'Comparer une offre au taux du marché', icon: CircleDollarSign },
+  { id: 'fees', label: 'Calculer les frais', description: 'Voir le montant réellement reçu', icon: ReceiptText },
+  { id: 'budget', label: 'Budget voyage', description: 'Suivre dépenses et solde restant', icon: PiggyBank },
+  { id: 'wallet', label: 'Argent liquide', description: 'Suivre le cash disponible', icon: WalletCards },
+  { id: 'calculator', label: 'Calculatrice devises', description: 'Calculer puis convertir un total', icon: Calculator },
+  { id: 'atm', label: 'Retrait au distributeur', description: 'Estimer frais bancaires et ATM', icon: Landmark },
+  { id: 'alerts', label: 'Alerte de taux', description: 'Définir un seuil à surveiller', icon: Bell },
+  { id: 'scan', label: 'Scanner un prix', description: 'Lire ou saisir un montant à convertir', icon: ScanLine },
+  { id: 'field', label: 'Taux observé', description: 'Noter une offre trouvée sur place', icon: MapPin },
 ];
 
 const read = (key, fallback) => {
@@ -115,9 +115,9 @@ export default function ProductTools({ allRates = {}, fromCurrency = 'EUR', toCu
   const shared = { allRates, marketRate, base, quote, setBase, setQuote, options, locale };
 
   return <div className="min-w-0">
-    <div className="mb-6 max-w-3xl"><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-emerald-700">Kiwango tools</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-4xl">Vos outils d’argent en voyage.</h1><p className="mt-3 text-sm leading-6 text-slate-500">Les mêmes taux de référence alimentent chaque outil. Budgets, alertes et observations restent enregistrés sur cet appareil.</p></div>
+    <div className="mb-6 max-w-3xl"><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-emerald-700">Outils pratiques</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-4xl">Choisissez ce que vous voulez calculer.</h1><p className="mt-3 text-sm leading-6 text-slate-500">Chaque outil répond à une tâche précise. Sélectionnez-en un pour afficher uniquement les champs nécessaires.</p></div>
     <div className="grid min-w-0 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
-      <aside><div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:sticky lg:top-24 lg:grid-cols-1">{TOOLS.map(([id, label, Icon]) => <button key={id} onClick={() => setTool(id)} className={`flex items-center gap-3 rounded-2xl px-3 py-3 text-left text-xs font-semibold transition ${tool === id ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950' : 'bg-white text-slate-600 hover:bg-slate-50 dark:bg-white/[.035]'}`}><Icon className="h-4 w-4"/>{label}</button>)}</div></aside>
+      <aside><div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:sticky lg:top-24 lg:grid-cols-1">{TOOLS.map(({ id, label, description, icon: Icon }) => <button key={id} onClick={() => setTool(id)} aria-pressed={tool === id} className={`flex items-start gap-3 border-l-2 px-3 py-3 text-left transition ${tool === id ? 'border-emerald-600 bg-emerald-50 text-slate-950 dark:bg-emerald-950/30 dark:text-white' : 'border-transparent text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/[.035]'}`}><Icon className="mt-0.5 h-4 w-4 flex-none text-emerald-700"/><span><span className="block text-xs font-semibold">{label}</span><span className={`mt-1 hidden text-[10px] font-normal leading-4 lg:block ${tool === id ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400'}`}>{description}</span></span></button>)}</div></aside>
       <div className="min-w-0">
         {tool === 'rate-check' && <RateCheck {...shared}/>} {tool === 'fees' && <Fees {...shared}/>} {tool === 'budget' && <Budget locale={locale}/>} {tool === 'wallet' && <Wallet locale={locale}/>} {tool === 'calculator' && <Calc {...shared}/>} {tool === 'atm' && <Atm {...shared}/>} {tool === 'alerts' && <Alerts {...shared}/>} {tool === 'scan' && <Scan {...shared}/>} {tool === 'field' && <Field {...shared}/>} 
       </div>

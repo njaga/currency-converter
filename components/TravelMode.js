@@ -5,6 +5,7 @@ import { getPreparedTrip, getPreparedTrips, savePreparedTrip } from '../lib/db';
 import { getExchangeRates, calculateCrossRate } from '../lib/rates';
 import { TRAVEL_DESTINATIONS } from '../lib/travel';
 import TripPreparation from './TripPreparation';
+import { getCountryDirectory } from '../lib/country-directory-client';
 
 const Flag = ({ code, className = 'h-6 w-9' }) => { const Component = Flags[code?.toUpperCase()]; return Component ? <Component className={`${className} rounded-md border border-black/5 object-cover shadow-sm`} /> : <Globe2 className="h-5 w-5 text-slate-400"/>; };
 const localizedCountryName = (country, lang) => { try { return new Intl.DisplayNames([lang === 'en' ? 'en' : 'fr'], { type: 'region' }).of(country.code) || country.name; } catch { return country.name; } };
@@ -14,10 +15,10 @@ const packAge = (trip) => { const timestamp=Number(trip?.rateTimestamp||trip?.pr
 
 export default function TravelMode({ lang='fr', onSelectPair }) {
   const fr = lang === 'fr';
-  const [countries,setCountries]=useState([]); const [destinationCode,setDestinationCode]=useState('GM'); const [selectedCurrencyCode,setSelectedCurrencyCode]=useState(null); const [query,setQuery]=useState(''); const [region,setRegion]=useState('all'); const [directoryStatus,setDirectoryStatus]=useState('loading'); const [preparedTrip,setPreparedTrip]=useState(null); const [preparedTrips,setPreparedTrips]=useState([]); const [status,setStatus]=useState('idle'); const [rates,setRates]=useState({});
+  const [countries,setCountries]=useState([]); const [destinationCode,setDestinationCode]=useState('SN'); const [selectedCurrencyCode,setSelectedCurrencyCode]=useState(null); const [query,setQuery]=useState(''); const [region,setRegion]=useState('all'); const [directoryStatus,setDirectoryStatus]=useState('loading'); const [preparedTrip,setPreparedTrip]=useState(null); const [preparedTrips,setPreparedTrips]=useState([]); const [status,setStatus]=useState('idle'); const [rates,setRates]=useState({});
 
   useEffect(()=>{ const params=new URLSearchParams(window.location.search); const fromUrl=params.get('country')?.toUpperCase(); const saved=localStorage.getItem('kiwango_quick_destination'); if(fromUrl)setDestinationCode(fromUrl); else if(saved)setDestinationCode(saved); },[]);
-  useEffect(()=>{ let cancelled=false; fetch('/api/countries').then(async r=>{if(!r.ok)throw new Error('countries');return r.json();}).then(data=>{if(cancelled)return;setCountries(data.countries||[]);setDirectoryStatus('ready');}).catch(()=>{if(cancelled)return;setCountries(fallbackCountries());setDirectoryStatus('fallback');}); getPreparedTrips().then((items)=>!cancelled&&setPreparedTrips(items)); return()=>{cancelled=true}; },[]);
+  useEffect(()=>{ let cancelled=false; const fallback=fallbackCountries(); getCountryDirectory(fallback).then(({countries:directory,source})=>{if(cancelled)return;setCountries(directory);setDirectoryStatus(source==='fallback'?'fallback':'ready');}); getPreparedTrips().then((items)=>!cancelled&&setPreparedTrips(items)); return()=>{cancelled=true}; },[]);
 
   const destination=useMemo(()=>countries.find((c)=>c.code===destinationCode)||countries[0]||null,[countries,destinationCode]);
   const localName=destination?localizedCountryName(destination,lang):''; const availableCurrencies=destination?.currencies||[]; const primaryCurrency=availableCurrencies.find((currency)=>currency.code===selectedCurrencyCode)||destination?.primaryCurrency||availableCurrencies[0]||null; const pairTargets=useMemo(()=>primaryCurrency?buildPairs(primaryCurrency.code):[],[primaryCurrency]);
