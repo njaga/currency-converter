@@ -1,98 +1,126 @@
-# AfriChange
+# Kiwango
 
-**Offline-first African currency converter.**
+**Travel money companion for Africa — conversion, rate checking, budgets and offline tools in one PWA.**
 
-AfriChange is a Progressive Web App designed for travelers, cross-border workers and anyone who needs to understand prices across African currencies even when connectivity becomes unreliable.
+Kiwango is designed for travelers, cross-border workers and anyone who needs to understand and manage money across currencies when connectivity can be unreliable.
 
-Live app: https://xof-converter.vercel.app
+Current deployment: https://xof-converter.vercel.app
 
-## Why this project exists
+## Product idea
 
-Currency conversion is easy when a stable internet connection is available. It becomes less trivial when arriving in another country without a local SIM card, while roaming is unavailable or while the network is intermittent.
+Kiwango goes beyond a basic currency converter. The product combines reliable rate conversion with practical travel-money workflows:
 
-AfriChange therefore treats offline use as a product requirement rather than an afterthought:
+- currency conversion with clear rate freshness;
+- offline Travel Packs;
+- Rate Check for evaluating a rate offered by a bureau, hotel or merchant;
+- fee-aware “amount actually received” calculator;
+- travel budget tracking;
+- Cash Wallet for physical cash;
+- multi-currency calculator;
+- ATM withdrawal estimator;
+- local rate alerts;
+- Scan & Convert with browser-native OCR when available and manual fallback otherwise;
+- locally recorded field rates;
+- verified historical trends;
+- configurable payment-method comparison;
+- nearby ATMs, banks and exchange services using OpenStreetMap data;
+- a local contextual summary built from the user’s own budget, cash and alerts.
 
-1. fetch verified exchange-rate data when connectivity is available;
-2. normalize and validate it;
-3. persist the latest successful snapshot in IndexedDB;
-4. perform conversions locally;
-5. clearly identify cached or stale data when offline.
+The application never fabricates a market or historical rate simply to keep a feature looking active.
 
-The application never fabricates a historical rate or silently presents an undated static estimate as live market data.
+## Offline-first architecture
+
+```text
+Internet available
+      │
+      ├── Fawaz exchange-rate dataset
+      ├── Frankfurter
+      └── optional server-side fallback
+               │
+               ▼
+      validation / normalization
+               │
+               ▼
+            IndexedDB
+               │
+               ▼
+       local conversion engine
+
+Offline
+      │
+      ├── latest IndexedDB snapshot
+      ├── prepared Travel Packs
+      └── official EUR/XOF/XAF fixed parity when applicable
+```
+
+Rate-provider API keys are never embedded in the browser bundle.
+
+## Travel Packs
+
+A Travel Pack prepares a destination before departure. Kiwango stores the useful currency pairs locally and generates a quick offline cheat sheet for common amounts. If reliable data cannot be retrieved, the pack is not falsely marked as synchronized.
+
+## Kiwango Tools
+
+### Rate Check
+Compare a rate offered in the real world with Kiwango’s current reference rate and estimate the percentage difference and potential loss.
+
+### Real fees
+Add percentage and fixed fees to estimate how much is actually converted and received.
+
+### Budget Voyage
+Create a local travel budget, add expenses and track remaining funds.
+
+### Cash Wallet
+Track the estimated amount of physical cash still in your pocket without connecting a bank account.
+
+### Calculator & ATM estimator
+Calculate expressions such as `450 * 3 + 120`, convert the result, and estimate withdrawals including ATM and bank fees.
+
+### Alerts
+Create local rate thresholds. The current implementation evaluates them while Kiwango is open; true background push notifications require a push service.
+
+### Scan & Convert
+Use the camera or an image of a price/receipt. Kiwango uses the browser’s native text detector when supported and falls back to assisted manual entry instead of pretending OCR succeeded.
+
+### Field rates
+Record rates actually offered by a bureau, hotel or merchant. These observations currently remain private on the device. A shared community layer will require a moderated backend.
+
+## Insights
+
+Kiwango includes verified historical series where the provider has real dated snapshots. It also includes a fee-method comparator and a nearby-services search for ATMs, banks, exchange offices and money-transfer points using OpenStreetMap/Overpass.
 
 ## Supported currencies
 
-The registry focuses on Africa and also contains major international currencies. It currently includes XOF, XAF, GMD, SLE, GNF, NGN, GHS, MRU, CDF, KES, TZS, UGX, ETB, RWF, BIF, MUR, MGA, SCR, MAD, DZD, TND, EGP, ZAR, BWP, NAD, MZN, ZMW, EUR, USD, GBP, CAD, CHF, JPY, CNY, AED and SAR.
+The registry focuses on Africa and also contains major international currencies, including XOF, XAF, GMD, SLE, GNF, NGN, GHS, MRU, CDF, KES, TZS, UGX, ETB, RWF, BIF, MUR, MGA, SCR, MAD, DZD, TND, EGP, ZAR, BWP, NAD, MZN, ZMW, EUR, USD, GBP, CAD, CHF, JPY, CNY, AED and SAR.
 
-The official EUR/XOF and EUR/XAF fixed parities are handled explicitly by the conversion engine.
-
-## Rate architecture
-
-```text
-Online
-  │
-  ├── Fawaz open currency dataset
-  ├── Frankfurter
-  └── optional server-side ExchangeRate-API fallback
-          │
-          ▼
-  normalization + validation
-          │
-          ▼
-       IndexedDB
-          │
-          ▼
-   local conversion engine
-
-Offline
-  │
-  ├── latest IndexedDB snapshot
-  └── official EUR/XOF/XAF fixed parity when applicable
-```
-
-API keys are never embedded in the browser bundle. If `EXCHANGE_RATE_API_KEY` is configured on the server, the browser reaches it through `/api/rates`.
-
-## Rate freshness
-
-AfriChange distinguishes between data states instead of using a simple online/offline flag:
-
-- fresh cached data;
-- stale cached data;
-- very old cached data, shown as indicative;
-- official fixed parity;
-- unavailable data.
-
-If a user opens the app offline before ever synchronizing a floating currency, AfriChange must report that the rate is unavailable instead of inventing one.
+The EUR/XOF and EUR/XAF fixed parities are handled explicitly by the conversion engine.
 
 ## Local data
 
-IndexedDB stores:
-
-- exchange-rate snapshots;
-- recent conversion history;
-- favorites.
-
-Theme and language preferences may use lightweight browser preferences. No account is required for the core experience.
+IndexedDB stores exchange-rate snapshots, conversion history, favorites and prepared Travel Packs. Additional personal travel tools such as budget, Cash Wallet, local alerts and field observations are stored locally in the browser. No account is required for the current core experience.
 
 ## PWA
 
-The app includes a web manifest and a service worker. Static application resources are cached for offline reuse, while `/api/*` responses are deliberately excluded from the service-worker cache because rate freshness is managed explicitly by the exchange-rate layer and IndexedDB.
+The app includes a web manifest and service worker. Application resources are cached for reuse, while `/api/*` responses are excluded from the service-worker cache because exchange-rate freshness is managed explicitly by the rate layer and IndexedDB.
+
+PWA shortcuts open Convert, Voyage and Tools directly.
 
 ## Languages
 
-The UI supports French, English, Spanish and Wolof.
+The maintained interface languages are French and English.
 
 ## Tech stack
 
-- Next.js (Pages Router)
+- Next.js Pages Router
 - React
 - Tailwind CSS
-- Framer Motion
 - IndexedDB
 - Service Worker / PWA APIs
-- Recharts for verified chart data only
+- Fawaz exchange-rate dataset
+- Frankfurter fallback
+- OpenStreetMap / Overpass for nearby financial services
 
-## Local development
+## Development
 
 ```bash
 git clone https://github.com/njaga/currency-converter.git
@@ -101,33 +129,23 @@ npm install
 npm run dev
 ```
 
-Optional server-side fallback:
+Optional server-side rate fallback:
 
 ```env
 EXCHANGE_RATE_API_KEY=your_server_only_key
-NEXT_PUBLIC_SITE_URL=https://xof-converter.vercel.app
+NEXT_PUBLIC_SITE_URL=https://your-domain.example
 ```
 
-Never prefix a secret rate-provider key with `NEXT_PUBLIC_`.
+Never prefix a secret provider key with `NEXT_PUBLIC_`.
 
 ## Data integrity rules
 
-Contributions must respect these rules:
-
 - no random or simulated market/historical data presented as real;
-- no secret API key in client-side code;
+- no secret provider key in client-side code;
 - no rate without a traceable source or cached timestamp, except an official fixed parity;
 - no silent substitution of stale data for live data;
-- conversion logic must return `null` when the required floating rate is unavailable.
-
-## Roadmap
-
-- Country / travel preparation mode
-- Pre-trip offline readiness check
-- Better multi-country metadata for XOF and XAF monetary zones
-- Verified historical provider before restoring charts/trends
-- Stronger automated tests around provider normalization and stale-rate handling
-- Incremental migration of large UI components toward smaller hooks/components and TypeScript
+- unavailable data must remain visibly unavailable;
+- community or operator pricing is never presented as live unless a reliable source actually exists.
 
 ## Author
 
