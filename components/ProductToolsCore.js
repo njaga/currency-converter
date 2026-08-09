@@ -1,17 +1,17 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Bell, Calculator, Camera, CircleDollarSign, Landmark, MapPin, PiggyBank, ReceiptText, ScanLine, Trash2, WalletCards } from 'lucide-react';
 import { calculateCrossRate } from '../lib/rates';
 
 const TOOLS = [
-  { id: 'rate-check', label: 'Vérifier un taux', description: 'Comparer une offre au taux du marché', icon: CircleDollarSign },
-  { id: 'fees', label: 'Calculer les frais', description: 'Voir le montant réellement reçu', icon: ReceiptText },
-  { id: 'budget', label: 'Budget voyage', description: 'Suivre dépenses et solde restant', icon: PiggyBank },
-  { id: 'wallet', label: 'Argent liquide', description: 'Suivre le cash disponible', icon: WalletCards },
-  { id: 'calculator', label: 'Calculatrice devises', description: 'Calculer puis convertir un total', icon: Calculator },
-  { id: 'atm', label: 'Retrait au distributeur', description: 'Estimer frais bancaires et ATM', icon: Landmark },
-  { id: 'alerts', label: 'Alerte de taux', description: 'Définir un seuil à surveiller', icon: Bell },
-  { id: 'scan', label: 'Scanner un prix', description: 'Lire ou saisir un montant à convertir', icon: ScanLine },
-  { id: 'field', label: 'Taux observé', description: 'Noter une offre trouvée sur place', icon: MapPin },
+  { id: 'rate-check', fr: 'Vérifier un taux', en: 'Check a rate', descFr: 'Comparer une offre au taux du marché', descEn: 'Compare an offer with the market rate', icon: CircleDollarSign },
+  { id: 'fees', fr: 'Calculer les frais', en: 'Calculate fees', descFr: 'Voir le montant réellement reçu', descEn: 'See the amount actually received', icon: ReceiptText },
+  { id: 'budget', fr: 'Budget voyage', en: 'Travel budget', descFr: 'Suivre dépenses et solde restant', descEn: 'Track spending and remaining balance', icon: PiggyBank },
+  { id: 'wallet', fr: 'Argent liquide', en: 'Cash wallet', descFr: 'Suivre le cash disponible', descEn: 'Track available cash', icon: WalletCards },
+  { id: 'calculator', fr: 'Calculatrice devises', en: 'Currency calculator', descFr: 'Calculer puis convertir un total', descEn: 'Calculate and convert a total', icon: Calculator },
+  { id: 'atm', fr: 'Retrait au distributeur', en: 'ATM withdrawal', descFr: 'Estimer frais bancaires et ATM', descEn: 'Estimate bank and ATM fees', icon: Landmark },
+  { id: 'alerts', fr: 'Alerte de taux', en: 'Rate alert', descFr: 'Définir un seuil à surveiller', descEn: 'Set a rate threshold', icon: Bell },
+  { id: 'scan', fr: 'Scanner un prix', en: 'Scan a price', descFr: 'Lire ou saisir un montant à convertir', descEn: 'Read or enter an amount to convert', icon: ScanLine },
+  { id: 'field', fr: 'Taux observé', en: 'Observed rate', descFr: 'Noter une offre trouvée sur place', descEn: 'Save an offer found locally', icon: MapPin },
 ];
 
 const read = (key, fallback) => {
@@ -89,8 +89,31 @@ function Shell({ title, subtitle, accent, children }) {
     <div className="p-5 sm:p-7">{children}</div>
   </section>;
 }
-function Input({ label, className = '', ...props }) {
-  return <label className="block min-w-0">{label && <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">{label}</span>}<input {...props} className={`w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 dark:border-white/10 dark:bg-slate-950 ${className}`} /></label>;
+function Input({ label, className = '', value = '', onChange, onBlur, ...props }) {
+  const [draft, setDraft] = useState(String(value ?? ''));
+  const timerRef = useRef(null);
+
+  useEffect(() => { setDraft(String(value ?? '')); }, [value]);
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  const commit = (next) => {
+    clearTimeout(timerRef.current);
+    onChange?.({ target: { value: next } });
+  };
+
+  const handleChange = (event) => {
+    const next = event.target.value;
+    setDraft(next);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => commit(next), 350);
+  };
+
+  const handleBlur = (event) => {
+    commit(draft);
+    onBlur?.(event);
+  };
+
+  return <label className="block min-w-0">{label && <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">{label}</span>}<input {...props} value={draft} onChange={handleChange} onBlur={handleBlur} className={`w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 dark:border-white/10 dark:bg-slate-950 ${className}`} /></label>;
 }
 function Select({ label, children, ...props }) {
   return <label className="block min-w-0">{label && <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">{label}</span>}<select {...props} className="w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-400 dark:border-white/10 dark:bg-slate-950">{children}</select></label>;
@@ -101,8 +124,8 @@ function Stat({ label, value, accent = false }) {
 function ErrorNote({ children }) {
   return <div className="mt-4 flex gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><AlertTriangle className="mt-0.5 h-4 w-4 flex-none"/><span>{children}</span></div>;
 }
-function Pair({ base, quote, setBase, setQuote, options }) {
-  return <div className="grid gap-3 sm:grid-cols-2"><Select label="Devise de départ" value={base} onChange={(e) => setBase(e.target.value)}>{options}</Select><Select label="Devise reçue" value={quote} onChange={(e) => setQuote(e.target.value)}>{options}</Select></div>;
+function Pair({ base, quote, setBase, setQuote, options, lang = 'fr' }) {
+  return <div className="grid gap-3 sm:grid-cols-2"><Select label={lang === 'fr' ? 'Devise de départ' : 'From currency'} value={base} onChange={(e) => setBase(e.target.value)}>{options}</Select><Select label={lang === 'fr' ? 'Devise reçue' : 'To currency'} value={quote} onChange={(e) => setQuote(e.target.value)}>{options}</Select></div>;
 }
 
 export default function ProductTools({ allRates = {}, fromCurrency = 'EUR', toCurrency = 'XOF', currencies = [], lang = 'fr' }) {
@@ -112,12 +135,12 @@ export default function ProductTools({ allRates = {}, fromCurrency = 'EUR', toCu
   const [quote, setQuote] = useState(toCurrency);
   const marketRate = useMemo(() => calculateCrossRate(base, quote, allRates, 'EUR'), [base, quote, allRates]);
   const options = currencies.map((currency) => <option key={currency.code} value={currency.code}>{currency.code} · {currency.name}</option>);
-  const shared = { allRates, marketRate, base, quote, setBase, setQuote, options, locale };
+  const shared = { allRates, marketRate, base, quote, setBase, setQuote, options, locale, lang };
 
   return <div className="min-w-0">
-    <div className="mb-6 max-w-3xl"><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-emerald-700">Outils pratiques</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-4xl">Choisissez ce que vous voulez calculer.</h1><p className="mt-3 text-sm leading-6 text-slate-500">Chaque outil répond à une tâche précise. Sélectionnez-en un pour afficher uniquement les champs nécessaires.</p></div>
+    <div className="mb-6 max-w-3xl"><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-emerald-700">{lang === 'fr' ? 'Outils pratiques' : 'Practical tools'}</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-4xl">{lang === 'fr' ? 'Choisissez ce que vous voulez calculer.' : 'Choose what you want to calculate.'}</h1><p className="mt-3 text-sm leading-6 text-slate-500">{lang === 'fr' ? 'Chaque outil répond à une tâche précise. Sélectionnez-en un pour afficher uniquement les champs nécessaires.' : 'Each tool handles one precise task. Select one to display only the fields you need.'}</p></div>
     <div className="grid min-w-0 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
-      <aside><div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:sticky lg:top-24 lg:grid-cols-1">{TOOLS.map(({ id, label, description, icon: Icon }) => <button key={id} onClick={() => setTool(id)} aria-pressed={tool === id} className={`flex items-start gap-3 border-l-2 px-3 py-3 text-left transition ${tool === id ? 'border-emerald-600 bg-emerald-50 text-slate-950 dark:bg-emerald-950/30 dark:text-white' : 'border-transparent text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/[.035]'}`}><Icon className="mt-0.5 h-4 w-4 flex-none text-emerald-700"/><span><span className="block text-xs font-semibold">{label}</span><span className={`mt-1 hidden text-[10px] font-normal leading-4 lg:block ${tool === id ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400'}`}>{description}</span></span></button>)}</div></aside>
+      <aside><div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:sticky lg:top-24 lg:grid-cols-1">{TOOLS.map(({ id, fr, en, descFr, descEn, icon: Icon }) => <button key={id} onClick={() => setTool(id)} aria-pressed={tool === id} className={`flex items-start gap-3 border-l-2 px-3 py-3 text-left transition ${tool === id ? 'border-emerald-600 bg-emerald-50 text-slate-950 dark:bg-emerald-950/30 dark:text-white' : 'border-transparent text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/[.035]'}`}><Icon className="mt-0.5 h-4 w-4 flex-none text-emerald-700"/><span><span className="block text-xs font-semibold">{lang === 'fr' ? fr : en}</span><span className={`mt-1 hidden text-[10px] font-normal leading-4 lg:block ${tool === id ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400'}`}>{lang === 'fr' ? descFr : descEn}</span></span></button>)}</div></aside>
       <div className="min-w-0">
         {tool === 'rate-check' && <RateCheck {...shared}/>} {tool === 'fees' && <Fees {...shared}/>} {tool === 'budget' && <Budget locale={locale}/>} {tool === 'wallet' && <Wallet locale={locale}/>} {tool === 'calculator' && <Calc {...shared}/>} {tool === 'atm' && <Atm {...shared}/>} {tool === 'alerts' && <Alerts {...shared}/>} {tool === 'scan' && <Scan {...shared}/>} {tool === 'field' && <Field {...shared}/>} 
       </div>
@@ -126,7 +149,8 @@ export default function ProductTools({ allRates = {}, fromCurrency = 'EUR', toCu
 }
 
 function RateCheck(props) {
-  const { marketRate, base, quote, locale } = props;
+  const { marketRate, base, quote, locale, lang } = props;
+  const fr = lang !== 'en';
   const [mode, setMode] = useState('rate');
   const [offered, setOffered] = useState('');
   const [amount, setAmount] = useState('100');
@@ -140,7 +164,7 @@ function RateCheck(props) {
   const expected = amt && marketRate ? amt * marketRate : null;
   const loss = valid ? Math.max(0, amt * (marketRate - offer)) : null;
   const verdict = diff === null ? null : diff >= -1 ? 'Bon taux' : diff >= -3 ? 'Acceptable' : 'Défavorable';
-  return <Shell title="Rate Check" subtitle="Comparez une offre réelle au taux de référence." accent={verdict && <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold dark:bg-white/10">{verdict}</span>}>
+  return <Shell title="Rate Check" subtitle={fr ? 'Comparez une offre réelle au taux de référence.' : 'Compare a real offer with the reference rate.'} accent={verdict && <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold dark:bg-white/10">{verdict}</span>}>
     <Pair {...props}/><div className="mt-4 flex flex-wrap gap-2">{[['rate','Je connais le taux'],['received','Je connais le montant reçu']].map(([id, label]) => <button key={id} onClick={() => setMode(id)} className={`rounded-full px-3 py-2 text-xs font-semibold ${mode === id ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950' : 'bg-slate-100 text-slate-500 dark:bg-white/5'}`}>{label}</button>)}</div>
     <div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label={`Montant donné (${base})`} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal"/>{mode === 'rate' ? <Input label={`Taux proposé (1 ${base})`} value={offered} onChange={(e) => setOffered(e.target.value)} inputMode="decimal"/> : <Input label={`Montant reçu (${quote})`} value={received} onChange={(e) => setReceived(e.target.value)} inputMode="decimal"/>}</div>
     <div className="mt-5 grid gap-3 sm:grid-cols-3"><Stat label="Référence" value={`1 ${base} = ${fmt(marketRate, locale, 4)} ${quote}`}/><Stat label="Attendu" value={`${fmt(expected, locale)} ${quote}`} accent/><Stat label="Écart" value={diff === null ? '—' : `${diff >= 0 ? '+' : ''}${fmt(diff, locale)} %`}/></div>
