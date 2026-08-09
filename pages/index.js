@@ -1,6 +1,8 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import CurrencyConverter from '../components/CurrencyConverter';
+import LandingFeatures from '../components/LandingFeatures';
+import MarketingSections from '../components/MarketingSections';
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://xof-converter.vercel.app').replace(/\/$/, '');
 
@@ -34,10 +36,10 @@ export default function Home() {
         <title>AfriChange | Convertisseur de devises africaines offline-first</title>
         <meta name="description" content="Convertissez les devises africaines et internationales. AfriChange conserve les derniers taux synchronisés sur votre appareil pour continuer à fonctionner hors connexion." />
         <meta name="keywords" content="convertisseur devises africaines, hors ligne, franc CFA, XOF, XAF, naira NGN, dalasi GMD, leone SLE, cedi GHS, shilling KES" />
-        <meta name="theme-color" content="#2563eb" />
+        <meta name="theme-color" content="#047857" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="AfriChange" />
 
         <meta property="og:type" content="website" />
@@ -60,7 +62,13 @@ export default function Home() {
 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       </Head>
+
       <CurrencyConverter />
+
+      <div className="mx-auto max-w-5xl px-4 md:px-6">
+        <LandingFeatures lang="fr" />
+        <MarketingSections lang="fr" />
+      </div>
     </>
   );
 }
