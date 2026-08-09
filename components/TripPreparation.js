@@ -10,7 +10,7 @@ const TASKS = [
   { id: 'connection', fr: 'Préparer la connexion mobile', en: 'Prepare mobile connectivity' },
 ];
 
-export default function TripPreparation({ country, lang = 'fr' }) {
+export default function TripPreparation({ country, lang = 'fr', activeTrip = null }) {
   const fr = lang === 'fr';
   const storageKey = country?.code ? `kiwango_departure_plan_${country.code}` : null;
   const [origin, setOrigin] = useState('');
@@ -24,20 +24,22 @@ export default function TripPreparation({ country, lang = 'fr' }) {
     if (!storageKey) return;
     try {
       const plan = JSON.parse(localStorage.getItem(storageKey));
-      setOrigin(plan?.origin || '');
-      setDepartureDate(plan?.departureDate || '');
-      setReturnDate(plan?.returnDate || '');
+      const matchingTrip = activeTrip?.destinationCode === country?.code ? activeTrip : null;
+      setOrigin(plan?.origin || matchingTrip?.originName || '');
+      setDepartureDate(plan?.departureDate || matchingTrip?.departureDate || '');
+      setReturnDate(plan?.returnDate || matchingTrip?.returnDate || '');
       setTravellers(String(plan?.travellers || 1));
       setCompleted(Array.isArray(plan?.completed) ? plan.completed : []);
     } catch {
-      setOrigin('');
-      setDepartureDate('');
-      setReturnDate('');
+      const matchingTrip = activeTrip?.destinationCode === country?.code ? activeTrip : null;
+      setOrigin(matchingTrip?.originName || '');
+      setDepartureDate(matchingTrip?.departureDate || '');
+      setReturnDate(matchingTrip?.returnDate || '');
       setTravellers('1');
       setCompleted([]);
     }
     setSaved(false);
-  }, [storageKey]);
+  }, [storageKey, activeTrip, country?.code]);
 
   const progress = useMemo(() => Math.round((completed.length / TASKS.length) * 100), [completed]);
 
@@ -60,6 +62,15 @@ export default function TripPreparation({ country, lang = 'fr' }) {
       completed,
       updatedAt: Date.now(),
     }));
+    if (activeTrip?.destinationCode === country.code) {
+      localStorage.setItem('kiwango_active_trip', JSON.stringify({
+        ...activeTrip,
+        originName: origin.trim(),
+        departureDate,
+        returnDate,
+        updatedAt: Date.now(),
+      }));
+    }
     setSaved(true);
   };
 
