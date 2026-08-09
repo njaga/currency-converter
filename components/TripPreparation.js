@@ -12,7 +12,7 @@ const TASKS = [
   { id: 'connection', fr: 'Préparer la connexion mobile', en: 'Prepare mobile connectivity' },
 ];
 
-export default function TripPreparation({ country, lang = 'fr', activeTrip = null }) {
+export default function TripPreparation({ country, lang = 'fr', activeTrip = null, preparedTrip = null }) {
   const fr = lang === 'fr';
   const storageKey = country?.code ? `kiwango_departure_plan_${country.code}` : null;
   const [origin, setOrigin] = useState('');
@@ -117,7 +117,7 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
               return <button key={task.id} type="button" onClick={() => toggleTask(task.id)} aria-pressed={checked} className="flex w-full items-center gap-3 py-4 text-left"><span className={`flex h-6 w-6 items-center justify-center border ${checked ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 text-transparent dark:border-white/20'}`}><Check className="h-4 w-4"/></span><span className={`text-sm font-medium ${checked ? 'text-slate-400 line-through' : ''}`}>{fr ? task.fr : task.en}</span></button>;
             })}
           </div>
-          <DestinationMapTools origin={origin} destination={country.name} lang={lang} />
+          <DestinationMapTools destination={country.name} lang={lang} offlineServices={preparedTrip?.financialServices || null} />
         </div>
       </div>
     </section>
