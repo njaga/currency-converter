@@ -1,13 +1,12 @@
-import Head from 'next/head';
 import Link from 'next/link';
 import * as Flags from 'country-flag-icons/react/3x2';
 import { ArrowRight, Banknote, Globe2, MapPin, Plane, ShieldCheck, WifiOff } from 'lucide-react';
 import Logo from '../../components/Logo';
 import SiteFooter from '../../components/SiteFooter';
+import SeoHead from '../../components/SeoHead';
 import { fetchCountryDirectory, countrySlug, resolveCountry } from '../../lib/countries-server';
+import { absoluteUrl } from '../../lib/seo';
 import { TRAVEL_DESTINATIONS } from '../../lib/travel';
-
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://kiwango.vercel.app').replace(/\/$/, '');
 
 const fallbackDirectory = TRAVEL_DESTINATIONS.map((item) => ({
   code: item.code,
@@ -33,12 +32,13 @@ function localCountryName(code, fallback) {
 export default function DestinationPage({ country }) {
   const name = localCountryName(country.code, country.name);
   const slug = countrySlug(name || country.name);
-  const canonical = `${SITE_URL}/voyage/${slug}`;
+  const path = `/voyage/${slug}`;
+  const canonical = absoluteUrl(path);
   const currencies = country.currencies || [];
   const primary = country.primaryCurrency || currencies[0];
   const currencyCodes = currencies.map((currency) => currency.code).join(', ');
   const title = `${name} : devise, change et Travel Pack | Kiwango`;
-  const description = `Préparez votre voyage en ${name} : devise ${currencyCodes || primary?.code || ''}, repères de change, Travel Pack hors connexion et outils financiers Kiwango.`;
+  const description = `Destination ${name} : devise ${currencyCodes || primary?.code || ''}, repères de change, DAB, bureaux de change et Travel Pack Kiwango hors connexion.`;
   const appHref = `/voyage?country=${country.code}`;
 
   const structuredData = {
@@ -55,27 +55,15 @@ export default function DestinationPage({ country }) {
     breadcrumb: {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Kiwango', item: SITE_URL },
-        { '@type': 'ListItem', position: 2, name: 'Voyage', item: `${SITE_URL}/voyage` },
+        { '@type': 'ListItem', position: 1, name: 'Kiwango', item: absoluteUrl('/') },
+        { '@type': 'ListItem', position: 2, name: 'Voyage', item: absoluteUrl('/voyage') },
         { '@type': 'ListItem', position: 3, name, item: canonical },
       ],
     },
   };
 
   return <div className="min-h-screen overflow-x-clip bg-white text-slate-950 dark:bg-slate-950 dark:text-white">
-    <Head>
-      <title>{title}</title>
-      <meta name="description" content={description} />
-      <link rel="canonical" href={canonical} />
-      <link rel="alternate" hrefLang="fr" href={canonical} />
-      <link rel="alternate" hrefLang="x-default" href={canonical} />
-      <meta property="og:type" content="website" />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:url" content={canonical} />
-      <meta property="og:image" content={`${SITE_URL}/og-image.png`} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-    </Head>
+    <SeoHead title={title} description={description} path={path} schema={structuredData} imageAlt={`Kiwango — préparer son argent pour la destination ${name}`} />
 
     <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/90">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6">
