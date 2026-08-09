@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:core": "node --test __tests__/conversion.node.test.mjs"
+    "test:core": "node --test __tests__/*.node.test.mjs"
   },
   "dependencies": {
     "country-flag-icons": "^1.6.12",

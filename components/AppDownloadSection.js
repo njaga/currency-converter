@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Check, Download, Share } from 'lucide-react';
+import { ArrowRight, Check, Share } from 'lucide-react';
 
 export default function AppDownloadSection({ lang = 'fr' }) {
   const fr = lang === 'fr';
-  const [promptEvent, setPromptEvent] = useState(null);
   const [installed, setInstalled] = useState(false);
   const [isIos, setIsIos] = useState(false);
 
@@ -13,18 +12,10 @@ export default function AppDownloadSection({ lang = 'fr' }) {
     const standalone = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone;
     setInstalled(Boolean(standalone));
     setIsIos(/iphone|ipad|ipod/i.test(window.navigator.userAgent));
-    const capture = (event) => { event.preventDefault(); setPromptEvent(event); };
-    window.addEventListener('beforeinstallprompt', capture);
-    return () => window.removeEventListener('beforeinstallprompt', capture);
+    const markInstalled = () => setInstalled(true);
+    window.addEventListener('appinstalled', markInstalled);
+    return () => window.removeEventListener('appinstalled', markInstalled);
   }, []);
-
-  const install = async () => {
-    if (!promptEvent) return;
-    promptEvent.prompt();
-    const choice = await promptEvent.userChoice;
-    if (choice?.outcome === 'accepted') setInstalled(true);
-    setPromptEvent(null);
-  };
 
   const help = isIos
     ? (fr ? 'Sur iPhone : Safari → Partager → Sur l’écran d’accueil.' : 'On iPhone: Safari → Share → Add to Home Screen.')
@@ -43,13 +34,9 @@ export default function AppDownloadSection({ lang = 'fr' }) {
           fr ? 'Même expérience sur tous vos écrans' : 'The same experience on every screen',
         ].map((text) => <div key={text} className="flex items-center gap-2"><Check className="h-4 w-4 flex-none text-emerald-700" />{text}</div>)}</div>
 
-        <div className="mt-8">
-          {promptEvent && !installed
-            ? <button onClick={install} className="inline-flex items-center gap-2 bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700"><Download className="h-4 w-4" />{fr ? 'Installer Kiwango' : 'Install Kiwango'}</button>
-            : <Link href="/convertisseur" className="inline-flex items-center gap-2 bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700">{installed ? (fr ? 'Ouvrir Kiwango' : 'Open Kiwango') : (fr ? 'Utiliser Kiwango' : 'Use Kiwango')}<ArrowRight className="h-4 w-4" /></Link>}
-        </div>
+        <div className="mt-8"><Link href="/convertisseur" className="inline-flex items-center gap-2 bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700">{installed ? (fr ? 'Ouvrir Kiwango' : 'Open Kiwango') : (fr ? 'Utiliser Kiwango' : 'Use Kiwango')}<ArrowRight className="h-4 w-4" /></Link></div>
 
-        {!installed && !promptEvent && <div className="mt-5 flex max-w-lg items-start gap-3 border-l-2 border-emerald-500 pl-4 text-sm leading-6 text-slate-500"><Share className="mt-1 h-4 w-4 flex-none text-emerald-700" /><p>{help}</p></div>}
+        {!installed && <div className="mt-5 flex max-w-lg items-start gap-3 border-l-2 border-emerald-500 pl-4 text-sm leading-6 text-slate-500"><Share className="mt-1 h-4 w-4 flex-none text-emerald-700" /><p>{help}</p></div>}
       </div>
 
       <div className="relative min-h-[430px] overflow-hidden bg-[#eef6f1] sm:min-h-[520px]">
