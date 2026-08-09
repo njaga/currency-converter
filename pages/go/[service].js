@@ -31,7 +31,7 @@ function validatedPartnerUrl(urlString, campaign) {
 }
 
 const fallbackDestination = (service, reason) =>
-  `/app?tab=travel&affiliate=${encodeURIComponent(reason)}&service=${encodeURIComponent(clean(service, 40))}`;
+  `/voyage?affiliate=${encodeURIComponent(reason)}&service=${encodeURIComponent(clean(service, 40))}`;
 
 export async function getServerSideProps({ params, query }) {
   const service = clean(params?.service, 40).toLowerCase();

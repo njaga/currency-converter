@@ -65,6 +65,10 @@ jobs:
 
           curl -fsS http://127.0.0.1:3000/ > /dev/null
           curl -fsS http://127.0.0.1:3000/app > /dev/null
+          curl -fsS http://127.0.0.1:3000/convertisseur > /dev/null
+          curl -fsS http://127.0.0.1:3000/voyage > /dev/null
+          curl -fsS http://127.0.0.1:3000/outils > /dev/null
+          curl -fsS http://127.0.0.1:3000/devises > /dev/null
           curl -fsS http://127.0.0.1:3000/mentions-legales > /dev/null
           curl -fsS http://127.0.0.1:3000/voyage/gambie > /tmp/gambie.html
           grep -q 'Gambie' /tmp/gambie.html
@@ -74,7 +78,7 @@ jobs:
           grep -q 'http://localhost:3000/sitemap.xml' /tmp/robots.txt
 
           curl -fsS http://127.0.0.1:3000/site.webmanifest > /tmp/manifest.json
-          node -e "const m=require('/tmp/manifest.json'); if(m.start_url!=='/app'||m.display!=='standalone'||!m.icons?.some(i=>i.purpose==='maskable')) process.exit(1)"
+          node -e "const m=require('/tmp/manifest.json'); if(m.start_url!=='/convertisseur'||m.display!=='standalone'||!m.icons?.some(i=>i.purpose==='maskable')) process.exit(1)"
           curl -fsS http://127.0.0.1:3000/pwa-maskable.svg > /dev/null
           curl -fsS http://127.0.0.1:3000/sw.js > /tmp/sw.js
           grep -q 'SKIP_WAITING' /tmp/sw.js
@@ -96,4 +100,8 @@ jobs:
 
           LOCATION=$(curl -sI 'http://127.0.0.1:3000/go/not-a-service' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
           echo "affiliate invalid redirect => $LOCATION"
-          test "$LOCATION" = "/app?tab=travel&affiliate=invalid-service&service=not-a-service"
+          test "$LOCATION" = "/voyage?affiliate=invalid-service&service=not-a-service"
+
+          LEGACY_LOCATION=$(curl -sI 'http://127.0.0.1:3000/app?tab=tools' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
+          echo "legacy tools redirect => $LEGACY_LOCATION"
+          test "$LEGACY_LOCATION" = "/outils"

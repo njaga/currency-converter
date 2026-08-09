@@ -1,20 +1,19 @@
-import Head from 'next/head';
-import CurrencyConverter from '../components/CurrencyConverter';
-import SiteFooter from '../components/SiteFooter';
+import { APP_ROUTES } from '../lib/app-routes';
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
+export default function LegacyAppPage() { return null; }
 
-export default function AppPage() {
-  return <>
-    <Head>
-      <title>Kiwango App | Convertir, voyager et gérer votre argent</title>
-      <meta name="description" content="Ouvrez Kiwango pour convertir, préparer un voyage, vérifier un taux, suivre un budget et utiliser vos outils financiers." />
-      <link rel="canonical" href={`${SITE_URL}/app`} />
-      <meta name="robots" content="index, follow" />
-    </Head>
-    <div className="kiwango-app-page">
-      <CurrencyConverter />
-      <SiteFooter />
-    </div>
-  </>;
+export function getServerSideProps({ query }) {
+  const tab = APP_ROUTES[query.tab] ? query.tab : 'converter';
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (key === 'tab' || value === undefined) return;
+    params.set(key, Array.isArray(value) ? value[0] : value);
+  });
+  const search = params.toString();
+  return {
+    redirect: {
+      destination: `${APP_ROUTES[tab]}${search ? `?${search}` : ''}`,
+      permanent: true,
+    },
+  };
 }

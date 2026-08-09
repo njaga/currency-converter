@@ -6,7 +6,7 @@ const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').r
 export default function Home() {
   const schemas = [
     { '@context':'https://schema.org','@type':'WebSite',name:'Kiwango',url:SITE_URL,inLanguage:['fr','en'] },
-    { '@context':'https://schema.org','@type':'WebApplication',name:'Kiwango',url:`${SITE_URL}/app`,applicationCategory:'FinanceApplication',operatingSystem:'Any',description:'Compagnon financier de voyage : conversion, taux, budget, cash, destinations et outils hors connexion.',offers:{'@type':'Offer',price:'0',priceCurrency:'XOF'} },
+    { '@context':'https://schema.org','@type':'WebApplication',name:'Kiwango',url:`${SITE_URL}/convertisseur`,applicationCategory:'FinanceApplication',operatingSystem:'Any',description:'Compagnon financier de voyage : conversion, taux, budget, cash, destinations et outils hors connexion.',offers:{'@type':'Offer',price:'0',priceCurrency:'XOF'} },
   ];
   return <>
     <Head>

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import * as Flags from 'country-flag-icons/react/3x2';
 import AppDownloadSection from './AppDownloadSection';
+import CountryQuickSelect from './CountryQuickSelect';
 import LanguageMenu from './LanguageMenu';
 import Logo from './Logo';
 import SiteFooter from './SiteFooter';
@@ -24,10 +25,10 @@ import { getCountryDirectory } from '../lib/country-directory-client';
 import { TRAVEL_DESTINATIONS } from '../lib/travel';
 
 const NAV_ITEMS = [
-  { href: '#product', fr: 'Produit', en: 'Product' },
-  { href: '#journey', fr: 'Préparer un voyage', en: 'Plan a trip' },
-  { href: '/app?tab=tools', fr: 'Outils', en: 'Tools' },
-  { href: '/app?tab=travel', fr: 'Destinations', en: 'Destinations' },
+  { href: '/convertisseur', fr: 'Convertir', en: 'Convert' },
+  { href: '/voyage', fr: 'Préparer un voyage', en: 'Plan a trip' },
+  { href: '/outils', fr: 'Outils', en: 'Tools' },
+  { href: '/devises', fr: 'Taux', en: 'Rates' },
 ];
 
 const FALLBACK_COUNTRIES = TRAVEL_DESTINATIONS.map((item) => ({
@@ -113,10 +114,10 @@ function TripStarter({ lang, countries }) {
     };
     localStorage.setItem('kiwango_active_trip', JSON.stringify(trip));
     localStorage.setItem('kiwango_quick_destination', destinationCountry.code);
-    const params = new URLSearchParams({ tab: 'travel', country: destinationCountry.code, origin: originCountry.code });
+    const params = new URLSearchParams({ country: destinationCountry.code, origin: originCountry.code });
     if (submittedDeparture) params.set('depart', submittedDeparture);
     if (submittedReturn) params.set('return', submittedReturn);
-    router.push(`/app?${params.toString()}`);
+    router.push(`/voyage?${params.toString()}`);
   };
 
   const canStart = origin && destination && origin !== destination;
@@ -167,6 +168,7 @@ function HeroGallery({ fr }) {
 }
 
 export default function KiwangoHome() {
+  const router = useRouter();
   const [lang, setLang] = useState('fr');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [countries, setCountries] = useState(FALLBACK_COUNTRIES);
@@ -184,24 +186,29 @@ export default function KiwangoHome() {
 
   const orderedCountries = useMemo(() => [...countries].sort((a, b) => countryName(a, lang).localeCompare(countryName(b, lang))), [countries, lang]);
   const changeLang = (value) => { setLang(value); localStorage.setItem('app_lang', value); };
+  const selectCountry = (country) => {
+    localStorage.setItem('kiwango_quick_destination', country.code);
+    router.push(`/voyage?country=${country.code}`);
+  };
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[#fffefa] text-slate-950">
       <header className="sticky top-0 z-[140] border-b border-slate-200/80 bg-[#fffefa]/95 backdrop-blur-xl">
-        <div className="mx-auto flex h-[72px] w-full max-w-[1320px] items-center justify-between px-4 md:px-8">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 md:px-6">
           <Logo size="md" showText />
-          <nav className="hidden items-center gap-8 lg:flex" aria-label={fr ? 'Navigation principale' : 'Main navigation'}>
+          <nav className="hidden items-center gap-7 lg:flex" aria-label={fr ? 'Navigation principale' : 'Main navigation'}>
             {NAV_ITEMS.map((item) => <Link key={item.href} href={item.href} className="text-sm font-medium text-slate-700 transition hover:text-emerald-700">{fr ? item.fr : item.en}</Link>)}
           </nav>
           <div className="flex items-center gap-2">
+            <div className="hidden lg:block"><CountryQuickSelect lang={lang} onSelect={selectCountry} /></div>
             <LanguageMenu value={lang} onChange={changeLang} />
-            <Link href="/app" className="hidden bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:inline-flex">{fr ? 'Ouvrir Kiwango' : 'Open Kiwango'}</Link>
+            <Link href="/convertisseur" className="hidden bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:inline-flex">{fr ? 'Ouvrir l’application' : 'Open the app'}</Link>
             <button type="button" onClick={() => setMobileOpen((open) => !open)} aria-expanded={mobileOpen} aria-label={fr ? 'Ouvrir le menu' : 'Open menu'} className="flex h-10 w-10 items-center justify-center border border-slate-200 bg-white lg:hidden">
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
-        {mobileOpen && <div className="border-t border-slate-200 bg-white px-4 py-4 shadow-xl lg:hidden"><nav className="mx-auto grid max-w-6xl" aria-label={fr ? 'Navigation mobile' : 'Mobile navigation'}>{NAV_ITEMS.map((item) => <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className="flex items-center justify-between border-b border-slate-100 py-4 text-base font-semibold">{fr ? item.fr : item.en}<ArrowRight className="h-4 w-4 text-slate-400" /></Link>)}<Link href="/app" onClick={() => setMobileOpen(false)} className="mt-4 bg-emerald-600 px-4 py-3.5 text-center text-sm font-semibold text-white">{fr ? 'Ouvrir Kiwango' : 'Open Kiwango'}</Link></nav></div>}
+        {mobileOpen && <div className="border-t border-slate-200 bg-white px-4 py-4 shadow-xl lg:hidden"><nav className="mx-auto grid max-w-6xl" aria-label={fr ? 'Navigation mobile' : 'Mobile navigation'}>{NAV_ITEMS.map((item) => <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className="flex items-center justify-between border-b border-slate-100 py-4 text-base font-semibold">{fr ? item.fr : item.en}<ArrowRight className="h-4 w-4 text-slate-400" /></Link>)}<Link href="/voyage" onClick={() => setMobileOpen(false)} className="mt-4 bg-emerald-600 px-4 py-3.5 text-center text-sm font-semibold text-white">{fr ? 'Choisir une destination' : 'Choose a destination'}</Link></nav></div>}
       </header>
 
       <main>
@@ -222,26 +229,26 @@ export default function KiwangoHome() {
           </div>
         </section>
 
-        <section id="journey" className="px-4 py-16 md:px-8 md:py-24">
+        <section id="journey" className="border-b border-slate-200/70 bg-[#f4f8f5] px-4 py-16 md:px-8">
           <div className="mx-auto max-w-[1180px]">
             <div className="text-center"><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">{fr ? 'Votre voyage, en toute sérénité' : 'Your trip, with peace of mind'}</p><h2 className="mt-4 text-3xl font-semibold tracking-[-.045em] md:text-5xl">{fr ? 'Trois étapes. Un seul guide.' : 'Three stages. One guide.'}</h2></div>
-            <div className="relative mt-14 grid gap-8 md:grid-cols-3 md:gap-0 before:absolute before:left-[16%] before:right-[16%] before:top-5 before:hidden before:h-px before:bg-slate-200 md:before:block">
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
               {[
                 [fr ? 'Avant le départ' : 'Before departure', fr ? 'Renseignez votre trajet, estimez votre budget et enregistrez les informations utiles.' : 'Enter your journey, estimate your budget and save useful information.'],
                 [fr ? 'Sur place' : 'At destination', fr ? 'Convertissez, contrôlez un taux proposé et suivez ce que vous dépensez.' : 'Convert, check an offered rate and track what you spend.'],
                 [fr ? 'Au retour' : 'After the trip', fr ? 'Retrouvez votre historique et conservez uniquement les repères qui vous servent.' : 'Review your history and keep only the references that remain useful.'],
-              ].map(([title, description], index) => <article key={title} className="relative px-5 text-center"><span className="relative z-10 mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-semibold text-white">{index + 1}</span><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mx-auto mt-2 max-w-xs text-sm leading-6 text-slate-500">{description}</p></article>)}
+              ].map(([title, description], index) => <article key={title} className="group border border-slate-200/80 bg-[#fffefa] p-7 text-left transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_20px_50px_rgba(15,23,42,.07)]"><div className="flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-[.16em] text-emerald-700">0{index + 1}</span><ArrowRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-600" /></div><h3 className="mt-14 text-xl font-semibold tracking-[-.03em]">{title}</h3><p className="mt-3 max-w-xs text-sm leading-6 text-slate-500">{description}</p></article>)}
             </div>
           </div>
         </section>
 
-        <section className="bg-slate-950 px-4 py-16 text-white md:px-8 md:py-24">
+        <section className="border-b border-emerald-100 bg-[#eaf6f0] px-4 py-16 md:px-8 md:py-24">
           <div className="mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
-            <div><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-400">{fr ? 'Une interface qui connaît votre trajet' : 'An interface built around your trip'}</p><h2 className="mt-4 text-4xl font-semibold leading-tight tracking-[-.045em]">{fr ? 'Dakar → Nairobi change réellement votre expérience.' : 'Dakar → Nairobi genuinely changes your experience.'}</h2><p className="mt-5 max-w-lg text-base leading-7 text-slate-400">{fr ? 'Kiwango sélectionne les bonnes devises, ouvre la destination correspondante et préremplit les dates de préparation. Vous gardez la main sur chaque information.' : 'Kiwango selects the right currencies, opens the matching destination and prefills your preparation dates. You remain in control of every detail.'}</p><Link href="/app?tab=travel" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-emerald-400">{fr ? 'Voir l’espace voyage' : 'See the travel workspace'}<ArrowRight className="h-4 w-4" /></Link></div>
-            <div className="border border-white/10 bg-white/[.04] p-6 sm:p-8">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6"><div><span className="text-xs uppercase tracking-[.12em] text-slate-500">{fr ? 'Voyage actif' : 'Active trip'}</span><p className="mt-2 text-2xl font-semibold">Dakar <ArrowRight className="mx-2 inline h-5 w-5 text-emerald-400" /> Nairobi</p></div><span className="flex items-center gap-2 text-xs text-emerald-300"><WifiOff className="h-4 w-4" />{fr ? 'Prêt hors connexion' : 'Offline ready'}</span></div>
-              <div className="grid divide-y divide-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                {[[fr ? 'Devise locale' : 'Local currency', 'KES'], [fr ? 'Budget du voyage' : 'Trip budget', fr ? 'À définir' : 'To set'], [fr ? 'Préparation' : 'Preparation', '2 / 6']].map(([label, value]) => <div key={label} className="py-5 sm:px-5 sm:first:pl-0 sm:last:pr-0"><span className="text-xs text-slate-500">{label}</span><strong className="mt-2 block text-lg">{value}</strong></div>)}
+            <div><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">{fr ? 'Une interface qui connaît votre trajet' : 'An interface built around your trip'}</p><h2 className="mt-4 text-4xl font-semibold leading-tight tracking-[-.045em]">{fr ? 'Votre trajet transforme réellement votre espace.' : 'Your journey genuinely shapes your workspace.'}</h2><p className="mt-5 max-w-lg text-base leading-7 text-slate-600">{fr ? 'Kiwango sélectionne les bonnes devises, ouvre la destination correspondante et préremplit les dates de préparation. Chaque information reste modifiable et stockée sur votre appareil.' : 'Kiwango selects the right currencies, opens the matching destination and prefills your preparation dates. Every detail remains editable and stored on your device.'}</p><Link href="/voyage" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-emerald-700">{fr ? 'Voir l’espace voyage' : 'See the travel workspace'}<ArrowRight className="h-4 w-4" /></Link></div>
+            <div className="border border-emerald-200/80 bg-[#fffefa] p-6 shadow-[0_24px_70px_rgba(15,23,42,.08)] sm:p-8">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-6"><div><span className="text-xs uppercase tracking-[.12em] text-slate-400">{fr ? 'Voyage actif' : 'Active trip'}</span><p className="mt-2 text-2xl font-semibold">Dakar <ArrowRight className="mx-2 inline h-5 w-5 text-emerald-600" /> Nairobi</p></div><span className="flex items-center gap-2 text-xs font-semibold text-emerald-700"><WifiOff className="h-4 w-4" />{fr ? 'Prêt hors connexion' : 'Offline ready'}</span></div>
+              <div className="grid divide-y divide-slate-200 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                {[[fr ? 'Devise locale' : 'Local currency', 'KES'], [fr ? 'Budget du voyage' : 'Trip budget', fr ? 'À définir' : 'To set'], [fr ? 'Préparation' : 'Preparation', '2 / 6']].map(([label, value]) => <div key={label} className="py-5 sm:px-5 sm:first:pl-0 sm:last:pr-0"><span className="text-xs text-slate-400">{label}</span><strong className="mt-2 block text-lg">{value}</strong></div>)}
               </div>
             </div>
           </div>

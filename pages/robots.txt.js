@@ -1,4 +1,4 @@
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://xof-converter.vercel.app').replace(/\/$/, '');
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://kiwango.vercel.app').replace(/\/$/, '');
 
 export default function Robots() { return null; }
 

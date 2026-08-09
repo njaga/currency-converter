@@ -7,7 +7,7 @@ import SiteFooter from '../../components/SiteFooter';
 import { fetchCountryDirectory, countrySlug, resolveCountry } from '../../lib/countries-server';
 import { TRAVEL_DESTINATIONS } from '../../lib/travel';
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://xof-converter.vercel.app').replace(/\/$/, '');
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://kiwango.vercel.app').replace(/\/$/, '');
 
 const fallbackDirectory = TRAVEL_DESTINATIONS.map((item) => ({
   code: item.code,
@@ -39,7 +39,7 @@ export default function DestinationPage({ country }) {
   const currencyCodes = currencies.map((currency) => currency.code).join(', ');
   const title = `${name} : devise, change et Travel Pack | Kiwango`;
   const description = `Préparez votre voyage en ${name} : devise ${currencyCodes || primary?.code || ''}, repères de change, Travel Pack hors connexion et outils financiers Kiwango.`;
-  const appHref = `/app?tab=travel&country=${country.code}`;
+  const appHref = `/voyage?country=${country.code}`;
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -56,7 +56,7 @@ export default function DestinationPage({ country }) {
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Kiwango', item: SITE_URL },
-        { '@type': 'ListItem', position: 2, name: 'Voyage', item: `${SITE_URL}/app?tab=travel` },
+        { '@type': 'ListItem', position: 2, name: 'Voyage', item: `${SITE_URL}/voyage` },
         { '@type': 'ListItem', position: 3, name, item: canonical },
       ],
     },
@@ -94,7 +94,7 @@ export default function DestinationPage({ country }) {
             <div className="mb-6 flex items-center gap-4"><Flag code={country.code} /><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-emerald-700">Guide financier de voyage</p><p className="mt-1 text-sm text-slate-500">{country.region}{country.subregion ? ` · ${country.subregion}` : ''}</p></div></div>
             <h1 className="text-4xl font-semibold leading-[1.02] tracking-[-.055em] sm:text-5xl lg:text-6xl">Votre argent en {name}, sans improviser sur place.</h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-500 sm:text-lg">Identifiez la devise locale, préparez vos repères de conversion et gardez les informations essentielles disponibles hors connexion avec votre Travel Pack Kiwango.</p>
-            <div className="mt-8 flex flex-wrap gap-3"><Link href={appHref} className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(5,150,105,.18)] hover:bg-emerald-700"><Plane className="h-4 w-4" />Préparer {name}</Link><Link href="/app?tab=converter" className="inline-flex items-center rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold hover:border-emerald-300 dark:border-white/10">Ouvrir le convertisseur</Link></div>
+            <div className="mt-8 flex flex-wrap gap-3"><Link href={appHref} className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(5,150,105,.18)] hover:bg-emerald-700"><Plane className="h-4 w-4" />Préparer {name}</Link><Link href="/convertisseur" className="inline-flex items-center rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold hover:border-emerald-300 dark:border-white/10">Ouvrir le convertisseur</Link></div>
           </div>
           <div className="rounded-[30px] bg-[#f2f8f4] p-6 dark:bg-white/[.04] sm:p-8"><p className="text-[11px] font-semibold uppercase tracking-[.15em] text-slate-400">À retenir</p><div className="mt-6 space-y-5"><div className="flex items-start gap-4"><span className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-900"><Banknote className="h-5 w-5" /></span><div><p className="text-sm text-slate-500">Devise{currencies.length > 1 ? 's' : ''}</p><p className="mt-1 text-lg font-semibold">{currencies.map((currency) => `${currency.code}${currency.symbol && currency.symbol !== currency.code ? ` · ${currency.symbol}` : ''}`).join(' / ')}</p></div></div>{country.capital && <div className="flex items-start gap-4"><span className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-900"><MapPin className="h-5 w-5" /></span><div><p className="text-sm text-slate-500">Capitale</p><p className="mt-1 text-lg font-semibold">{country.capital}</p></div></div>}<div className="flex items-start gap-4"><span className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-900"><WifiOff className="h-5 w-5" /></span><div><p className="text-sm text-slate-500">Travel Pack</p><p className="mt-1 text-lg font-semibold">Préparable hors connexion</p></div></div></div></div>
         </div>

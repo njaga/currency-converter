@@ -1,6 +1,6 @@
-const CACHE_NAME = 'kiwango-shell-v3';
-const OFFLINE_URL = '/app';
-const PRECACHE_ASSETS = ['/', '/app', '/site.webmanifest', '/favicon.svg', '/logo.svg', '/mentions-legales'];
+const CACHE_NAME = 'kiwango-shell-v4';
+const OFFLINE_URL = '/convertisseur';
+const PRECACHE_ASSETS = ['/', '/convertisseur', '/voyage', '/outils', '/devises', '/site.webmanifest', '/favicon.svg', '/logo.svg', '/mentions-legales'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS)));
