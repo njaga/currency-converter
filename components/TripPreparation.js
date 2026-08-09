@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Banknote, CalendarDays, Check, ExternalLink, Landmark, Plane, Route, Users } from 'lucide-react';
+import { CalendarDays, Check, Plane, Users } from 'lucide-react';
+import DestinationMapTools from './DestinationMapTools';
 import PlaceAutocompleteInput from './PlaceAutocompleteInput';
 
 const TASKS = [
@@ -81,8 +82,6 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
   };
 
   const valid = origin.trim() && departureDate;
-  const mapsSearch = (query) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${query} ${country.name}`)}`;
-  const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin.trim())}&destination=${encodeURIComponent(country.name)}`;
 
   return (
     <section className="mt-6 min-w-0 border border-slate-200 bg-white dark:border-white/10 dark:bg-white/[.03]">
@@ -118,15 +117,7 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
               return <button key={task.id} type="button" onClick={() => toggleTask(task.id)} aria-pressed={checked} className="flex w-full items-center gap-3 py-4 text-left"><span className={`flex h-6 w-6 items-center justify-center border ${checked ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 text-transparent dark:border-white/20'}`}><Check className="h-4 w-4"/></span><span className={`text-sm font-medium ${checked ? 'text-slate-400 line-through' : ''}`}>{fr ? task.fr : task.en}</span></button>;
             })}
           </div>
-          <div className="mt-6 border-t border-slate-200 pt-5 dark:border-white/10">
-            <p className="text-xs font-semibold uppercase tracking-[.14em] text-slate-400">{fr ? `Raccourcis utiles pour ${country.name}` : `Useful shortcuts for ${country.name}`}</p>
-            <p className="mt-2 text-xs leading-5 text-slate-500">{fr ? 'Ouvrez directement Google Maps pour préparer votre itinéraire et repérer les services financiers essentiels. Kiwango ne reçoit aucune commission.' : 'Open Google Maps directly to prepare your route and find essential financial services. Kiwango receives no commission.'}</p>
-            <div className="mt-4 grid gap-2 sm:grid-cols-3">
-              <a href={directionsUrl} target="_blank" rel="noreferrer" className="group flex items-center gap-2 border border-slate-200 px-3 py-3 text-xs font-semibold transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-white/10 dark:hover:bg-emerald-950/20"><Route className="h-4 w-4 text-emerald-700" />{fr ? 'Itinéraire' : 'Directions'}<ExternalLink className="ml-auto h-3 w-3 text-slate-300" /></a>
-              <a href={mapsSearch(fr ? 'distributeur automatique banque' : 'ATM bank')} target="_blank" rel="noreferrer" className="group flex items-center gap-2 border border-slate-200 px-3 py-3 text-xs font-semibold transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-white/10 dark:hover:bg-emerald-950/20"><Landmark className="h-4 w-4 text-emerald-700" />{fr ? 'DAB & banques' : 'ATMs & banks'}<ExternalLink className="ml-auto h-3 w-3 text-slate-300" /></a>
-              <a href={mapsSearch(fr ? 'bureau de change' : 'currency exchange')} target="_blank" rel="noreferrer" className="group flex items-center gap-2 border border-slate-200 px-3 py-3 text-xs font-semibold transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-white/10 dark:hover:bg-emerald-950/20"><Banknote className="h-4 w-4 text-emerald-700" />{fr ? 'Bureaux de change' : 'Exchange offices'}<ExternalLink className="ml-auto h-3 w-3 text-slate-300" /></a>
-            </div>
-          </div>
+          <DestinationMapTools origin={origin} destination={country.name} lang={lang} />
         </div>
       </div>
     </section>

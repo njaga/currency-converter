@@ -18,10 +18,6 @@ const META = {
     title: 'Outils financiers de voyage | Kiwango',
     description: 'Vérifiez un taux proposé, calculez les frais, préparez un budget et gérez votre cash pendant le voyage.',
   },
-  rates: {
-    title: 'Taux et devises internationales | Kiwango',
-    description: 'Explorez les devises et les paires de change utiles avec la date de dernière synchronisation.',
-  },
 };
 
 export default function KiwangoAppPage({ tab = 'converter' }) {

@@ -1,5 +1,10 @@
-import KiwangoAppPage from '../components/KiwangoAppPage';
+export default function LegacyRatesPage() { return null; }
 
-export default function RatesPage() {
-  return <KiwangoAppPage tab="rates" />;
+export function getServerSideProps() {
+  return {
+    redirect: {
+      destination: '/convertisseur#devises',
+      permanent: true,
+    },
+  };
 }
