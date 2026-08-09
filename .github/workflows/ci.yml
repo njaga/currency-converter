@@ -63,7 +63,10 @@ jobs:
             sleep 1
           done
 
-          curl -fsS http://127.0.0.1:3000/ > /dev/null
+          curl -fsS http://127.0.0.1:3000/ > /tmp/home.html
+          grep -q 'property="og:image" content="http://localhost:3000/og/kiwango-social-card.png"' /tmp/home.html
+          grep -q 'property="og:image:width" content="1200"' /tmp/home.html
+          grep -q 'name="twitter:card" content="summary_large_image"' /tmp/home.html
           curl -fsS http://127.0.0.1:3000/app > /dev/null
           curl -fsS http://127.0.0.1:3000/convertisseur > /dev/null
           curl -fsS http://127.0.0.1:3000/voyage > /dev/null
@@ -76,9 +79,12 @@ jobs:
           grep -q '/voyage/gambie' /tmp/sitemap.xml
           curl -fsS http://127.0.0.1:3000/robots.txt > /tmp/robots.txt
           grep -q 'http://localhost:3000/sitemap.xml' /tmp/robots.txt
+          grep -q 'Disallow: /api/' /tmp/robots.txt
 
           curl -fsS http://127.0.0.1:3000/site.webmanifest > /tmp/manifest.json
-          node -e "const m=require('/tmp/manifest.json'); if(m.start_url!=='/convertisseur'||m.display!=='standalone'||!m.icons?.some(i=>i.purpose==='maskable')) process.exit(1)"
+          node -e "const m=require('/tmp/manifest.json'); if(m.start_url!=='/convertisseur'||m.display!=='standalone'||!m.icons?.some(i=>i.purpose==='maskable')||!m.icons?.some(i=>i.sizes==='512x512'&&i.type==='image/png')) process.exit(1)"
+          curl -fsS http://127.0.0.1:3000/og/kiwango-social-card.png > /tmp/og.png
+          node -e "const b=require('fs').readFileSync('/tmp/og.png'); if(b.readUInt32BE(16)!==1200||b.readUInt32BE(20)!==630) process.exit(1)"
           curl -fsS http://127.0.0.1:3000/pwa-maskable.svg > /dev/null
           curl -fsS http://127.0.0.1:3000/sw.js > /tmp/sw.js
           grep -q 'SKIP_WAITING' /tmp/sw.js
