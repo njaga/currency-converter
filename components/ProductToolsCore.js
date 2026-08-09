@@ -124,32 +124,13 @@ function Stat({ label, value, accent = false }) {
 function ErrorNote({ children }) {
   return <div className="mt-4 flex gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><AlertTriangle className="mt-0.5 h-4 w-4 flex-none"/><span>{children}</span></div>;
 }
-function Pair({ base, quote, setBase, setQuote, options }) {
-  return <div className="grid gap-3 sm:grid-cols-2"><Select label="Devise de départ" value={base} onChange={(e) => setBase(e.target.value)}>{options}</Select><Select label="Devise reçue" value={quote} onChange={(e) => setQuote(e.target.value)}>{options}</Select></div>;
-}
-
-export default function ProductTools({ allRates = {}, fromCurrency = 'EUR', toCurrency = 'XOF', currencies = [], lang = 'fr' }) {
-  const locale = lang === 'fr' ? 'fr-FR' : 'en-US';
-  const [tool, setTool] = useState('rate-check');
-  const [base, setBase] = useState(fromCurrency);
-  const [quote, setQuote] = useState(toCurrency);
-  const marketRate = useMemo(() => calculateCrossRate(base, quote, allRates, 'EUR'), [base, quote, allRates]);
-  const options = currencies.map((currency) => <option key={currency.code} value={currency.code}>{currency.code} · {currency.name}</option>);
-  const shared = { allRates, marketRate, base, quote, setBase, setQuote, options, locale, lang };
-
-  return <div className="min-w-0">
-    <div className="mb-6 max-w-3xl"><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-emerald-700">{lang === 'fr' ? 'Outils pratiques' : 'Practical tools'}</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-4xl">{lang === 'fr' ? 'Choisissez ce que vous voulez calculer.' : 'Choose what you want to calculate.'}</h1><p className="mt-3 text-sm leading-6 text-slate-500">{lang === 'fr' ? 'Chaque outil répond à une tâche précise. Sélectionnez-en un pour afficher uniquement les champs nécessaires.' : 'Each tool handles one precise task. Select one to display only the fields you need.'}</p></div>
-    <div className="grid min-w-0 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
-      <aside><div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:sticky lg:top-24 lg:grid-cols-1">{TOOLS.map(({ id, fr, en, descFr, descEn, icon: Icon }) => <button key={id} onClick={() => setTool(id)} aria-pressed={tool === id} className={`flex items-start gap-3 border-l-2 px-3 py-3 text-left transition ${tool === id ? 'border-emerald-600 bg-emerald-50 text-slate-950 dark:bg-emerald-950/30 dark:text-white' : 'border-transparent text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/[.035]'}`}><Icon className="mt-0.5 h-4 w-4 flex-none text-emerald-700"/><span><span className="block text-xs font-semibold">{lang === 'fr' ? fr : en}</span><span className={`mt-1 hidden text-[10px] font-normal leading-4 lg:block ${tool === id ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400'}`}>{lang === 'fr' ? descFr : descEn}</span></span></button>)}</div></aside>
-      <div className="min-w-0">
-        {tool === 'rate-check' && <RateCheck {...shared}/>} {tool === 'fees' && <Fees {...shared}/>} {tool === 'budget' && <Budget locale={locale}/>} {tool === 'wallet' && <Wallet locale={locale}/>} {tool === 'calculator' && <Calc {...shared}/>} {tool === 'atm' && <Atm {...shared}/>} {tool === 'alerts' && <Alerts {...shared}/>} {tool === 'scan' && <Scan {...shared}/>} {tool === 'field' && <Field {...shared}/>} 
-      </div>
-    </div>
-  </div>;
+function Pair({ base, quote, setBase, setQuote, options, lang = 'fr' }) {
+  return <div className="grid gap-3 sm:grid-cols-2"><Select label={lang === 'fr' ? 'Devise de départ' : 'From currency'} value={base} onChange={(e) => setBase(e.target.value)}>{options}</Select><Select label={lang === 'fr' ? 'Devise reçue' : 'To currency'} value={quote} onChange={(e) => setQuote(e.target.value)}>{options}</Select></div>;
 }
 
 function RateCheck(props) {
-  const { marketRate, base, quote, locale } = props;
+  const { marketRate, base, quote, locale, lang } = props;
+  const fr = lang !== 'en';
   const [mode, setMode] = useState('rate');
   const [offered, setOffered] = useState('');
   const [amount, setAmount] = useState('100');
@@ -162,13 +143,13 @@ function RateCheck(props) {
   const diff = valid ? ((offer - marketRate) / marketRate) * 100 : null;
   const expected = amt && marketRate ? amt * marketRate : null;
   const loss = valid ? Math.max(0, amt * (marketRate - offer)) : null;
-  const verdict = diff === null ? null : diff >= -1 ? 'Bon taux' : diff >= -3 ? 'Acceptable' : 'Défavorable';
-  return <Shell title="Rate Check" subtitle="Comparez une offre réelle au taux de référence." accent={verdict && <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold dark:bg-white/10">{verdict}</span>}>
-    <Pair {...props}/><div className="mt-4 flex flex-wrap gap-2">{[['rate','Je connais le taux'],['received','Je connais le montant reçu']].map(([id, label]) => <button key={id} onClick={() => setMode(id)} className={`rounded-full px-3 py-2 text-xs font-semibold ${mode === id ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950' : 'bg-slate-100 text-slate-500 dark:bg-white/5'}`}>{label}</button>)}</div>
-    <div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label={`Montant donné (${base})`} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal"/>{mode === 'rate' ? <Input label={`Taux proposé (1 ${base})`} value={offered} onChange={(e) => setOffered(e.target.value)} inputMode="decimal"/> : <Input label={`Montant reçu (${quote})`} value={received} onChange={(e) => setReceived(e.target.value)} inputMode="decimal"/>}</div>
-    <div className="mt-5 grid gap-3 sm:grid-cols-3"><Stat label="Référence" value={`1 ${base} = ${fmt(marketRate, locale, 4)} ${quote}`}/><Stat label="Attendu" value={`${fmt(expected, locale)} ${quote}`} accent/><Stat label="Écart" value={diff === null ? '—' : `${diff >= 0 ? '+' : ''}${fmt(diff, locale)} %`}/></div>
-    {((mode === 'rate' && offered && directRate === null) || (mode === 'received' && received && receivedValue === null)) && <ErrorNote>Entrez une valeur strictement positive.</ErrorNote>}
-    {loss > 0 && <ErrorNote>Perte estimée : {fmt(loss, locale)} {quote}.</ErrorNote>}
+  const verdict = diff === null ? null : diff >= -1 ? (fr ? 'Bon taux' : 'Good rate') : diff >= -3 ? (fr ? 'Acceptable' : 'Fair') : (fr ? 'Défavorable' : 'Poor rate');
+  return <Shell title="Rate Check" subtitle={fr ? 'Comparez une offre réelle au taux de référence.' : 'Compare a real offer with the reference rate.'} accent={verdict && <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold dark:bg-white/10">{verdict}</span>}>
+    <Pair {...props}/><div className="mt-4 flex flex-wrap gap-2">{[['rate',fr ? 'Je connais le taux' : 'I know the rate'],['received',fr ? 'Je connais le montant reçu' : 'I know the received amount']].map(([id, label]) => <button key={id} onClick={() => setMode(id)} className={`rounded-full px-3 py-2 text-xs font-semibold ${mode === id ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950' : 'bg-slate-100 text-slate-500 dark:bg-white/5'}`}>{label}</button>)}</div>
+    <div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label={`${fr ? 'Montant donné' : 'Amount given'} (${base})`} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal"/>{mode === 'rate' ? <Input label={`${fr ? 'Taux proposé' : 'Offered rate'} (1 ${base})`} value={offered} onChange={(e) => setOffered(e.target.value)} inputMode="decimal"/> : <Input label={`${fr ? 'Montant reçu' : 'Amount received'} (${quote})`} value={received} onChange={(e) => setReceived(e.target.value)} inputMode="decimal"/>}</div>
+    <div className="mt-5 grid gap-3 sm:grid-cols-3"><Stat label={fr ? 'Référence' : 'Reference'} value={`1 ${base} = ${fmt(marketRate, locale, 4)} ${quote}`}/><Stat label={fr ? 'Attendu' : 'Expected'} value={`${fmt(expected, locale)} ${quote}`} accent/><Stat label={fr ? 'Écart' : 'Difference'} value={diff === null ? '—' : `${diff >= 0 ? '+' : ''}${fmt(diff, locale)} %`}/></div>
+    {((mode === 'rate' && offered && directRate === null) || (mode === 'received' && received && receivedValue === null)) && <ErrorNote>{fr ? 'Entrez une valeur strictement positive.' : 'Enter a value greater than zero.'}</ErrorNote>}
+    {loss > 0 && <ErrorNote>{fr ? 'Perte estimée' : 'Estimated loss'} : {fmt(loss, locale)} {quote}.</ErrorNote>}
   </Shell>;
 }
 
