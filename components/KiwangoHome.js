@@ -28,7 +28,7 @@ const NAV_ITEMS = [
   { href: '/convertisseur', fr: 'Convertir', en: 'Convert' },
   { href: '/voyage', fr: 'Préparer un voyage', en: 'Plan a trip' },
   { href: '/outils', fr: 'Outils', en: 'Tools' },
-  { href: '/devises', fr: 'Taux', en: 'Rates' },
+  { href: '/convertisseur#devises', fr: 'Taux', en: 'Rates' },
 ];
 
 const FALLBACK_COUNTRIES = TRAVEL_DESTINATIONS.map((item) => ({
@@ -167,6 +167,59 @@ function HeroGallery({ fr }) {
   );
 }
 
+function StoryChecklist({ items }) {
+  return (
+    <div className="mt-7 grid gap-3 sm:grid-cols-2">
+      {items.map((item) => (
+        <div key={item} className="flex items-start gap-3 text-sm leading-6 text-slate-600">
+          <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-emerald-100 text-emerald-700"><Check className="h-3 w-3" /></span>
+          <span>{item}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TripPreparationVisual({ fr }) {
+  return (
+    <div className="relative aspect-[4/5] overflow-hidden rounded-[34px] bg-slate-100 shadow-[0_26px_70px_rgba(15,23,42,.1)] sm:aspect-[4/3]">
+      <Image src="/images/kiwango-trip-preparation.webp" alt={fr ? 'Voyageuse préparant sa valise et son itinéraire' : 'Traveller preparing her suitcase and itinerary'} fill loading="eager" sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-[67%_center]" />
+      <div className="absolute bottom-4 left-4 right-4 max-w-[350px] rounded-[24px] border border-white/80 bg-white/95 p-5 shadow-[0_20px_50px_rgba(15,23,42,.16)] sm:bottom-6 sm:left-6 sm:p-6">
+        <div className="flex items-center justify-between gap-4 text-[10px] font-semibold uppercase tracking-[.14em] text-slate-400"><span>{fr ? 'Voyage enregistré' : 'Trip saved'}</span><span className="flex items-center gap-1.5 normal-case tracking-normal text-emerald-700"><ShieldCheck className="h-3.5 w-3.5" />{fr ? 'Sur cet appareil' : 'On this device'}</span></div>
+        <p className="mt-4 text-xl font-semibold tracking-[-.04em] sm:text-2xl">Dakar <ArrowRight className="mx-1 inline h-4 w-4 text-emerald-600" /> Nairobi</p>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-600"><span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-2"><CalendarDays className="h-3.5 w-3.5 text-emerald-700" />12–19 août</span><span className="rounded-full bg-slate-100 px-3 py-2">6 {fr ? 'essentiels' : 'essentials'}</span></div>
+      </div>
+    </div>
+  );
+}
+
+function RateCheckVisual({ fr }) {
+  return (
+    <div className="relative aspect-[4/5] overflow-hidden rounded-[34px] bg-slate-100 shadow-[0_26px_70px_rgba(15,23,42,.1)] sm:aspect-[4/3]">
+      <Image src="/images/kiwango-rate-check.webp" alt={fr ? 'Voyageur vérifiant un taux avant de payer' : 'Traveller checking a rate before paying'} fill loading="eager" sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-[35%_center]" />
+      <div className="absolute bottom-4 left-4 right-4 ml-auto max-w-[360px] rounded-[24px] border border-white/80 bg-white/95 p-5 shadow-[0_20px_50px_rgba(15,23,42,.16)] sm:bottom-6 sm:right-6 sm:p-6">
+        <div className="flex items-center justify-between gap-4"><span className="text-[10px] font-semibold uppercase tracking-[.14em] text-slate-400">Rate Check</span><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">{fr ? 'Exemple' : 'Example'}</span></div>
+        <div className="mt-4 flex items-end justify-between gap-5"><div><p className="text-xs text-slate-400">{fr ? 'Vous changez' : 'You exchange'}</p><p className="mt-1 text-xl font-semibold">100 EUR</p></div><div className="text-right"><p className="text-xs text-slate-400">{fr ? 'Référence' : 'Reference'}</p><p className="mt-1 text-xl font-semibold">65 596 XOF</p></div></div>
+        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs"><span className="text-slate-500">{fr ? 'Offre reçue' : 'Offered rate'} · 64 900 XOF</span><strong className="text-amber-700">−696 XOF</strong></div>
+      </div>
+    </div>
+  );
+}
+
+function OfflineTravelVisual({ fr }) {
+  return (
+    <div className="relative aspect-[4/5] overflow-hidden rounded-[34px] bg-slate-100 shadow-[0_26px_70px_rgba(15,23,42,.1)] sm:aspect-[4/3]">
+      <Image src="/images/kiwango-offline-travel.webp" alt={fr ? 'Voyageuse utilisant ses repères Kiwango hors connexion' : 'Traveller using Kiwango references offline'} fill loading="eager" sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-[63%_center]" />
+      <div className="absolute bottom-4 left-4 right-4 max-w-[350px] rounded-[24px] border border-white/80 bg-white/95 p-5 shadow-[0_20px_50px_rgba(15,23,42,.16)] sm:bottom-6 sm:left-6 sm:p-6">
+        <div className="flex items-center justify-between gap-4"><span className="text-[10px] font-semibold uppercase tracking-[.14em] text-slate-400">Travel Pack · Kenya</span><WifiOff className="h-4 w-4 text-emerald-700" /></div>
+        <p className="mt-3 text-xl font-semibold tracking-[-.035em]">{fr ? 'Vos repères sont disponibles.' : 'Your references are available.'}</p>
+        <p className="mt-2 text-xs leading-5 text-slate-500">{fr ? 'Synchronisé aujourd’hui · Données conservées localement' : 'Synced today · Data stored locally'}</p>
+        <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold text-emerald-800"><span className="rounded-full bg-emerald-50 px-3 py-2">KES ↔ XOF</span><span className="rounded-full bg-emerald-50 px-3 py-2">KES ↔ EUR</span><span className="rounded-full bg-emerald-50 px-3 py-2">KES ↔ USD</span></div>
+      </div>
+    </div>
+  );
+}
+
 export default function KiwangoHome() {
   const router = useRouter();
   const [lang, setLang] = useState('fr');
@@ -202,7 +255,6 @@ export default function KiwangoHome() {
           <div className="flex items-center gap-2">
             <div className="hidden lg:block"><CountryQuickSelect lang={lang} onSelect={selectCountry} /></div>
             <LanguageMenu value={lang} onChange={changeLang} />
-            <Link href="/convertisseur" className="hidden bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:inline-flex">{fr ? 'Ouvrir l’application' : 'Open the app'}</Link>
             <button type="button" onClick={() => setMobileOpen((open) => !open)} aria-expanded={mobileOpen} aria-label={fr ? 'Ouvrir le menu' : 'Open menu'} className="flex h-10 w-10 items-center justify-center border border-slate-200 bg-white lg:hidden">
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -216,7 +268,7 @@ export default function KiwangoHome() {
           <div className="mx-auto grid w-full max-w-[1320px] gap-10 lg:grid-cols-[.98fr_1.02fr] lg:items-center">
             <div className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">{fr ? 'Guide de voyage financier' : 'Financial travel guide'}</p>
-              <h1 className="mt-6 text-5xl font-semibold leading-[.98] tracking-[-.06em] sm:text-6xl lg:text-[76px]">{fr ? <>Changez de pays,<br />pas de repères<span className="text-emerald-600">.</span></> : <>Change countries,<br />not your bearings<span className="text-emerald-600">.</span></>}</h1>
+              <h1 className="mt-6 text-[42px] font-semibold leading-[1] tracking-[-.055em] sm:text-[52px] lg:text-[64px]">{fr ? <>Changez de pays,<br />pas de repères<span className="text-emerald-600">.</span></> : <>Change countries,<br />not your bearings<span className="text-emerald-600">.</span></>}</h1>
               <p className="mt-7 max-w-xl text-lg leading-8 text-slate-600">{fr ? 'Kiwango prépare votre espace selon votre trajet. Devises, taux, budget et essentiels du séjour restent réunis, même hors connexion.' : 'Kiwango prepares your space around your journey. Currencies, rates, budget and trip essentials stay together, even offline.'}</p>
               <TripStarter lang={lang} countries={orderedCountries} />
               <div className="mt-6 grid gap-3 text-xs text-slate-600 sm:grid-cols-3">
@@ -229,28 +281,32 @@ export default function KiwangoHome() {
           </div>
         </section>
 
-        <section id="journey" className="border-b border-slate-200/70 bg-[#f4f8f5] px-4 py-16 md:px-8">
-          <div className="mx-auto max-w-[1180px]">
-            <div className="text-center"><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">{fr ? 'Votre voyage, en toute sérénité' : 'Your trip, with peace of mind'}</p><h2 className="mt-4 text-3xl font-semibold tracking-[-.045em] md:text-5xl">{fr ? 'Trois étapes. Un seul guide.' : 'Three stages. One guide.'}</h2></div>
-            <div className="mt-10 grid gap-4 md:grid-cols-3">
-              {[
-                [fr ? 'Avant le départ' : 'Before departure', fr ? 'Renseignez votre trajet, estimez votre budget et enregistrez les informations utiles.' : 'Enter your journey, estimate your budget and save useful information.'],
-                [fr ? 'Sur place' : 'At destination', fr ? 'Convertissez, contrôlez un taux proposé et suivez ce que vous dépensez.' : 'Convert, check an offered rate and track what you spend.'],
-                [fr ? 'Au retour' : 'After the trip', fr ? 'Retrouvez votre historique et conservez uniquement les repères qui vous servent.' : 'Review your history and keep only the references that remain useful.'],
-              ].map(([title, description], index) => <article key={title} className="group border border-slate-200/80 bg-[#fffefa] p-7 text-left transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_20px_50px_rgba(15,23,42,.07)]"><div className="flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-[.16em] text-emerald-700">0{index + 1}</span><ArrowRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-600" /></div><h3 className="mt-14 text-xl font-semibold tracking-[-.03em]">{title}</h3><p className="mt-3 max-w-xs text-sm leading-6 text-slate-500">{description}</p></article>)}
-            </div>
+        <section id="journey" className="border-b border-slate-200/70 bg-[#fffefa] px-4 py-16 md:px-8 md:py-24">
+          <div className="mx-auto max-w-[1180px] text-center">
+            <p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">{fr ? 'Kiwango, du départ au retour' : 'Kiwango, from departure to return'}</p>
+            <h2 className="mx-auto mt-4 max-w-3xl text-3xl font-semibold leading-[1.06] tracking-[-.045em] md:text-[46px]">{fr ? 'Votre argent suit le voyage. Vos repères aussi.' : 'Your money follows the trip. Your bearings do too.'}</h2>
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-600">{fr ? 'Kiwango réunit les décisions financières utiles avant de partir, pendant le séjour et lorsque la connexion devient incertaine.' : 'Kiwango brings together the financial decisions that matter before departure, during the trip and when connectivity becomes uncertain.'}</p>
           </div>
         </section>
 
-        <section className="border-b border-emerald-100 bg-[#eaf6f0] px-4 py-16 md:px-8 md:py-24">
-          <div className="mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
-            <div><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">{fr ? 'Une interface qui connaît votre trajet' : 'An interface built around your trip'}</p><h2 className="mt-4 text-4xl font-semibold leading-tight tracking-[-.045em]">{fr ? 'Votre trajet transforme réellement votre espace.' : 'Your journey genuinely shapes your workspace.'}</h2><p className="mt-5 max-w-lg text-base leading-7 text-slate-600">{fr ? 'Kiwango sélectionne les bonnes devises, ouvre la destination correspondante et préremplit les dates de préparation. Chaque information reste modifiable et stockée sur votre appareil.' : 'Kiwango selects the right currencies, opens the matching destination and prefills your preparation dates. Every detail remains editable and stored on your device.'}</p><Link href="/voyage" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-emerald-700">{fr ? 'Voir l’espace voyage' : 'See the travel workspace'}<ArrowRight className="h-4 w-4" /></Link></div>
-            <div className="border border-emerald-200/80 bg-[#fffefa] p-6 shadow-[0_24px_70px_rgba(15,23,42,.08)] sm:p-8">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-6"><div><span className="text-xs uppercase tracking-[.12em] text-slate-400">{fr ? 'Voyage actif' : 'Active trip'}</span><p className="mt-2 text-2xl font-semibold">Dakar <ArrowRight className="mx-2 inline h-5 w-5 text-emerald-600" /> Nairobi</p></div><span className="flex items-center gap-2 text-xs font-semibold text-emerald-700"><WifiOff className="h-4 w-4" />{fr ? 'Prêt hors connexion' : 'Offline ready'}</span></div>
-              <div className="grid divide-y divide-slate-200 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                {[[fr ? 'Devise locale' : 'Local currency', 'KES'], [fr ? 'Budget du voyage' : 'Trip budget', fr ? 'À définir' : 'To set'], [fr ? 'Préparation' : 'Preparation', '2 / 6']].map(([label, value]) => <div key={label} className="py-5 sm:px-5 sm:first:pl-0 sm:last:pr-0"><span className="text-xs text-slate-400">{label}</span><strong className="mt-2 block text-lg">{value}</strong></div>)}
-              </div>
-            </div>
+        <section className="border-b border-slate-200/70 bg-[#fffefa] px-4 py-16 md:px-8 md:py-24">
+          <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[1.12fr_.88fr] lg:items-center lg:gap-20">
+            <TripPreparationVisual fr={fr} />
+            <div className="max-w-xl"><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">01 · {fr ? 'Avant de partir' : 'Before departure'}</p><h2 className="mt-5 text-4xl font-semibold leading-[1.04] tracking-[-.05em] md:text-5xl">{fr ? 'Un voyage renseigné, une expérience déjà prête.' : 'Enter one trip. Start with a ready experience.'}</h2><p className="mt-6 text-base leading-7 text-slate-600">{fr ? 'Indiquez votre départ, votre destination et vos dates. Kiwango prépare automatiquement les devises, les repères et les informations utiles pour ce trajet.' : 'Enter your origin, destination and dates. Kiwango automatically prepares the currencies, references and useful information for that journey.'}</p><StoryChecklist items={fr ? ['Itinéraire réellement personnalisé', 'Checklist claire avant le départ', 'Informations conservées sur votre appareil', 'Interface adaptée à la destination'] : ['A genuinely personalized itinerary', 'A clear pre-departure checklist', 'Information kept on your device', 'An interface adapted to the destination']} /><Link href="/voyage" className="mt-8 inline-flex items-center gap-2 bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700">{fr ? 'Préparer mon voyage' : 'Plan my trip'}<ArrowRight className="h-4 w-4" /></Link></div>
+          </div>
+        </section>
+
+        <section className="border-b border-emerald-100 bg-[#eef6f1] px-4 py-16 md:px-8 md:py-24">
+          <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[.88fr_1.12fr] lg:items-center lg:gap-20">
+            <div className="max-w-xl lg:order-1"><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">02 · {fr ? 'Au moment de payer' : 'When it is time to pay'}</p><h2 className="mt-5 text-4xl font-semibold leading-[1.04] tracking-[-.05em] md:text-5xl">{fr ? 'Sachez ce que vaut votre argent, avant de le remettre.' : 'Know what your money is worth before handing it over.'}</h2><p className="mt-6 text-base leading-7 text-slate-600">{fr ? 'Convertissez un montant, comparez un taux proposé et visualisez immédiatement l’écart. Vous décidez avec une référence claire, sans transformer chaque paiement en calcul mental.' : 'Convert an amount, compare an offered rate and see the difference immediately. Make decisions with a clear reference instead of doing mental maths for every payment.'}</p><StoryChecklist items={fr ? ['Taux horodatés et source visible', 'Rate Check pour contrôler une offre', 'Écart affiché en montant et en pourcentage', 'Outils simples, sans jargon financier'] : ['Timestamped rates with a visible source', 'Rate Check to review an offer', 'Difference shown as an amount and percentage', 'Simple tools without financial jargon']} /><Link href="/outils" className="mt-8 inline-flex items-center gap-2 bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700">{fr ? 'Vérifier un taux' : 'Check a rate'}<ArrowRight className="h-4 w-4" /></Link></div>
+            <div className="lg:order-2"><RateCheckVisual fr={fr} /></div>
+          </div>
+        </section>
+
+        <section className="border-b border-slate-200/70 bg-[#fffefa] px-4 py-16 md:px-8 md:py-24">
+          <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[1.12fr_.88fr] lg:items-center lg:gap-20">
+            <OfflineTravelVisual fr={fr} />
+            <div className="max-w-xl"><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">03 · {fr ? 'Même sans réseau' : 'Even without a network'}</p><h2 className="mt-5 text-4xl font-semibold leading-[1.04] tracking-[-.05em] md:text-5xl">{fr ? 'Vos repères restent avec vous quand la connexion disparaît.' : 'Your bearings stay with you when the connection disappears.'}</h2><p className="mt-6 text-base leading-7 text-slate-600">{fr ? 'Préparez un Travel Pack avant le départ. Les conversions utiles, votre budget et les informations de destination restent accessibles localement, avec la date de dernière synchronisation toujours visible.' : 'Prepare a Travel Pack before departure. Useful conversions, your budget and destination information remain locally available, with the last sync date always visible.'}</p><StoryChecklist items={fr ? ['Paires de devises choisies pour le trajet', 'Dernière synchronisation toujours indiquée', 'Budget et historique accessibles localement', 'Aucune création de compte obligatoire'] : ['Currency pairs selected for the journey', 'Last synchronization always displayed', 'Budget and history available locally', 'No account creation required']} /><Link href="/voyage" className="mt-8 inline-flex items-center gap-2 bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700">{fr ? 'Préparer le mode hors connexion' : 'Prepare offline mode'}<ArrowRight className="h-4 w-4" /></Link></div>
           </div>
         </section>
 

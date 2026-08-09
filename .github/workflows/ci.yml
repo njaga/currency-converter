@@ -95,6 +95,7 @@ jobs:
           expect_status 400 rates-invalid-base 'http://127.0.0.1:3000/api/rates?base=INVALID'
           expect_status 400 historical-invalid 'http://127.0.0.1:3000/api/historical-rates?base=EUR!&quote=XOF'
           expect_status 400 nearby-invalid 'http://127.0.0.1:3000/api/nearby-finance?lat=999&lon=0'
+          expect_status 400 travel-map-invalid 'http://127.0.0.1:3000/api/travel-map?type=route&destination=Kenya'
           expect_status 400 telemetry-invalid -X POST -H 'Content-Type: application/json' --data '{"event":"unknown"}' http://127.0.0.1:3000/api/telemetry
           expect_status 204 telemetry-valid -X POST -H 'Content-Type: application/json' --data '{"event":"client_error","context":"smoke","message":"test","path":"/app"}' http://127.0.0.1:3000/api/telemetry
 
@@ -105,3 +106,11 @@ jobs:
           LEGACY_LOCATION=$(curl -sI 'http://127.0.0.1:3000/app?tab=tools' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
           echo "legacy tools redirect => $LEGACY_LOCATION"
           test "$LEGACY_LOCATION" = "/outils"
+
+          RATES_LOCATION=$(curl -sI 'http://127.0.0.1:3000/devises' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
+          echo "legacy rates redirect => $RATES_LOCATION"
+          test "$RATES_LOCATION" = "/convertisseur#devises" -o "$RATES_LOCATION" = "/convertisseur%23devises"
+
+          LEGACY_RATES_LOCATION=$(curl -sI 'http://127.0.0.1:3000/app?tab=rates' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
+          echo "legacy tab rates redirect => $LEGACY_RATES_LOCATION"
+          test "$LEGACY_RATES_LOCATION" = "/convertisseur#devises" -o "$LEGACY_RATES_LOCATION" = "/convertisseur%23devises"

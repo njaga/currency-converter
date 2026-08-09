@@ -27,7 +27,6 @@ export async function getServerSideProps({ res }) {
     { loc: '/convertisseur', priority: '0.9', changefreq: 'daily' },
     { loc: '/voyage', priority: '0.9', changefreq: 'weekly' },
     { loc: '/outils', priority: '0.8', changefreq: 'weekly' },
-    { loc: '/devises', priority: '0.8', changefreq: 'daily' },
     { loc: '/mentions-legales', priority: '0.2', changefreq: 'yearly' },
   ];
 

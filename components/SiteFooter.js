@@ -15,7 +15,7 @@ export default function SiteFooter({ lang }) {
     ['Kenya', 'kenya'],
   ];
   const groups = [
-    { title: fr ? 'Explorer' : 'Explore', links: [[fr ? 'Convertisseur' : 'Converter','/convertisseur'],[fr ? 'Toutes les destinations' : 'All destinations','/voyage'],[fr ? 'Outils financiers' : 'Money tools','/outils'],[fr ? 'Devises' : 'Currencies','/devises'],[fr ? 'Télécharger l’application' : 'Get the app','/#download']] },
+    { title: fr ? 'Explorer' : 'Explore', links: [[fr ? 'Convertisseur' : 'Converter','/convertisseur'],[fr ? 'Toutes les destinations' : 'All destinations','/voyage'],[fr ? 'Outils financiers' : 'Money tools','/outils'],[fr ? 'Devises et taux' : 'Currencies and rates','/convertisseur#devises'],[fr ? 'Installer Kiwango' : 'Install Kiwango','/#download']] },
     { title: fr ? 'Destinations populaires' : 'Popular destinations', links: popular.map(([label,slug]) => [label, `/voyage/${slug}`]) },
     { title: fr ? 'Ressources' : 'Resources', links: [['Rate Check','/outils'],[fr ? 'Budget voyage' : 'Travel budget','/outils'],['Cash Wallet','/outils'],[fr ? 'Mentions légales & confidentialité' : 'Legal & privacy','/mentions-legales']] },
   ];

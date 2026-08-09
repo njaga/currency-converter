@@ -1,11 +1,10 @@
 import React from 'react';
-import { ArrowRightLeft, LineChart, Plane, Wrench } from 'lucide-react';
+import { ArrowRightLeft, Plane, Wrench } from 'lucide-react';
 
 const ITEMS = [
   { id: 'converter', icon: ArrowRightLeft, fr: 'Convertir', en: 'Convert' },
   { id: 'travel', icon: Plane, fr: 'Voyage', en: 'Travel' },
   { id: 'tools', icon: Wrench, fr: 'Outils', en: 'Tools' },
-  { id: 'rates', icon: LineChart, fr: 'Devises', en: 'Rates' },
 ];
 
 export default function MobileDock({ activeTab, onChange, lang = 'fr' }) {
@@ -15,7 +14,7 @@ export default function MobileDock({ activeTab, onChange, lang = 'fr' }) {
       className="fixed inset-x-0 z-[90] mx-auto w-[calc(100%-20px)] max-w-md md:hidden"
       style={{ bottom: 'max(10px, env(safe-area-inset-bottom))' }}
     >
-      <div className="grid grid-cols-4 rounded-[24px] border border-white/70 bg-white/88 p-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.18)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/78 dark:border-white/10 dark:bg-slate-900/88">
+      <div className="grid grid-cols-3 rounded-[24px] border border-white/70 bg-white/88 p-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.18)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/78 dark:border-white/10 dark:bg-slate-900/88">
         {ITEMS.map((item) => {
           const Icon = item.icon;
           const active = activeTab === item.id;
