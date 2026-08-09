@@ -27,8 +27,8 @@ import { TRAVEL_DESTINATIONS } from '../lib/travel';
 const NAV_ITEMS = [
   { href: '/convertisseur', fr: 'Convertir', en: 'Convert' },
   { href: '/voyage', fr: 'Préparer un voyage', en: 'Plan a trip' },
+  { href: '/payer', fr: 'Comment payer ?', en: 'How to pay?' },
   { href: '/outils', fr: 'Outils', en: 'Tools' },
-  { href: '/convertisseur#devises', fr: 'Taux', en: 'Rates' },
 ];
 
 const FALLBACK_COUNTRIES = TRAVEL_DESTINATIONS.map((item) => ({
@@ -193,14 +193,18 @@ function TripPreparationVisual({ fr }) {
   );
 }
 
-function RateCheckVisual({ fr }) {
+function PaymentAdvisorVisual({ fr }) {
   return (
     <div className="relative aspect-[4/5] overflow-hidden rounded-[34px] bg-slate-100 shadow-[0_26px_70px_rgba(15,23,42,.1)] sm:aspect-[4/3]">
-      <Image src="/images/kiwango-rate-check.webp" alt={fr ? 'Voyageur vérifiant un taux avant de payer' : 'Traveller checking a rate before paying'} fill loading="eager" sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-[35%_center]" />
+      <Image src="/images/kiwango-rate-check.webp" alt={fr ? 'Voyageur comparant ses moyens de paiement' : 'Traveller comparing payment methods'} fill loading="eager" sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-[35%_center]" />
       <div className="absolute bottom-4 left-4 right-4 ml-auto max-w-[360px] rounded-[24px] border border-white/80 bg-white/95 p-5 shadow-[0_20px_50px_rgba(15,23,42,.16)] sm:bottom-6 sm:right-6 sm:p-6">
-        <div className="flex items-center justify-between gap-4"><span className="text-[10px] font-semibold uppercase tracking-[.14em] text-slate-400">Rate Check</span><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">{fr ? 'Exemple' : 'Example'}</span></div>
-        <div className="mt-4 flex items-end justify-between gap-5"><div><p className="text-xs text-slate-400">{fr ? 'Vous changez' : 'You exchange'}</p><p className="mt-1 text-xl font-semibold">100 EUR</p></div><div className="text-right"><p className="text-xs text-slate-400">{fr ? 'Référence' : 'Reference'}</p><p className="mt-1 text-xl font-semibold">65 596 XOF</p></div></div>
-        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs"><span className="text-slate-500">{fr ? 'Offre reçue' : 'Offered rate'} · 64 900 XOF</span><strong className="text-amber-700">−696 XOF</strong></div>
+        <div className="flex items-center justify-between gap-4"><span className="text-[10px] font-semibold uppercase tracking-[.14em] text-slate-400">Pay Advisor</span><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">{fr ? 'Comparaison' : 'Comparison'}</span></div>
+        <p className="mt-4 text-lg font-semibold tracking-[-.035em]">{fr ? 'Comment payer 10 000 KES ?' : 'How to pay KES 10,000?'}</p>
+        <div className="mt-4 space-y-2 text-xs">
+          <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-2.5"><span className="font-semibold">{fr ? 'Carte' : 'Card'} <em className="ml-1 not-italic text-[9px] text-emerald-700">{fr ? 'meilleur' : 'best'}</em></span><strong>68,21 EUR</strong></div>
+          <div className="flex items-center justify-between px-3 py-2"><span className="text-slate-500">{fr ? 'Bureau de change' : 'Exchange office'}</span><strong>69,05 EUR</strong></div>
+          <div className="flex items-center justify-between border-t border-slate-100 px-3 pt-3"><span className="text-slate-500">DCC</span><strong className="text-amber-700">72,34 EUR</strong></div>
+        </div>
       </div>
     </div>
   );
@@ -298,8 +302,8 @@ export default function KiwangoHome() {
 
         <section className="border-b border-emerald-100 bg-[#eef6f1] px-4 py-16 md:px-8 md:py-24">
           <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[.88fr_1.12fr] lg:items-center lg:gap-20">
-            <div className="max-w-xl lg:order-1"><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">02 · {fr ? 'Au moment de payer' : 'When it is time to pay'}</p><h2 className="mt-5 text-4xl font-semibold leading-[1.04] tracking-[-.05em] md:text-5xl">{fr ? 'Sachez ce que vaut votre argent, avant de le remettre.' : 'Know what your money is worth before handing it over.'}</h2><p className="mt-6 text-base leading-7 text-slate-600">{fr ? 'Convertissez un montant, comparez un taux proposé et visualisez immédiatement l’écart. Vous décidez avec une référence claire, sans transformer chaque paiement en calcul mental.' : 'Convert an amount, compare an offered rate and see the difference immediately. Make decisions with a clear reference instead of doing mental maths for every payment.'}</p><StoryChecklist items={fr ? ['Taux horodatés et source visible', 'Rate Check pour contrôler une offre', 'Écart affiché en montant et en pourcentage', 'Outils simples, sans jargon financier'] : ['Timestamped rates with a visible source', 'Rate Check to review an offer', 'Difference shown as an amount and percentage', 'Simple tools without financial jargon']} /><Link href="/outils" className="mt-8 inline-flex items-center gap-2 bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700">{fr ? 'Vérifier un taux' : 'Check a rate'}<ArrowRight className="h-4 w-4" /></Link></div>
-            <div className="lg:order-2"><RateCheckVisual fr={fr} /></div>
+            <div className="max-w-xl lg:order-1"><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">02 · {fr ? 'Au moment de payer' : 'When it is time to pay'}</p><h2 className="mt-5 text-4xl font-semibold leading-[1.04] tracking-[-.05em] md:text-5xl">{fr ? 'Choisissez le moyen de paiement, pas seulement le taux.' : 'Choose the payment method, not just the rate.'}</h2><p className="mt-6 text-base leading-7 text-slate-600">{fr ? 'Comparez carte, DAB, bureau de change et conversion du terminal. Kiwango classe chaque option selon son coût réel dans votre devise.' : 'Compare card, ATM, exchange office and terminal conversion. Kiwango ranks every option by its real cost in your currency.'}</p><StoryChecklist items={fr ? ['Comparaison des quatre options', 'Frais bancaires personnalisables', 'Économie affichée immédiatement', 'Alerte claire contre la DCC'] : ['Four payment options compared', 'Customisable bank fees', 'Instant saving estimate', 'Clear warning about DCC']} /><Link href="/payer" className="mt-8 inline-flex items-center gap-2 bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700">{fr ? 'Comparer mes options' : 'Compare my options'}<ArrowRight className="h-4 w-4" /></Link></div>
+            <div className="lg:order-2"><PaymentAdvisorVisual fr={fr} /></div>
           </div>
         </section>
 

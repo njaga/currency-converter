@@ -7,7 +7,7 @@ const sections = [
   {
     icon: ShieldCheck,
     title: 'Protection des données',
-    content: "Kiwango ne nécessite aucun compte pour convertir des devises. L'historique, les favoris, les voyages préparés, budgets, Cash Wallet, alertes locales et taux terrain sont enregistrés sur votre appareil. Ces données ne servent pas à établir un profil utilisateur.",
+    content: "Kiwango ne nécessite aucun compte pour convertir des devises. L'historique, les favoris, les voyages préparés, budgets, préférences de frais du Pay Advisor, Cash Wallet, alertes locales et taux terrain sont enregistrés sur votre appareil. Ces données ne servent pas à établir un profil utilisateur.",
   },
   {
     icon: Database,
