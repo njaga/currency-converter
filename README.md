@@ -1,112 +1,135 @@
-# XOF Currency Converter
+# AfriChange
 
-<div align="center">
-  <img src="public/logo.svg" alt="XOF Converter Logo" width="200"/>
+**Offline-first African currency converter.**
 
-  Un convertisseur de devises moderne et intuitif, spécialement conçu pour la conversion entre le Franc CFA (XOF) et d'autres devises internationales.
+AfriChange is a Progressive Web App designed for travelers, cross-border workers and anyone who needs to understand prices across African currencies even when connectivity becomes unreliable.
 
-  [Voir la démo en direct](https://xof-converter.vercel.app) | [Signaler un bug](https://github.com/njaga/currency-converter/issues) | [Demander une fonctionnalité](https://github.com/njaga/currency-converter/issues)
-</div>
+Live app: https://xof-converter.vercel.app
 
-## 🌟 Fonctionnalités
+## Why this project exists
 
-- ⚡️ Conversion en temps réel entre différentes devises
-- 💾 Sauvegarde locale des conversions favorites
-- 📊 Historique des taux de change avec visualisation graphique
-- 🔄 Double API pour une fiabilité maximale
-- 📱 Interface responsive et moderne
-- 🎨 Animations fluides et interactions intuitives
-- 🌙 Support de multiples devises (USD, EUR, GBP, JPY, etc.)
-- 🔒 Aucun stockage de données personnelles
+Currency conversion is easy when a stable internet connection is available. It becomes less trivial when arriving in another country without a local SIM card, while roaming is unavailable or while the network is intermittent.
 
-## 🚀 Technologies Utilisées
+AfriChange therefore treats offline use as a product requirement rather than an afterthought:
 
-- **Frontend:**
-  - [Next.js 14](https://nextjs.org/) - Framework React moderne
-  - [Tailwind CSS](https://tailwindcss.com/) - Framework CSS utilitaire
-  - [Framer Motion](https://www.framer.com/motion/) - Bibliothèque d'animations
-  - [Lucide React](https://lucide.dev/) - Icônes modernes et personnalisables
-  - [Recharts](https://recharts.org/) - Bibliothèque de graphiques
+1. fetch verified exchange-rate data when connectivity is available;
+2. normalize and validate it;
+3. persist the latest successful snapshot in IndexedDB;
+4. perform conversions locally;
+5. clearly identify cached or stale data when offline.
 
-- **APIs:**
-  - [ExchangeRate-API](https://www.exchangerate-api.com/) - API principale de taux de change
-  - [CurrencyAPI](https://currencyapi.com/) - API secondaire (fallback)
+The application never fabricates a historical rate or silently presents an undated static estimate as live market data.
 
-## 🛠️ Installation
+## Supported currencies
 
-1. **Clonez le répertoire**
-   ```bash
-   git clone https://github.com/njaga/currency-converter.git
-   ```
+The registry focuses on Africa and also contains major international currencies. It currently includes XOF, XAF, GMD, SLE, GNF, NGN, GHS, MRU, CDF, KES, TZS, UGX, ETB, RWF, BIF, MUR, MGA, SCR, MAD, DZD, TND, EGP, ZAR, BWP, NAD, MZN, ZMW, EUR, USD, GBP, CAD, CHF, JPY, CNY, AED and SAR.
 
-2. **Installez les dépendances**
-   ```bash
-   cd currency-converter
-   npm install
-   ```
-   ou
-   ```bash
-   yarn install
-   ```
+The official EUR/XOF and EUR/XAF fixed parities are handled explicitly by the conversion engine.
 
-3. **Configurez les variables d'environnement**
-   ```bash
-   cp .env.example .env
-   ```
-   Ajoutez vos clés API dans le fichier `.env.local`:
-   ```
-   CURRENCY_API_KEY=votre_clé_ici
-   EXCHANGE_RATE_API_KEY=votre_clé_ici
-   ```
+## Rate architecture
 
-4. **Démarrez le serveur de développement**
-   ```bash
-   npm run dev
-   ```
-   ou
-   ```bash
-   yarn dev
-   ```
+```text
+Online
+  │
+  ├── Fawaz open currency dataset
+  ├── Frankfurter
+  └── optional server-side ExchangeRate-API fallback
+          │
+          ▼
+  normalization + validation
+          │
+          ▼
+       IndexedDB
+          │
+          ▼
+   local conversion engine
 
-5. **Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur**
+Offline
+  │
+  ├── latest IndexedDB snapshot
+  └── official EUR/XOF/XAF fixed parity when applicable
+```
 
-## 📦 Structure du Projet
+API keys are never embedded in the browser bundle. If `EXCHANGE_RATE_API_KEY` is configured on the server, the browser reaches it through `/api/rates`.
 
-- `components/`: Composants React
-- `pages/`: Pages Next.js
-- `public/`: Fichiers statiques
-- `styles/`: Styles globaux
-- `utils/`: Fonctions utilitaires
+## Rate freshness
 
-## 🤝 Contribution
+AfriChange distinguishes between data states instead of using a simple online/offline flag:
 
-Les contributions sont les bienvenues ! N'hésitez pas à :
+- fresh cached data;
+- stale cached data;
+- very old cached data, shown as indicative;
+- official fixed parity;
+- unavailable data.
 
-1. Fork le projet
-2. Créer votre branche (`git checkout -b feature/AmazingFeature`)
-3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
+If a user opens the app offline before ever synchronizing a floating currency, AfriChange must report that the rate is unavailable instead of inventing one.
 
-## 📝 License
+## Local data
 
-Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
+IndexedDB stores:
 
-## 👨‍💻 Auteur
+- exchange-rate snapshots;
+- recent conversion history;
+- favorites.
 
-**Ndiaga Ndiaye**
-- Portfolio: [ndiagandiaye.com](https://ndiagandiaye.com)
-- Email: [contact@ndiagandiaye.com](mailto:contact@ndiagandiaye.com)
-- GitHub: [@njaga](https://github.com/njaga)
+Theme and language preferences may use lightweight browser preferences. No account is required for the core experience.
 
-## 💖 Remerciements
+## PWA
 
-- [ExchangeRate-API](https://www.exchangerate-api.com/) pour leur API fiable
-- [CurrencyAPI](https://currencyapi.com/) pour leur service de backup
-- La communauté open source pour leurs contributions inestimables
+The app includes a web manifest and a service worker. Static application resources are cached for offline reuse, while `/api/*` responses are deliberately excluded from the service-worker cache because rate freshness is managed explicitly by the exchange-rate layer and IndexedDB.
 
----
+## Languages
 
-<div align="center">
-  Développé avec ❤️ par <a href="https://ndiagandiaye.com">Ndiaga Ndiaye</a>
-</div>
+The UI supports French, English, Spanish and Wolof.
+
+## Tech stack
+
+- Next.js (Pages Router)
+- React
+- Tailwind CSS
+- Framer Motion
+- IndexedDB
+- Service Worker / PWA APIs
+- Recharts for verified chart data only
+
+## Local development
+
+```bash
+git clone https://github.com/njaga/currency-converter.git
+cd currency-converter
+npm install
+npm run dev
+```
+
+Optional server-side fallback:
+
+```env
+EXCHANGE_RATE_API_KEY=your_server_only_key
+NEXT_PUBLIC_SITE_URL=https://xof-converter.vercel.app
+```
+
+Never prefix a secret rate-provider key with `NEXT_PUBLIC_`.
+
+## Data integrity rules
+
+Contributions must respect these rules:
+
+- no random or simulated market/historical data presented as real;
+- no secret API key in client-side code;
+- no rate without a traceable source or cached timestamp, except an official fixed parity;
+- no silent substitution of stale data for live data;
+- conversion logic must return `null` when the required floating rate is unavailable.
+
+## Roadmap
+
+- Country / travel preparation mode
+- Pre-trip offline readiness check
+- Better multi-country metadata for XOF and XAF monetary zones
+- Verified historical provider before restoring charts/trends
+- Stronger automated tests around provider normalization and stale-rate handling
+- Incremental migration of large UI components toward smaller hooks/components and TypeScript
+
+## Author
+
+Ndiaga Ndiaye  
+https://ndiagandiaye.com

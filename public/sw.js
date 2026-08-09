@@ -1,4 +1,4 @@
-const CACHE_NAME = 'africhange-pwa-v2';
+const CACHE_NAME = 'africhange-pwa-v3';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -8,71 +8,54 @@ const PRECACHE_ASSETS = [
   '/mentions-legales',
 ];
 
-// Install Event - Pre-cache shell assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS);
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(PRECACHE_ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activate Event - Clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys()
+      .then((cacheNames) => Promise.all(
+        cacheNames.filter((cache) => cache !== CACHE_NAME).map((cache) => caches.delete(cache))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// Fetch Event - Stale-While-Revalidate with protocol safety
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests or non-HTTP(S) schemes (e.g. chrome-extension://, moz-extension://)
-  if (request.method !== 'GET') return;
-  if (!url.protocol.startsWith('http')) return;
+  if (request.method !== 'GET' || !url.protocol.startsWith('http')) return;
 
-  // Handle static assets & navigation pages
-  if (
+  // Rate freshness is handled explicitly by IndexedDB and the provider layer.
+  // Never let the service worker introduce a second, opaque API cache.
+  if (url.origin === self.location.origin && url.pathname.startsWith('/api/')) return;
+
+  const cacheable =
     request.mode === 'navigate' ||
-    url.origin === self.origin ||
-    request.destination === 'style' ||
-    request.destination === 'script' ||
-    request.destination === 'image' ||
-    request.destination === 'font'
-  ) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then(async (cache) => {
-        const cachedResponse = await cache.match(request);
-        const fetchPromise = fetch(request)
-          .then((networkResponse) => {
-            // Guard against invalid/extension/non-200 responses
-            if (
-              networkResponse &&
-              networkResponse.status === 200 &&
-              url.protocol.startsWith('http')
-            ) {
-              try {
-                cache.put(request, networkResponse.clone());
-              } catch (e) {
-                // Ignore unsupported scheme errors silently
-              }
-            }
-            return networkResponse;
-          })
-          .catch(() => cachedResponse);
+    url.origin === self.location.origin ||
+    ['style', 'script', 'image', 'font'].includes(request.destination);
 
-        return cachedResponse || fetchPromise;
-      })
-    );
-  }
+  if (!cacheable) return;
+
+  event.respondWith(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      const cachedResponse = await cache.match(request);
+      const networkPromise = fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse?.ok && (networkResponse.type === 'basic' || networkResponse.type === 'cors')) {
+            cache.put(request, networkResponse.clone()).catch(() => undefined);
+          }
+          return networkResponse;
+        })
+        .catch(() => cachedResponse || caches.match('/'));
+
+      return cachedResponse || networkPromise;
+    })
+  );
 });
