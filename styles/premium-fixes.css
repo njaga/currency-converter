@@ -73,7 +73,7 @@ header.sticky.w-full button:has(.lucide-download) {
 /* Dropdowns rendered inside the floating header must remain above content. */
 header.sticky.w-full [role='menu'] { z-index: 190 !important; }
 
-/* CurrencyConverter still contains its legacy compact footer. The /app page
+/* CurrencyConverter still contains its legacy compact footer. The app pages
    renders the full SiteFooter after the product shell, so hide only that inner one. */
 .kiwango-app-page > div:first-child > footer {
   display: none !important;
@@ -96,5 +96,6 @@ header.sticky.w-full [role='menu'] { z-index: 190 !important; }
 
 @media (min-width: 1024px) and (max-width: 1180px) {
   header.sticky.w-full > div { gap: .5rem; }
-  header.sticky.w-full nav button { padding-left: .75rem; padding-right: .75rem; }
+  header.sticky.w-full nav button,
+  header.sticky.w-full nav a { padding-left: .75rem; padding-right: .75rem; }
 }

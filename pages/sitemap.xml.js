@@ -1,7 +1,7 @@
 import { fetchCountryDirectory, countrySlug } from '../lib/countries-server';
 import { TRAVEL_DESTINATIONS } from '../lib/travel';
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://xof-converter.vercel.app').replace(/\/$/, '');
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://kiwango.vercel.app').replace(/\/$/, '');
 
 const escapeXml = (value) => String(value)
   .replace(/&/g, '&amp;')
@@ -24,7 +24,10 @@ export async function getServerSideProps({ res }) {
 
   const staticUrls = [
     { loc: '/', priority: '1.0', changefreq: 'weekly' },
-    { loc: '/app', priority: '0.9', changefreq: 'weekly' },
+    { loc: '/convertisseur', priority: '0.9', changefreq: 'daily' },
+    { loc: '/voyage', priority: '0.9', changefreq: 'weekly' },
+    { loc: '/outils', priority: '0.8', changefreq: 'weekly' },
+    { loc: '/devises', priority: '0.8', changefreq: 'daily' },
     { loc: '/mentions-legales', priority: '0.2', changefreq: 'yearly' },
   ];
 

@@ -1,43 +1,44 @@
-# Design QA — Kiwango landing and personalized trip flow
+# Design QA — Kiwango navigation, landing continuity and travel workspace
 
 - Source visual truth: `/workspace/scratch/9f4de7a6690c/generated_images/exec-fd78d8a6-065e-424f-a86a-38b4d47c01dc.png`
-- Browser implementation capture: `/workspace/scratch/kiwango-implementation-final.jpg`
-- Side-by-side evidence: `/workspace/scratch/9f4de7a6690c/kiwango/qa-comparison-final.png`
+- Browser implementation capture: `/workspace/scratch/9f4de7a6690c/kiwango-home-final-top-fr.jpg`
+- Side-by-side evidence: `/workspace/scratch/9f4de7a6690c/kiwango-qa-comparison-final.png`
 - Browser viewport: 1357 × 932 CSS px, device scale factor 1
 - Source pixels: 1487 × 1058
 - Implementation pixels: 1357 × 932
-- Normalization: both captures cropped from the top to a 3:2 comparison region, then resized to 768 × 512 and placed side by side
+- Normalization: source resized proportionally, top-cropped to 1357 × 932, then placed beside the browser capture
 - State: French landing page, Senegal → Kenya, departure 15 September 2026, return 27 September 2026
 
 ## Findings
 
 No actionable P0, P1 or P2 differences remain.
 
-- Fonts and typography: Inter matches the product's established design system and reproduces the mock's strong editorial hierarchy, weight and wrapping closely. Small labels remain readable.
-- Spacing and layout rhythm: the split hero, asymmetrical image collage, conversion overlay and next-section reveal match the selected direction. The implemented trip form intentionally uses two rows instead of the mock's one row to include the departure and return dates requested by the user.
-- Colors and visual tokens: deep ink, emerald, warm off-white, subtle borders and restrained shadows match the source direction.
-- Image quality and asset fidelity: all three hero assets are production raster images created for this layout. Crops are sharp, subjects match the source art direction and no placeholder/CSS illustration substitutes remain.
-- Copy and content: French and English landing content is complete. The implemented copy is more explicit about personalization while preserving the selected concept's tone.
-- Responsive and accessibility: semantic navigation, labelled selects, labelled date fields, visible focusable controls, disabled invalid-route state, translated labels and alt text are present.
+- Fonts and typography: the established Geist typography preserves the strong editorial hierarchy, readable labels and compact navigation from the selected direction.
+- Spacing and layout rhythm: the split hero, asymmetrical image collage and rate overlay remain aligned with the approved source. The two-row form is an intentional product extension for departure and return dates. The following sections now use a consistent light editorial rhythm and expose the next content within the first viewport.
+- Colors and visual tokens: warm off-white, emerald accents, pale mint surfaces, fine borders and restrained shadows now continue through the page. The previous solid dark middle section has been removed.
+- Image quality and asset fidelity: the three production WebP hero assets remain sharp and correctly cropped. No placeholder or code-drawn visual replaces a source asset.
+- Copy and content: French and English copy is complete for the changed landing, navigation, SEO pages and personalized trip planner. The former ambiguous “Services utiles” label is replaced with an explicit personalized-plan value proposition.
+- Navigation: the previously approved Convertir / Préparer un voyage / Outils / Taux menu and destination shortcut are restored, while every destination now points to a dedicated route.
+- Accessibility: semantic links, page-current states, associated form labels, an ARIA combobox for place search, keyboard-accessible suggestions and visible focus states are present.
 
 ## Interaction verification
 
-- Selected Senegal as origin and Kenya as destination.
-- Entered departure and return dates.
-- Submitted the trip form and verified the personalized travel URL and workspace.
-- Verified that the active trip, currencies and dates appear in the Travel interface.
-- Verified that the Converter opens with XOF → KES and personalized trip copy.
-- Switched the landing page to English and verified translated navigation, form, journey and CTA content.
-- Checked browser console: no application errors; only unrelated cloud-browser extension messages were present.
+- Typed `123456` continuously into “Vous envoyez”; the complete value remained in the field and focus stayed active.
+- Verified `/convertisseur`, `/voyage`, `/outils` and `/devises` each render with their own title, canonical path and selected navigation state.
+- Verified legacy `/app?tab=tools` redirects to `/outils`.
+- Verified the personalized travel plan, Google Maps departure combobox, checklist and direct map shortcuts render for Kenya.
+- Switched the travel page to English and verified the new headings and field labels.
+- Checked browser console: no application errors; only unrelated cloud-browser extension metadata messages were present.
 
 ## Comparison history
 
-1. Initial comparison found a P2 vertical-rhythm mismatch: the hero was too tall and hid the start of the journey section.
-2. Reduced the desktop gallery height and hero vertical padding.
-3. Recaptured the same French state. The journey section now appears within the viewport and the hero proportions align with the selected visual.
+1. The previous production review identified a P1 visual-continuity issue: a large dark section broke the light editorial direction below the approved hero.
+2. Replaced it with a pale mint personalized-workspace section, redesigned the journey steps as clean editorial cards and restored the requested menu.
+3. The first revised capture showed too much space before the journey cards (P2). Reduced the section padding and card gap.
+4. Recaptured at the same viewport and state. The hero remains faithful, the next section is visible and the page now continues with one coherent visual system.
 
 ## Follow-up polish
 
-- P3: a future mobile-specific capture can fine-tune collage crops for very narrow screens after production analytics show the most common viewport widths.
+- P3: validate exact image crops on the most common production mobile viewport once real analytics provide a dominant screen width.
 
 final result: passed

@@ -56,6 +56,6 @@ export default function TravelMode({ lang='fr', onSelectPair }) {
       </div>
     </div>
 
-    <div><div className="mb-4"><p className="text-[11px] font-semibold uppercase tracking-[.14em] text-slate-400">{fr?'Préparer le séjour':'Prepare the stay'}</p><h2 className="mt-1 text-xl font-semibold">{fr?'Services utiles pour cette destination':'Useful services for this destination'}</h2></div><TripPreparation country={{...destination,name:localName}} lang={lang} activeTrip={activeTrip}/></div>
+    <div><div className="mb-4 max-w-3xl"><p className="text-[11px] font-semibold uppercase tracking-[.14em] text-emerald-700">{fr?'Plan de voyage personnalisé':'Personal trip plan'}</p><h2 className="mt-2 text-2xl font-semibold tracking-[-.035em]">{fr?`Préparez concrètement votre séjour : ${localName}`:`Prepare your stay: ${localName}`}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{fr?'Centralisez votre point de départ, vos dates, votre checklist et des raccourcis Google Maps réellement utiles. Toutes les données du plan restent sur votre appareil.':'Keep your departure point, dates, checklist and genuinely useful Google Maps shortcuts together. All plan data stays on your device.'}</p></div><TripPreparation country={{...destination,name:localName}} lang={lang} activeTrip={activeTrip}/></div>
   </section>;
 }

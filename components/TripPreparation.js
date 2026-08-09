@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Check, MapPin, Plane, Users } from 'lucide-react';
+import { Banknote, CalendarDays, Check, ExternalLink, Landmark, Plane, Route, Users } from 'lucide-react';
+import PlaceAutocompleteInput from './PlaceAutocompleteInput';
 
 const TASKS = [
   { id: 'documents', fr: 'Vérifier les documents de voyage', en: 'Check travel documents' },
@@ -14,6 +15,7 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
   const fr = lang === 'fr';
   const storageKey = country?.code ? `kiwango_departure_plan_${country.code}` : null;
   const [origin, setOrigin] = useState('');
+  const [originPlace, setOriginPlace] = useState(null);
   const [departureDate, setDepartureDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [travellers, setTravellers] = useState('1');
@@ -26,6 +28,7 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
       const plan = JSON.parse(localStorage.getItem(storageKey));
       const matchingTrip = activeTrip?.destinationCode === country?.code ? activeTrip : null;
       setOrigin(plan?.origin || matchingTrip?.originName || '');
+      setOriginPlace(plan?.originPlace || matchingTrip?.originPlace || null);
       setDepartureDate(plan?.departureDate || matchingTrip?.departureDate || '');
       setReturnDate(plan?.returnDate || matchingTrip?.returnDate || '');
       setTravellers(String(plan?.travellers || 1));
@@ -33,6 +36,7 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
     } catch {
       const matchingTrip = activeTrip?.destinationCode === country?.code ? activeTrip : null;
       setOrigin(matchingTrip?.originName || '');
+      setOriginPlace(matchingTrip?.originPlace || null);
       setDepartureDate(matchingTrip?.departureDate || '');
       setReturnDate(matchingTrip?.returnDate || '');
       setTravellers('1');
@@ -54,6 +58,7 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
     if (!origin.trim() || !departureDate || !storageKey) return;
     localStorage.setItem(storageKey, JSON.stringify({
       origin: origin.trim(),
+      originPlace,
       destination: country.name,
       destinationCode: country.code,
       departureDate,
@@ -66,6 +71,7 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
       localStorage.setItem('kiwango_active_trip', JSON.stringify({
         ...activeTrip,
         originName: origin.trim(),
+        originPlace,
         departureDate,
         returnDate,
         updatedAt: Date.now(),
@@ -75,6 +81,8 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
   };
 
   const valid = origin.trim() && departureDate;
+  const mapsSearch = (query) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${query} ${country.name}`)}`;
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin.trim())}&destination=${encodeURIComponent(country.name)}`;
 
   return (
     <section className="mt-6 min-w-0 border border-slate-200 bg-white dark:border-white/10 dark:bg-white/[.03]">
@@ -82,10 +90,10 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
         <div className="border-b border-slate-200 p-5 sm:p-7 lg:border-b-0 lg:border-r dark:border-white/10">
           <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-emerald-700">{fr ? 'Préparer le départ' : 'Prepare departure'}</p>
           <h2 className="mt-3 text-2xl font-semibold tracking-[-.035em]">{fr ? `Votre trajet vers ${country.name}` : `Your trip to ${country.name}`}</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-500">{fr ? 'Indiquez d’où vous partez et les dates du séjour. Le plan est conservé uniquement sur cet appareil.' : 'Enter where you are leaving from and your travel dates. The plan is stored only on this device.'}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-500">{fr ? 'Recherchez votre point de départ avec Google Maps, indiquez vos dates et conservez ce plan uniquement sur cet appareil.' : 'Find your departure point with Google Maps, add your dates and keep this plan only on this device.'}</p>
 
           <div className="mt-6 space-y-4">
-            <label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">{fr ? 'Ville ou pays de départ' : 'Departure city or country'}</span><div className="flex items-center gap-2 border border-slate-200 px-3.5 focus-within:border-emerald-500 dark:border-white/10"><MapPin className="h-4 w-4 text-slate-400"/><input value={origin} onChange={(event) => { setOrigin(event.target.value); setSaved(false); }} placeholder={fr ? 'Ex. Dakar, Sénégal' : 'E.g. Dakar, Senegal'} className="w-full bg-transparent py-3 text-sm outline-none"/></div></label>
+            <label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">{fr ? 'Ville ou pays de départ' : 'Departure city or country'}</span><PlaceAutocompleteInput value={origin} selectedPlace={originPlace} lang={lang} onChange={(nextValue, place) => { setOrigin(nextValue); setOriginPlace(place); setSaved(false); }} /></label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label><span className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">{fr ? 'Départ' : 'Departure'}</span><div className="flex items-center gap-2 border border-slate-200 px-3 dark:border-white/10"><CalendarDays className="h-4 w-4 text-slate-400"/><input type="date" value={departureDate} onChange={(event) => { setDepartureDate(event.target.value); setSaved(false); }} className="w-full bg-transparent py-3 text-sm outline-none"/></div></label>
               <label><span className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">{fr ? 'Retour facultatif' : 'Optional return'}</span><input type="date" min={departureDate} value={returnDate} onChange={(event) => { setReturnDate(event.target.value); setSaved(false); }} className="w-full border border-slate-200 bg-transparent px-3 py-3 text-sm outline-none dark:border-white/10"/></label>
@@ -110,7 +118,15 @@ export default function TripPreparation({ country, lang = 'fr', activeTrip = nul
               return <button key={task.id} type="button" onClick={() => toggleTask(task.id)} aria-pressed={checked} className="flex w-full items-center gap-3 py-4 text-left"><span className={`flex h-6 w-6 items-center justify-center border ${checked ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 text-transparent dark:border-white/20'}`}><Check className="h-4 w-4"/></span><span className={`text-sm font-medium ${checked ? 'text-slate-400 line-through' : ''}`}>{fr ? task.fr : task.en}</span></button>;
             })}
           </div>
-          <p className="mt-5 text-xs leading-5 text-slate-400">{fr ? 'Aucun lien commercial ni service affilié n’est utilisé dans cette version.' : 'No commercial or affiliate links are used in this version.'}</p>
+          <div className="mt-6 border-t border-slate-200 pt-5 dark:border-white/10">
+            <p className="text-xs font-semibold uppercase tracking-[.14em] text-slate-400">{fr ? `Raccourcis utiles pour ${country.name}` : `Useful shortcuts for ${country.name}`}</p>
+            <p className="mt-2 text-xs leading-5 text-slate-500">{fr ? 'Ouvrez directement Google Maps pour préparer votre itinéraire et repérer les services financiers essentiels. Kiwango ne reçoit aucune commission.' : 'Open Google Maps directly to prepare your route and find essential financial services. Kiwango receives no commission.'}</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <a href={directionsUrl} target="_blank" rel="noreferrer" className="group flex items-center gap-2 border border-slate-200 px-3 py-3 text-xs font-semibold transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-white/10 dark:hover:bg-emerald-950/20"><Route className="h-4 w-4 text-emerald-700" />{fr ? 'Itinéraire' : 'Directions'}<ExternalLink className="ml-auto h-3 w-3 text-slate-300" /></a>
+              <a href={mapsSearch(fr ? 'distributeur automatique banque' : 'ATM bank')} target="_blank" rel="noreferrer" className="group flex items-center gap-2 border border-slate-200 px-3 py-3 text-xs font-semibold transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-white/10 dark:hover:bg-emerald-950/20"><Landmark className="h-4 w-4 text-emerald-700" />{fr ? 'DAB & banques' : 'ATMs & banks'}<ExternalLink className="ml-auto h-3 w-3 text-slate-300" /></a>
+              <a href={mapsSearch(fr ? 'bureau de change' : 'currency exchange')} target="_blank" rel="noreferrer" className="group flex items-center gap-2 border border-slate-200 px-3 py-3 text-xs font-semibold transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-white/10 dark:hover:bg-emerald-950/20"><Banknote className="h-4 w-4 text-emerald-700" />{fr ? 'Bureaux de change' : 'Exchange offices'}<ExternalLink className="ml-auto h-3 w-3 text-slate-300" /></a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
